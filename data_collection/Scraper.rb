@@ -42,6 +42,7 @@ module Scraper
   end
 
   def self.scrape
+    year_2000 = Time.mktime(2000)
     host_rel_path = "http://www.nuforc.org#{SITE_DIRECTORY}"
 
     #Represent tables
@@ -64,6 +65,9 @@ module Scraper
         #ONLY 2 rows out of the whole set have these problems, really broken HTML in summary, lets ignore these records
         if columns.length == 7 
           sighting[:occurred_at] = columns[0].content.strip_html.strip
+          if sighting[:occurred_at] and !sighting[:occurred_at].empty? and sighting[:occurred_at].to_date < year_2000
+            break 
+          end
           sighting[:city] = columns[1].content.strip_html.strip
           sighting[:state] = columns[2].content.strip_html.strip
           state[:name_abbreviation] ||= sighting[:state].strip
@@ -80,12 +84,12 @@ module Scraper
           html = open(sighting[:sighting_detail_url])
           next unless html
           details_html = Nokogiri::HTML(html).xpath "//table/tbody/tr/td"
-          if details_html.length < 2
-            reported_at = details_html[0].content.to_s.strip_html.scan /Reported:\s(.*?)\s.*[PAM]{2}\s(\d{1,2}:\d{1,2})/
+          if details_html.length > 1
+            reported_at = details_html.first.content.to_s.strip_html.scan /Reported:\s(.*?)\s.*[PAM]{2}\s(\d{1,2}:\d{1,2})/
             if reported_at.one?
               sighting[:reported_at] = reported_at.first.map(&:strip).join(" ").strip
             end
-            full_description = details_html[1].content.strip_html.strip
+            full_description = details_html.last.content.strip_html.strip
             unless full_description.empty?
               sighting[:full_description] = full_description.strip
             end
