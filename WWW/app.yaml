@@ -1,0 +1,19 @@
+application: it-came-out-of-the-sky
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+- url: /stylesheets
+  static_dir: stylesheets
+- url: /downloads
+  static_dir: downloads
+- url: /images
+  static_dir: images
+- url: /js
+  static_dir: js
+
+- url: /.*
+  script: it_came_out_of_the_sky.py
+
+
