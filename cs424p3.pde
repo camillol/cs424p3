@@ -12,6 +12,9 @@ void setup()
   
   View hbar = new HBar(100,100,200,20);
   rootView.subviews.add(hbar);
+
+  View hbar2 = new HBar(100,200,200,20);
+  rootView.subviews.add(hbar2);
 }
 
 void draw()
