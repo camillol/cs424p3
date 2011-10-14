@@ -6,14 +6,17 @@ void setup()
   setupG2D();
   
   smooth();
-  background(0);
+  background(50);
   
   rootView = new View(0, 0, width, height);
+  
+  View hbar = new HBar(100,100,200,20);
+  rootView.subviews.add(hbar);
 }
 
 void draw()
 {
-  background(0);    /* seems to be needed to actually clear the frame */
+  background(50);    /* seems to be needed to actually clear the frame */
   Animator.updateAll();
   
   rootView.draw();
