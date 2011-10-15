@@ -7,6 +7,7 @@ require 'net/http'
 require 'chronic'
 require "sqlite3"
 require 'progressbar'
+require 'fastercsv'
 
 
 #TODO add method that will write the data into flat file OR database
@@ -16,6 +17,27 @@ module Scraper
   SITE_DIRECTORY = "/webreports".freeze
   BANNED_LOCATIONS = %w(UNSPECIFIED/INTERNATIONAL ALBERTA,CANADA).freeze
 
+  def self.dump_file_path
+    File.join File.expand_path(File.dirname(__FILE__)), DUMP_FILE_NAME
+  end
+
+  def self.downloaded_csv_files
+  end
+
+  def self.update_city_coordinates
+    i = 0
+    db = SQLite3::Database.new('ufo.db')
+    FasterCSV.foreach(File.join(File.expand_path(File.dirname(__FILE__)), "../data", "Gaz_places_national.csv"), :col_sep => "\t") do |line|
+      if i > 0
+        rows = db.execute("SELECT c.id FROM cities c JOIN states s ON s.id = c.state_id WHERE c.name like ? AND s.name_abbreviation like ? ", 
+                   "%#{line[3].gsub(/(CDP|city|town)/, '').strip}%", "%#{line[0]}%")
+        if rows.one?
+          db.execute("UPDATE cities SET lat = ?, lon = ? WHERE id = ?", (line[8].to_f * 100).round, (line[9].to_f * 100).round, rows.first.first)
+        end
+      end
+      i+=1
+    end
+  end
 
   def self.open(url_string)
     url = URI.parse(url_string)
@@ -35,10 +57,6 @@ module Scraper
       puts e
     end
     response
-  end
-
-  def self.dump_file_path
-    File.join File.expand_path(File.dirname(__FILE__)), DUMP_FILE_NAME
   end
 
   def self.scrape
@@ -68,10 +86,10 @@ module Scraper
           if sighting[:occurred_at] and !sighting[:occurred_at].empty? and sighting[:occurred_at].to_date < year_2000
             break 
           end
-          sighting[:city] = columns[1].content.strip_html.strip
-          sighting[:state] = columns[2].content.strip_html.strip
-          state[:name_abbreviation] ||= sighting[:state].strip
-          sighting[:shape] = columns[3].content.strip_html.strip
+          sighting[:city] = columns[1].content.strip_html.strip.downcase.capitalize
+          sighting[:state] = columns[2].content.strip_html.strip.upcase
+          state[:name_abbreviation] ||= sighting[:state].strip.upcase
+          sighting[:shape] = columns[3].content.strip_html.strip.downcase.capitalize
           sighting[:duration] = columns[4].content.strip_html.strip
           sighting[:summary_description] = columns[5].content.strip_html.strip
           sighting[:posted_at] = columns[6].content.strip_html.strip
@@ -168,12 +186,12 @@ module Scraper
       end
       #TODO find county for each city, insert conties into table, and map cities to counties
       puts "Inserting cities"
-      result[:sightings].map{|sighting| [sighting[:city], sighting[:state] ] }.uniq.each do |city_state|
+      result[:sightings].map{|sighting| [sighting[:city], sighting[:state]] }.uniq.each do |city_state|
         db.execute "INSERT INTO cities (name, state_id) VALUES (?, (SELECT id FROM states WHERE name_abbreviation LIKE ?))", city_state.first, city_state.last
       end
 
       puts "Inserting shapes"
-      result[:sightings].map{|sighting| sighting[:shape].strip }.uniq.each do |shape|
+      result[:sightings].map{|sighting| sighting[:shape] }.uniq.each do |shape|
         db.execute "INSERT INTO shapes (name) VALUES (?)", shape
       end
 
@@ -185,6 +203,27 @@ module Scraper
                                   sighting[:occurred_at].to_date(:db),
                                   sighting[:reported_at] ? sighting[:reported_at].to_date(:db) : nil, 
                                   sighting[:posted_at].to_date(:db)
+
+        puts "Building indexes"
+        db.execute "CREATE INDEX states_index_id ON states(id);"
+        db.execute "CREATE INDEX states_index_name_abbreviation ON states(name_abbreviation);"
+
+        db.execute "CREATE INDEX counties_index_id ON counties(id);"
+        db.execute "CREATE INDEX counties_index_state_id ON counties(state_id);"
+
+        db.execute "CREATE INDEX cities_index_id ON cities(id);"
+        db.execute "CREATE INDEX cities_index_state_id ON cities(state_id);"
+        db.execute "CREATE INDEX cities_index_county_id ON cities(county_id);"
+        db.execute "CREATE INDEX cities_index_lat_lon ON cities(lat, lon);"
+        db.execute "CREATE INDEX cities_index_name ON cities(name);"
+
+        db.execute "CREATE INDEX shapes_index_id ON shapes(id)"
+
+        db.execute "CREATE INDEX sightings_index_id ON sightings(id)"
+        db.execute "CREATE INDEX sightings_index_shape_id ON sightings(shape_id)"
+        db.execute "CREATE INDEX sightings_index_city_id ON sightings(city_id)"
+        db.execute "CREATE INDEX sightings_index_occurred_at ON sightings(occurred_at);"
+
       end
     end
   end
