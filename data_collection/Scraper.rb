@@ -21,7 +21,23 @@ module Scraper
     File.join File.expand_path(File.dirname(__FILE__)), DUMP_FILE_NAME
   end
 
-  def self.downloaded_csv_files
+  def self.update_coordinates_from_google
+    db = SQLite3::Database.new("ufo.db") 
+    #http://dev.virtualearth.net/REST/v1/Locations/Napervil,IL?o=xml&key=AglK4wns9bo4A1oV_robGjdXYuKww4c7lM5b6fbgIh-WXJAurJpfJIlCJIbHmT7V
+
+    db.execute("SELECT c.id, s.name_abbreviation, c.name FROM cities c JOIN states s ON c.state_id = s.id WHERE lat is null or lon is null").each do |row|
+      url = URI.encode("http://maps.googleapis.com/maps/api/geocode/xml?address=#{row[2].gsub(/(\(.*?\))/, '')}, #{row[1]}&sensor=false")
+      html = Nokogiri.HTML(open(url))
+      lat_doc = html.xpath("//geometry/location/lat").first
+      lon_doc = html.xpath("//geometry/location/lng").first
+      if lat_doc and lon_doc
+        lat = lat_doc.content
+        lon = lon_doc.content
+        db.execute("UPDATE cities SET lat = ? lon = ? WHERE id = ? ", row[0], lat, lon)
+      else
+        puts html.content
+      end
+    end
   end
 
   def self.update_city_coordinates
@@ -134,6 +150,26 @@ module Scraper
     db = SQLite3::Database.new('ufo.db')
     db.transaction do
       create_query  = %{
+        
+        DROP INDEX IF EXISTS states_index_id;
+        DROP INDEX IF EXISTS states_index_name_abbreviation;
+
+        DROP INDEX IF EXISTS counties_index_id;
+        DROP INDEX IF EXISTS counties_index_state_id;
+
+        DROP INDEX IF EXISTS cities_index_id;
+        DROP INDEX IF EXISTS cities_index_state_id;
+        DROP INDEX IF EXISTS cities_index_county_id;
+        DROP INDEX IF EXISTS cities_index_lat_lon;
+        DROP INDEX IF EXISTS cities_index_name;
+
+        DROP INDEX IF EXISTS shapes_index_id;
+
+        DROP INDEX IF EXISTS sightings_index_id;
+        DROP INDEX IF EXISTS sightings_index_shape_id;
+        DROP INDEX IF EXISTS sightings_index_city_id;
+        DROP INDEX IF EXISTS sightings_index_occurred_at;
+        
 
         DROP TABLE IF EXISTS states;
         CREATE TABLE states (
@@ -178,7 +214,7 @@ module Scraper
       }
 
       db.execute_batch create_query
-
+        
       # feeding data to database   
       puts "Inserting states"
       result[:states].each do |state|
@@ -203,28 +239,27 @@ module Scraper
                                   sighting[:occurred_at].to_date(:db),
                                   sighting[:reported_at] ? sighting[:reported_at].to_date(:db) : nil, 
                                   sighting[:posted_at].to_date(:db)
-
-        puts "Building indexes"
-        db.execute "CREATE INDEX states_index_id ON states(id);"
-        db.execute "CREATE INDEX states_index_name_abbreviation ON states(name_abbreviation);"
-
-        db.execute "CREATE INDEX counties_index_id ON counties(id);"
-        db.execute "CREATE INDEX counties_index_state_id ON counties(state_id);"
-
-        db.execute "CREATE INDEX cities_index_id ON cities(id);"
-        db.execute "CREATE INDEX cities_index_state_id ON cities(state_id);"
-        db.execute "CREATE INDEX cities_index_county_id ON cities(county_id);"
-        db.execute "CREATE INDEX cities_index_lat_lon ON cities(lat, lon);"
-        db.execute "CREATE INDEX cities_index_name ON cities(name);"
-
-        db.execute "CREATE INDEX shapes_index_id ON shapes(id)"
-
-        db.execute "CREATE INDEX sightings_index_id ON sightings(id)"
-        db.execute "CREATE INDEX sightings_index_shape_id ON sightings(shape_id)"
-        db.execute "CREATE INDEX sightings_index_city_id ON sightings(city_id)"
-        db.execute "CREATE INDEX sightings_index_occurred_at ON sightings(occurred_at);"
-
       end
+
+      puts "Building indexes"
+      db.execute "CREATE INDEX states_index_id ON states(id);"
+      db.execute "CREATE INDEX states_index_name_abbreviation ON states(name_abbreviation);"
+
+      db.execute "CREATE INDEX counties_index_id ON counties(id);"
+      db.execute "CREATE INDEX counties_index_state_id ON counties(state_id);"
+
+      db.execute "CREATE INDEX cities_index_id ON cities(id);"
+      db.execute "CREATE INDEX cities_index_state_id ON cities(state_id);"
+      db.execute "CREATE INDEX cities_index_county_id ON cities(county_id);"
+      db.execute "CREATE INDEX cities_index_lat_lon ON cities(lat, lon);"
+      db.execute "CREATE INDEX cities_index_name ON cities(name);"
+
+      db.execute "CREATE INDEX shapes_index_id ON shapes(id)"
+
+      db.execute "CREATE INDEX sightings_index_id ON sightings(id)"
+      db.execute "CREATE INDEX sightings_index_shape_id ON sightings(shape_id)"
+      db.execute "CREATE INDEX sightings_index_city_id ON sightings(city_id)"
+      db.execute "CREATE INDEX sightings_index_occurred_at ON sightings(occurred_at);"
     end
   end
 end
