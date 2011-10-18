@@ -35,3 +35,5 @@
 2|Light|12253
 17|Flash|997
 6|Fireball|3629
+
+icons from icones.pro
