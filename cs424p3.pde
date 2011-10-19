@@ -25,6 +25,8 @@ String[] timeLabels = {"00","01","02","03","04","05","06","07","08","09","10","1
 
 PImage airplaneImage;
 
+SightingTable sightings;
+
 void setup()
 {
   size(1000, 700);
@@ -33,6 +35,8 @@ void setup()
   papplet = this;
   
   smooth();
+  
+  sightings = new DummySightingTable();
   
   rootView = new View(0, 0, width, height);
   font = loadFont("Helvetica-48.vlw");
