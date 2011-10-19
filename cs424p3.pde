@@ -4,7 +4,7 @@ PFont font;
 
 HBar hbar;
 HBar hbar2;
-Animator anim;
+Animator settingsAnimator;
 
 PApplet papplet;
 MapView mapv;
@@ -46,16 +46,15 @@ void setup()
   hbar2 = new HBar(10,200,200,20);
   rootView.subviews.add(hbar2);
   */
-  anim = new Animator(0);
   
   mapv = new MapView(0,0,width,height);
   rootView.subviews.add(mapv);
   
   
-  settingsView = new SettingsView(0,0,width,125);
+  settingsView = new SettingsView(0,-100,width,125);
   rootView.subviews.add(settingsView);
 
- // settingsView.y = -100;
+  settingsAnimator = new Animator(settingsView.y);
 }
 
 void draw()
@@ -63,8 +62,7 @@ void draw()
   background(backgroundColor); 
   Animator.updateAll();
   
-  anim.target(settingsView.y);
-  settingsView.y = anim.value;
+  settingsView.y = settingsAnimator.value;
   
   rootView.draw();
 }
