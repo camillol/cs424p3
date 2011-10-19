@@ -34,16 +34,19 @@ module Scraper
     #http://dev.virtualearth.net/REST/v1/Locations/Skokie,IL?o=xml&key=AglK4wns9bo4A1oV_robGjdXYuKww4c7lM5b6fbgIh-WXJAurJpfJIlCJIbHmT7V
     #url = URI.encode("http://maps.googleapis.com/maps/api/geocode/xml?address=#{row[2].gsub(/(\(.*?\))/, '')}, #{row[1]}&sensor=false")
     db.execute("SELECT c.id, s.name_abbreviation, c.name, s.id FROM cities c JOIN states s ON c.state_id = s.id WHERE lat is null or lon is null or c.county_id is null").each do |row|
-      url = URI.encode("http://dev.virtualearth.net/REST/v1/Locations/#{row[2].gsub(/(\(.*?\))/, '')},#{row[1]}?o=xml&key=AglK4wns9bo4A1oV_robGjdXYuKww4c7lM5b6fbgIh-WXJAurJpfJIlCJIbHmT7V")
+      url = URI.encode("http://maps.googleapis.com/maps/api/geocode/xml?address=#{row[2].gsub(/(\(.*?\))/, '')},#{row[1]}&sensor=false")
+      puts url
+      #url = URI.encode("http://dev.virtualearth.net/REST/v1/Locations/#{row[2].gsub(/(\(.*?\))/, '')},#{row[1]}?o=xml&key=AglK4wns9bo4A1oV_robGjdXYuKww4c7lM5b6fbgIh-WXJAurJpfJIlCJIbHmT7V")
       html = Nokogiri.HTML(open(url))
       lat_doc, lon_doc, county_doc = nil, nil, nil
       if url.include? "google"
         lat_doc = html.xpath("//geometry/location/lat").first
         lon_doc = html.xpath("//geometry/location/lng").first
+        county_doc = html.xpath("//address_component[type='administrative_area_level_2']/long_name").first
       else
         lat_doc = html.xpath("//location/point/latitude").first
         lon_doc = html.xpath("//location/point/longitude").first
-        county_doc = html.xpath("//location/address/admindistrict2").first
+        county_doc = html.xpath("//address_co/admindistrict2").first
       end
       if lat_doc and lon_doc
         lat = lat_doc.content
