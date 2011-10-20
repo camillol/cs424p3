@@ -35,25 +35,25 @@ class SettingsView extends View {
     timeSlider = new HSlider(75,70,0,0,timeLabels,"",2);
     this.subviews.add(timeSlider);
     
-    UFOType1 = new Checkbox(CHECKBOX_X + 10 ,CHECKBOX_Y + 9 ,12,12,"UFOType 1","blue.png");
+    UFOType1 = new Checkbox(CHECKBOX_X + 10 ,CHECKBOX_Y + 9 ,12,12,UFOTypeLabels[0],UFOImages[0]);
     this.subviews.add(UFOType1);
     
-    UFOType2 = new Checkbox(CHECKBOX_X + 10 ,CHECKBOX_Y + 29,12,12,"UFOType 2","green.png");
+    UFOType2 = new Checkbox(CHECKBOX_X + 10 ,CHECKBOX_Y + 29,12,12,UFOTypeLabels[1],UFOImages[1]);
     this.subviews.add(UFOType2);
     
-    UFOType3 = new Checkbox(CHECKBOX_X + 10 ,CHECKBOX_Y + 49,12,12,"UFOType 3","gray.png");
+    UFOType3 = new Checkbox(CHECKBOX_X + 10 ,CHECKBOX_Y + 49,12,12,UFOTypeLabels[2],UFOImages[2]);
     this.subviews.add(UFOType3);
     
-    UFOType4 = new Checkbox(CHECKBOX_X + 10 ,CHECKBOX_Y + 69,12,12,"UFOType 4","orange.png");
+    UFOType4 = new Checkbox(CHECKBOX_X + 10 ,CHECKBOX_Y + 69,12,12,UFOTypeLabels[3],UFOImages[3]);
     this.subviews.add(UFOType4);
     
-    UFOType5 = new Checkbox(CHECKBOX_X + 170 ,CHECKBOX_Y + 9,12,12,"UFOType 5","purple.png");
+    UFOType5 = new Checkbox(CHECKBOX_X + 170 ,CHECKBOX_Y + 9,12,12,UFOTypeLabels[4],UFOImages[4]);
     this.subviews.add(UFOType5);
     
-    UFOType6 = new Checkbox(CHECKBOX_X + 170 ,CHECKBOX_Y + 29,12,12,"UFOType 6","red.png");
+    UFOType6 = new Checkbox(CHECKBOX_X + 170 ,CHECKBOX_Y + 29,12,12,UFOTypeLabels[5],UFOImages[5]);
     this.subviews.add(UFOType6);
     
-    UFOType7 = new Checkbox(CHECKBOX_X + 170,CHECKBOX_Y + 49,12,12,"UFOType 7","yellow.png");
+    UFOType7 = new Checkbox(CHECKBOX_X + 170,CHECKBOX_Y + 49,12,12,UFOTypeLabels[6],UFOImages[6]);
     this.subviews.add(UFOType7);
     
     showAirport = new Checkbox(800,10,12,12,"Show airports","plane.png");
