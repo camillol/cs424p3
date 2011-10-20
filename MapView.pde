@@ -18,13 +18,21 @@ class MapView extends View {
   
   void drawContent()
   {
+    imageMode(CORNER);  // modestmaps needs this
     mmap.draw();
     smooth();
-    imageMode(CENTER);
     noStroke();
-    fill(airportAreaColor,40);
-    ellipse(300,250,80,80);
-    image(airplaneImage,300,250);
+
+    Point2f p = mmap.locationPoint(new Location(41.881944, -87.627778));
+    println(p);
+    println(mmap.pointLocation(p));
+    image(airplaneImage,p.x,p.y);
+  }
+
+  boolean mouseDragged(float px, float py)
+  {
+    mmap.mouseDragged();
+    return true;
   }
 }
 

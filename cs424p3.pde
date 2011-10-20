@@ -26,6 +26,8 @@ String[] timeLabels = {"00","01","02","03","04","05","06","07","08","09","10","1
 PImage airplaneImage;
 
 SightingTable sightings;
+List<Place> places;
+List<SightingType> sightingTypes;
 
 void setup()
 {
