@@ -31,7 +31,7 @@ void setup()
 {
   size(1000, 700);
   setupG2D();
-  
+  DataMapper.connect(this); 
   papplet = this;
   
   smooth();
