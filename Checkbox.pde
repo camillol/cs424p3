@@ -54,7 +54,6 @@ class Checkbox extends View {
      text(title, w + w + 10, 0);
      imageMode(CORNERS);
      image(icon, w + 5, 0,w+5+w,h);
-     imageMode(CENTER);
      
    }
    else{
