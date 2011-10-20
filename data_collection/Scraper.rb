@@ -15,7 +15,8 @@ module Scraper
   #Downloads data and parses it into three buckets seasons, episodes, and phrases
   DUMP_FILE_NAME = "scraped_rb_dump.bin".freeze
   SITE_DIRECTORY = "/webreports".freeze
-  BANNED_LOCATIONS = %w(UNSPECIFIED/INTERNATIONAL ALBERTA,CANADA).freeze
+  BANNED_LOCATIONS = ["UNSPECIFIED/INTERNATIONAL", "ALBERTA,CANADA", "BRITISH COLUMBIA,CAN", "MANITOBA,CANADA", "NEW BRUNSWICK,CAN",
+                      "NEWFOUNDLAND,CAN", "NOVA SCOTIA,CAN", "ONTARIO,CAN", "PROV OF QUE,CAN", "SASKATCHEWAN,CAN"].freeze
 
   def self.dump_file_path
     File.join File.expand_path(File.dirname(__FILE__)), DUMP_FILE_NAME
@@ -291,6 +292,18 @@ module Scraper
       db.execute "CREATE INDEX sightings_index_shape_id ON sightings(shape_id)"
       db.execute "CREATE INDEX sightings_index_city_id ON sightings(city_id)"
       db.execute "CREATE INDEX sightings_index_occurred_at ON sightings(occurred_at);"
+    end
+  end
+
+  def self.clear_banned_data
+
+    #UNSAFE, SQL INJECTIONS CAN BE DONE HERE!
+    db = SQLite3::Database.new('ufo.db')
+    db.transaction do
+      result = db.execute("SELECT s.id, c.id, si.id FROM states s JOIN cities c ON s.id = c.state_id JOIN sightings si ON si.city_id = c.id WHERE s.name IN ('#{ BANNED_LOCATIONS.join("', '") }')")
+      db.execute("DELETE FROM sightings WHERE id in (#{result.map{|m| m[2].to_i}.join(", ")})")
+      db.execute("DELETE FROM cities WHERE id in (#{result.map{|m| m[1].to_i}.join(", ")})")
+      db.execute("DELETE FROM states WHERE id in (#{result.map{|m| m[0].to_i}.join(", ")})")
     end
   end
 end
