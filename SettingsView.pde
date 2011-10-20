@@ -94,7 +94,7 @@ class SettingsView extends View {
   
   boolean contentPressed(float lx, float ly)
   {
-    if(lx > 0 && lx <lx+95 && ly>h-25 && ly < h){
+    if(lx > 0 && lx <95 && ly>h-25 && ly < h){
         settingsAnimator.target((showView)?(-heightView+25):0);
         showView = !showView;    
     }
