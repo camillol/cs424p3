@@ -49,6 +49,11 @@ class View {
   {
     return true;
   }
+  
+  boolean contentMouseWheel(float lx, float ly, int delta)
+  {
+    return false;
+  }
 
   boolean ptInRect(float px, float py, float rx, float ry, float rw, float rh)
   {
@@ -92,6 +97,19 @@ class View {
       if (v.mouseClicked(lx, ly)) return true;
     }
     return contentClicked(lx, ly);
+  }
+  
+  boolean mouseWheel(float px, float py, int delta)
+  {
+    if (!ptInRect(px, py, x, y, w, h)) return false;
+    float lx = px - x;
+    float ly = py - y;
+    // check our subviews first
+    for (int i = subviews.size()-1; i >= 0; i--) {
+      View v = (View)subviews.get(i);
+      if (v.mouseWheel(lx, ly, delta)) return true;
+    }
+    return contentMouseWheel(lx, ly, delta);
   }
 }
 

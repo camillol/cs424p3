@@ -61,6 +61,13 @@ void setup()
   rootView.subviews.add(settingsView);
 
   settingsAnimator = new Animator(settingsView.y);
+  
+  // I want to add true multitouch support, but let's have this as a stopgap for now
+  addMouseWheelListener(new java.awt.event.MouseWheelListener() {
+    public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
+      rootView.mouseWheel(mouseX, mouseY, evt.getWheelRotation());
+    }
+  });
 }
 
 void draw()
