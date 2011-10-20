@@ -18,7 +18,7 @@ class MapView extends View {
   
   void drawContent()
   {
-    imageMode(CORNER);  // modestmaps needs this
+    imageMode(CORNER);  // modestmaps needs this - I sent a patch, but who knows when it'll be committed
     mmap.draw();
     smooth();
     noStroke();
@@ -27,6 +27,26 @@ class MapView extends View {
     println(p);
     println(mmap.pointLocation(p));
     image(airplaneImage,p.x,p.y);
+  }
+
+  boolean contentMouseWheel(float lx, float ly, int delta)
+  {
+    float sc = 1.0;
+    if (delta < 0) {
+      sc = 1.05;
+    }
+    else if (delta > 0) {
+      sc = 1.0/1.05;
+    }
+    float mx = lx - w/2;
+    float my = ly - h/2;
+    mmap.tx -= mx/mmap.sc;
+    mmap.ty -= my/mmap.sc;
+    mmap.sc *= sc;
+    mmap.tx += mx/mmap.sc;
+    mmap.ty += my/mmap.sc;
+
+    return true;
   }
 
   boolean mouseDragged(float px, float py)
