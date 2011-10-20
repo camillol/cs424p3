@@ -30,7 +30,6 @@ class SightingType {
   }
 }
 
-
 class Place {
   int type;  /* city, airport, military base */
   Location loc;
