@@ -9,12 +9,14 @@ Animator settingsAnimator;
 PApplet papplet;
 MapView mapv;
 SettingsView settingsView;
+DateFormat dateFormat= new SimpleDateFormat("EEEE MMMM dd, yyyy HH:mm");
 
 color backgroundColor = 0;
 color textColor = 255;
 color viewBackgroundColor = #2D2A36;
 color airportAreaColor = #FFA500;
-color[] UFOColors = {#345677,#568999,#456789,#908766,#229988,#771122,#121211};
+color infoBoxBackground = #000000;
+color[] UFOColors = {#000000,#ffffff,#555555,#333333,#444444,#555555,#666666};
 
 int normalFontSize = 13;
 int smallFontSize = 9 ;
@@ -24,13 +26,15 @@ String[] yearLabels = {"'00","'01","'02","'03","'04","'05","'06","'07","'08","'0
 String[] yearLabelsToPrint = {"2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010","2011"};
 String[] timeLabels = {"00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23"};
 String[] UFOTypeLabels = {"UFOType 1","UFOType 2","UFOType 3","UFOType 4","UFOType 5","UFOType 6","UFOType 7"};
-String[] UFOImages = {"blue.png","green.png","gray.png","orange.png","purple.png","red.png","yellow.png"};
+String[] UFOImages = {"blue.png","green.png","star.png","orange.png","purple.png","red.png","yellow.png"};
 
 PImage airplaneImage;
 
 SightingTable sightings;
 List<Place> places;
 List<SightingType> sightingTypes;
+
+Boolean showAirports=false;
 
 void setup()
 {
@@ -87,6 +91,7 @@ void mouseDragged()
 
 void mouseClicked()
 {
+  showAirports = settingsView.showAirport.value;
   rootView.mouseClicked(mouseX, mouseY);
 }
 
