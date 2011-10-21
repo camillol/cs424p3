@@ -9,6 +9,7 @@ Animator settingsAnimator;
 PApplet papplet;
 MapView mapv;
 SettingsView settingsView;
+SightingDetailsView sightingDetailsView;
 DateFormat dateFormat= new SimpleDateFormat("EEEE MMMM dd, yyyy HH:mm");
 
 color backgroundColor = 0;
@@ -33,7 +34,7 @@ PImage airplaneImage;
 SightingTable sightings;
 List<Place> places;
 List<SightingType> sightingTypes;
-
+Sighting clickedSighting;
 Boolean showAirports=false;
 
 void setup()
@@ -58,6 +59,9 @@ void setup()
   
   settingsView = new SettingsView(0,-100,width,125);
   rootView.subviews.add(settingsView);
+  
+  sightingDetailsView = new SightingDetailsView(0,height-150,width,150);
+  rootView.subviews.add(sightingDetailsView);
 
   settingsAnimator = new Animator(settingsView.y);
   
@@ -76,6 +80,12 @@ void draw()
   
   settingsView.y = settingsAnimator.value;
   
+  sightingDetailsView._sighting = mapv.clickedSighting;
+  if (sightingDetailsView._sighting==null)
+      sightingDetailsView.showView = false;
+  else 
+      sightingDetailsView.showView = true;
+      
   rootView.draw();
 }
 
@@ -92,6 +102,8 @@ void mouseDragged()
 void mouseClicked()
 {
   showAirports = settingsView.showAirport.value;
+
+ 
   rootView.mouseClicked(mouseX, mouseY);
 }
 
