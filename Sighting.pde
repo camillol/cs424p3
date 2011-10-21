@@ -52,14 +52,19 @@ class DummySightingTable implements SightingTable {
   
   DummySightingTable() {
       sightingList = new ArrayList<Sighting>();
-    Place chicago = new Place(0, new Location(41.881944,-87.627778), "Chicago");
+
     PImage image_ = loadImage(UFOImages[0]);
-    SightingType fruit = new SightingType(image_, UFOColors[0], UFOTypeLabels[0]);
-    sightingList.add(new Sighting("A flying pineapple", fruit, 0.1, 0.2, new Date(), chicago));
+    Place ohare = new Place(0, new Location(41.97, -87.905), "O'Hare");
+    SightingType circle2 = new SightingType(image_, UFOColors[2], UFOTypeLabels[2]);
+    sightingList.add(new Sighting("A flying circle2", circle2, 0.5, 0.2, new Date(), ohare));
     image_ = loadImage(UFOImages[1]);
     Place newYork = new Place(0, new Location(40.664274,-73.938500), "New York");
     SightingType circle = new SightingType(image_, UFOColors[1], UFOTypeLabels[1]);
     sightingList.add(new Sighting("A flying circle", circle, 0.3, 0.3, new Date(), newYork));
+    image_ = loadImage(UFOImages[2]);
+    Place chicago = new Place(0, new Location(41.881944,-87.627778), "Chicago");
+    SightingType fruit = new SightingType(image_, UFOColors[0], UFOTypeLabels[0]);
+    sightingList.add(new Sighting("A flying pineapple", fruit, 0.1, 0.2, new Date(), chicago));
   }
   
   Iterator<Sighting> activeSightingIterator() {
