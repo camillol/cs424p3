@@ -3,6 +3,7 @@ import com.modestmaps.*;
 import com.modestmaps.core.*;
 import com.modestmaps.geo.*;
 import com.modestmaps.providers.*;
+import java.util.Iterator;
 
 class MapView extends View {
   InteractiveMap mmap;
@@ -72,8 +73,8 @@ class MapView extends View {
    imageMode(CENTER);
    for (Iterator<Sighting> sightingList = sightings.activeSightingIterator(); sightingList.hasNext();) {
       Sighting newSighting = sightingList.next();
-      Point2f p = mmap.locationPoint(((Place)(newSighting.location)).loc);
-      image(((SightingType)newSighting.type).icon,p.x,p.y,map(zoomValue,minZoom,maxZoom,minPointSize,maxPointSize),map(zoomValue,minZoom,maxZoom,minPointSize,maxPointSize));
+      //Point2f p = mmap.locationPoint(((Place)(newSighting.location)).loc);
+     // image(((SightingType)newSighting.type).icon,p.x,p.y,map(zoomValue,minZoom,maxZoom,minPointSize,maxPointSize),map(zoomValue,minZoom,maxZoom,minPointSize,maxPointSize));
    }
   }
 }

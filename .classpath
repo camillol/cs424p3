@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="lib" path="/opt/eclipse/plugins/processing.plugin.core_0.2.5.1/Resources/lib/core.jar"/>
+	<classpathentry kind="con" path="/org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.7.0"/>
+	<classpathentry kind="lib" path="/home/emagdel/school_2011/cs424/project_3/cs424p3/modestmaps.jar"/>
+	<classpathentry kind="output" path="generated/compiler"/>
+</classpath>
