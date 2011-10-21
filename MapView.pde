@@ -15,6 +15,7 @@ class MapView extends View {
   int maxIconSize = 25;
   int minDistSize = 1;
   int maxDistSize = 100;
+  Sighting clickedSighting;
   
   MapView(float x_, float y_, float w_, float h_)
   {
@@ -25,7 +26,7 @@ class MapView extends View {
   String[] subdomains = new String[] { "otile1", "otile2", "otile3", "otile4"}; // optional
   mmap = new InteractiveMap(papplet, new TemplatedMapProvider(template, subdomains));*/
   
-    mmap.setCenterZoom(new Location(41.881944,-87.627778), int(zoomValue));     
+    mmap.setCenterZoom(new Location(39,-98), int(zoomValue));     
   }
   
   void drawContent()
@@ -53,9 +54,10 @@ class MapView extends View {
     float my = ly - h/2;
     mmap.tx -= mx/mmap.sc;
     mmap.ty -= my/mmap.sc;
-    if (mmap.sc*sc > 16 && mmap.sc*sc < 1000){
+    if (mmap.sc*sc > 16 && mmap.sc*sc < 800){
       mmap.sc *= sc;
-      zoomValue = map((int)mmap.sc,16,1000,minZoom,maxZoom);
+      zoomValue = ceil(map((int)mmap.sc,16,800,minZoom,maxZoom));
+      println(zoomValue + " " + mmap.sc);
     }  
     mmap.tx += mx/mmap.sc;
     mmap.ty += my/mmap.sc;
@@ -63,7 +65,12 @@ class MapView extends View {
     println("Map tx ty " + mmap.tx + " " + mmap.ty );
     return true;
   }
-
+ 
+  boolean mouseClicked(float px, float py)
+  {
+    return true;
+  }
+  
   boolean mouseDragged(float px, float py)
   {
     mmap.mouseDragged();
@@ -92,6 +99,7 @@ class MapView extends View {
       Sighting newSighting = sightingList.next();
       Point2f p = mmap.locationPoint(((Place)(newSighting.location)).loc);
       if (dist(mouseX,mouseY,p.x,p.y) < map(zoomValue,minZoom,maxZoom,minPointSize/2,maxPointSize/2)){
+        textSize(normalFontSize);
         strokeWeight(1);
         stroke(((SightingType)newSighting.type).colr);
         String textToPrint = dateFormat.format(newSighting.localTime);
@@ -100,12 +108,20 @@ class MapView extends View {
         fill(infoBoxBackground);
         float w_ = textWidth(textToPrint)+10;
         float x_ = (p.x+w_ > w)?w-w_-5:p.x;
-        float h_ = (textAscent() + textDescent()) *2 + 10;
+        float h_ = (textAscent() + textDescent()) *3 + 10;
         float y_ = (p.y+h_ > h)?h-h_-5:p.y;
         rect(x_,y_,w_,h_);
         fill(textColor);
         text(dateFormat.format(newSighting.localTime), x_ + (w_ - textWidth(dateFormat.format(newSighting.localTime)))/2 ,y_+5);
-        text(((Place)(newSighting.location)).name,x_ + (w_ - textWidth(((Place)(newSighting.location)).name))/2, (y_+ h_/2+4));
+        text(((Place)(newSighting.location)).name,x_ + (w_ - textWidth(((Place)(newSighting.location)).name))/2, (y_+ h_/2));
+        textSize(smallFontSize);
+        text("Click on it to see details",x_+5,y_+h_-10);
+        if (mousePressed){
+          clickedSighting = newSighting;
+        }        
+      }
+      else if (clickedSighting == newSighting){
+        clickedSighting = null;
       }
    }
   }
