@@ -3,7 +3,7 @@ class SettingsView extends View {
   HSlider monthSlider;
   HSlider timeSlider;
   Checkbox yearCheckbox, monthCheckbox, timeCheckbox;
-  Checkbox UFOType1,UFOType2,UFOType3,UFOType4,UFOType5,UFOType6,UFOType7,UFOType8;
+  Checkbox UFOType1,UFOType2,UFOType3,UFOType4,UFOType5,UFOType6,UFOType7;
   Checkbox showAirport;
   
   int CHECKBOX_X = 450;
@@ -87,9 +87,7 @@ class SettingsView extends View {
     title = "MAP " + ((yearSlider.minIndex()!=yearSlider.maxIndex())?("From: "+yearLabelsToPrint[yearSlider.minIndex()] + " To: " + yearLabelsToPrint[yearSlider.maxIndex()]):("Year: "+yearLabelsToPrint[yearSlider.minIndex()]));
     title = title + ((monthCheckbox.value)?((monthSlider.minIndex()!=monthSlider.maxIndex())?(" - " + monthLabelsToPrint[monthSlider.minIndex()] + " to " + monthLabelsToPrint[monthSlider.maxIndex()]):(" - " +  monthLabelsToPrint[monthSlider.minIndex()])):(""));
     title = title +  ((timeCheckbox.value)?((timeSlider.minIndex()!=timeSlider.maxIndex())?(" - " + timeLabels[timeSlider.minIndex()] + ":00 to " + timeLabels[timeSlider.maxIndex()] +":00"):(" - " + timeLabels[timeSlider.minIndex()])+":00"):(""));   
-    text(title,(width-textWidth(title))/2,h-20);
- 
-       
+    text(title,(width-textWidth(title))/2,h-20);      
   }
   
   boolean contentPressed(float lx, float ly)

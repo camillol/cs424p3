@@ -7,21 +7,27 @@ import java.util.Iterator;
 
 class MapView extends View {
   InteractiveMap mmap;
-  int zoomValue = 4;
-  int minZoom = 4;
-  int maxZoom = 12;
-  int minPointSize= 5;
-  int maxPointSize = 20;
+  float zoomValue = 4;
+  float minZoom = 4;
+  float maxZoom = 12;
+  int minPointSize= 7;
+  int maxPointSize = 25;
   int minIconSize= 8;
   int maxIconSize = 25;
   int minDistSize = 1;
   int maxDistSize = 100;
+  Sighting clickedSighting;
   
   MapView(float x_, float y_, float w_, float h_)
   {
     super(x_, y_, w_, h_);
     mmap = new InteractiveMap(papplet, new Microsoft.HybridProvider(), w, h);
-    mmap.setCenterZoom(new Location(41.881944,-87.627778), zoomValue);     
+   // mmap = new InteractiveMap(papplet, new Microsoft.AerialProvider());  
+ /* String template = "http://{S}.mqcdn.com/tiles/1.0.0/osm/{Z}/{X}/{Y}.png";
+  String[] subdomains = new String[] { "otile1", "otile2", "otile3", "otile4"}; // optional
+  mmap = new InteractiveMap(papplet, new TemplatedMapProvider(template, subdomains));*/
+  
+    mmap.setCenterZoom(new Location(39,-98), int(zoomValue));     
   }
   
   void drawContent()
@@ -31,7 +37,9 @@ class MapView extends View {
     smooth();
 
     drawSightings();
-    drawAirports();
+    if (showAirports)
+        drawAirports();
+    drawSightingsInformationBox();
   }
 
   boolean contentMouseWheel(float lx, float ly, int delta)
@@ -47,13 +55,23 @@ class MapView extends View {
     float my = ly - h/2;
     mmap.tx -= mx/mmap.sc;
     mmap.ty -= my/mmap.sc;
-    mmap.sc *= sc;
+    if (mmap.sc*sc > 16 && mmap.sc*sc < 800){
+      mmap.sc *= sc;
+      zoomValue = ceil(map((int)mmap.sc,16,800,minZoom,maxZoom));
+      println(zoomValue + " " + mmap.sc);
+    }  
     mmap.tx += mx/mmap.sc;
     mmap.ty += my/mmap.sc;
-
+    
+    println("Map tx ty " + mmap.tx + " " + mmap.ty );
     return true;
   }
-
+ 
+  boolean mouseClicked(float px, float py)
+  {
+    return true;
+  }
+  
   boolean mouseDragged(float px, float py)
   {
     mmap.mouseDragged();
@@ -69,12 +87,43 @@ class MapView extends View {
   }
   
   void drawSightings(){
-   
    imageMode(CENTER);
    for (Iterator<Sighting> sightingList = sightings.activeSightingIterator(); sightingList.hasNext();) {
       Sighting newSighting = sightingList.next();
       //Point2f p = mmap.locationPoint(((Place)(newSighting.location)).loc);
      // image(((SightingType)newSighting.type).icon,p.x,p.y,map(zoomValue,minZoom,maxZoom,minPointSize,maxPointSize),map(zoomValue,minZoom,maxZoom,minPointSize,maxPointSize));
+   }
+  }
+  
+  void drawSightingsInformationBox(){
+   for (Iterator<Sighting> sightingList = sightings.activeSightingIterator(); sightingList.hasNext();) {
+      Sighting newSighting = sightingList.next();
+      Point2f p = mmap.locationPoint(((Place)(newSighting.location)).loc);
+      if (dist(mouseX,mouseY,p.x,p.y) < map(zoomValue,minZoom,maxZoom,minPointSize/2,maxPointSize/2)){
+        textSize(normalFontSize);
+        strokeWeight(1);
+        stroke(((SightingType)newSighting.type).colr);
+        String textToPrint = dateFormat.format(newSighting.localTime);
+        if (dateFormat.format(newSighting.localTime).length() < ((Place)(newSighting.location)).name.length())
+              textToPrint = ((Place)(newSighting.location)).name;
+        fill(infoBoxBackground);
+        float w_ = textWidth(textToPrint)+10;
+        float x_ = (p.x+w_ > w)?w-w_-5:p.x;
+        float h_ = (textAscent() + textDescent()) *3 + 10;
+        float y_ = (p.y+h_ > h)?h-h_-5:p.y;
+        rect(x_,y_,w_,h_);
+        fill(textColor);
+        text(dateFormat.format(newSighting.localTime), x_ + (w_ - textWidth(dateFormat.format(newSighting.localTime)))/2 ,y_+5);
+        text(((Place)(newSighting.location)).name,x_ + (w_ - textWidth(((Place)(newSighting.location)).name))/2, (y_+ h_/2));
+        textSize(smallFontSize);
+        text("Click on it to see details",x_+5,y_+h_-10);
+        if (mousePressed){
+          clickedSighting = newSighting;
+        }        
+      }
+      else if (clickedSighting == newSighting){
+        clickedSighting = null;
+      }
    }
   }
 }
