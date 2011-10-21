@@ -1,3 +1,8 @@
+import com.modestmaps.*;
+import com.modestmaps.core.*;
+import com.modestmaps.geo.*;
+import com.modestmaps.providers.*;
+
 View rootView;
 
 PFont font;
@@ -9,7 +14,7 @@ Animator settingsAnimator;
 PApplet papplet;
 MapView mapv;
 SettingsView settingsView;
-
+import de.bezier.data.sql.*;
 color backgroundColor = 0;
 color textColor = 255;
 color viewBackgroundColor = #2D2A36;
