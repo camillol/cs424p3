@@ -93,8 +93,8 @@ void draw()
   
   settingsView.y = settingsAnimator.value;
   
-  sightingDetailsView._sighting = mapv.clickedSighting;
-  if (sightingDetailsView._sighting==null)
+  sightingDetailsView.place = mapv.clickedPlace;
+  if (sightingDetailsView.place==null)
       sightingDetailsView.showView = false;
   else 
       sightingDetailsView.showView = true;
