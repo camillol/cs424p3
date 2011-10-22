@@ -3,16 +3,14 @@ color checkboxColor = 255;
 class Checkbox extends View {
   boolean value;
   color ckbColor = -1;
-  String imageName = "";
   PImage icon;
   String title;
   
-  Checkbox(float x_, float y_, float w_, float h_,String text_, String image_)
+  Checkbox(float x_, float y_, float w_, float h_,String text_, PImage image_)
   {
     super(x_, y_, w_, h_);
     value = false;
-    imageName = image_;
-    icon = loadImage(imageName);
+    icon = image_;
     title = text_;
   }
   
@@ -50,7 +48,7 @@ class Checkbox extends View {
    fill(textColor);
    textFont(font,normalFontSize);
    textAlign(LEFT,TOP);
-   if (imageName.length() > 0){
+   if (icon != null){
      text(title, w + w + 10, 0);
      imageMode(CORNERS);
      image(icon, w + 5, 0,w+5+w,h);
