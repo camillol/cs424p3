@@ -2,7 +2,8 @@ class SightingDetailsView extends View {
 
   float heightView ;
   boolean showView = false;
-  Sighting _sighting;
+  Sighting[] _sighting;
+  Place place;
     
   SightingDetailsView(float x_, float y_, float w_, float h_)
   {
@@ -16,7 +17,7 @@ class SightingDetailsView extends View {
       fill(viewBackgroundColor,220);
       stroke(viewBackgroundColor,220);
       rect(0,0, w, h);
-      text(_sighting.description,5,5);
+      text(place.name,5,5);
     }
         
   }
