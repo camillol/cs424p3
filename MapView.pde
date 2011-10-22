@@ -17,6 +17,10 @@ class MapView extends View {
   int maxDistSize = 100;
   Sighting clickedSighting;
   
+  PImage tempIcon;
+  PGraphics buffer;
+  boolean bufDirty;
+  
   MapView(float x_, float y_, float w_, float h_)
   {
     super(x_, y_, w_, h_);
@@ -26,17 +30,27 @@ class MapView extends View {
   String[] subdomains = new String[] { "otile1", "otile2", "otile3", "otile4"}; // optional
   mmap = new InteractiveMap(papplet, new TemplatedMapProvider(template, subdomains));*/
   
-    mmap.setCenterZoom(new Location(39,-98), int(zoomValue));     
+    mmap.setCenterZoom(new Location(39,-98), int(zoomValue));
+    tempIcon = loadImage("yellow.png");
+    
+    buffer = createGraphics(int(w), int(h), JAVA2D);
+    bufDirty = true;
   }
   
   void drawContent()
   {
     imageMode(CORNER);  // modestmaps needs this - I sent a patch, but who knows when it'll be committed
     mmap.draw();
-    smooth();
 
-    drawPlaces();
-    drawSightings();
+    if (bufDirty) {
+      buffer.beginDraw();
+//      buffer.background(255,0);
+      drawPlaces(buffer);
+      buffer.endDraw();
+      bufDirty = false;
+    }
+    image(buffer, 0, 0);
+//    drawSightings();
     if (showAirports)
         drawAirports();
     drawSightingsInformationBox();
@@ -83,9 +97,8 @@ class MapView extends View {
        image(airplaneImage,p2.x,p2.y,map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize),map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize));
   }
   
-  void drawPlaces() {
-    imageMode(CENTER);
-    PImage icon = loadImage("yellow.png");
+  void drawPlaces(PGraphics buffer) {
+    buffer.imageMode(CENTER);
     for (Iterator<Place> it = places.iterator(); it.hasNext();) {
       Place place = it.next();
       float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
@@ -93,7 +106,7 @@ class MapView extends View {
    
       Point2f p = mmap.locationPoint(place.loc);
       
-      image(icon, p.x, p.y, dotSize, dotSize);
+      buffer.image(tempIcon, p.x, p.y, dotSize, dotSize);
      // dotSize = map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointSize);
    //   ellipse(p.x,p.y,dotSize,dotSize);
     } 

@@ -44,12 +44,13 @@ SQLite db;
 
 void setup()
 {
-  size(1000, 700);
+  size(1000, 700);  // OPENGL seems to be slower than the default
   setupG2D();
   
   papplet = this;
   
   smooth();
+//  noSmooth();
   
   /* load data */
   db = new SQLite( this, "ufo.db" );
