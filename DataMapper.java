@@ -10,6 +10,12 @@ public abstract class DataMapper {
     db.connect();
   }
   
+  public static SQLite getConnection(){
+   SQLite ndb = new SQLite(parent, "ufo.db");
+   ndb.connect();
+   return ndb;
+  }
+  
   public static boolean columnExists(ResultSetMetaData meta, String name){
     try{
       for (int i = 1; i <=  meta.getColumnCount(); ++i)
