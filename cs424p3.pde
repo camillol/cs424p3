@@ -38,8 +38,8 @@ String[] UFOImages = {"blue.png","green.png","star.png","orange.png","purple.png
 
 PImage airplaneImage;
 
-SightingTable sightings;
-List<Place> places;
+Table<Place> places;
+
 List<SightingType> sightingTypes;
 Sighting clickedSighting;
 Boolean showAirports=false;
@@ -55,7 +55,8 @@ void setup()
   
   smooth();
   
-  sightings = new DummySightingTable(this);
+  //sightings = new DummySightingTable(this);
+  places = new Table<Place>(this);
   
   rootView = new View(0, 0, width, height);
   font = loadFont("Helvetica-48.vlw");

@@ -36,10 +36,12 @@ class MapView extends View {
     mmap.draw();
     smooth();
 
-    drawSightings();
+    drawPlaces();
+    /*
     if (showAirports)
         drawAirports();
-    drawSightingsInformationBox();
+    //drawSightingsInformationBox();
+    */
   }
 
   boolean contentMouseWheel(float lx, float ly, int delta)
@@ -86,20 +88,17 @@ class MapView extends View {
        image(airplaneImage,p2.x,p2.y,map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize),map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize));
   }
   
-  void drawSightings(){
+  void drawPlaces(){
    imageMode(CENTER);
-   for (Iterator<Sighting> sightingList = sightings.activeSightingIterator(); sightingList.hasNext();) {
-      Sighting newSighting = sightingList.next();
-      if(newSighting.city() == null)
-        continue;
-      Point2f p = mmap.locationPoint(((Place)(newSighting.city())).loc);
-      //System.out.println("POING: " + p);
-      PImage icon = ((SightingType)newSighting.type).getIcon();
-      if(icon != null)
-        image(icon,p.x,p.y,map(zoomValue,minZoom,maxZoom,minPointSize,maxPointSize),map(zoomValue,minZoom,maxZoom,minPointSize,maxPointSize));
+   PImage icon = loadImage("yellow.png");
+   for (Iterator<Place> placesList = places.iterator(); placesList.hasNext();) {
+      Place place = placesList.next();
+      Point2f p = mmap.locationPoint(place.loc);
+      image(icon,p.x,p.y,map(zoomValue,minZoom,maxZoom,minPointSize,maxPointSize),map(zoomValue,minZoom,maxZoom,minPointSize,maxPointSize));
    }
   }
-  
+
+ /* 
   void drawSightingsInformationBox(){
    for (Iterator<Sighting> sightingList = sightings.activeSightingIterator(); sightingList.hasNext();) {
       Sighting newSighting = sightingList.next();
@@ -131,5 +130,6 @@ class MapView extends View {
       }
    }
   }
+  */
 }
 

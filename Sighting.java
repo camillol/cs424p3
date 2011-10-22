@@ -98,7 +98,7 @@ class SightingType {
 class Place {
   int id;
   int type;  /* city, airport, military base */
-  Location loc;
+  public Location loc;
   String name;
   public static ArrayList<Place> places;
   public SQLite db;
@@ -223,27 +223,30 @@ class Place {
   }
 }
 
-interface SightingTable {
-  Iterator<Sighting> activeSightingIterator();
+interface SightingTable<T> {
+  Iterator<T> iterator();
 }
 
-class Table<T> implements SightingTabple{
+class Table<T> implements SightingTable<T>{
   ArrayList<T> rows;
   Table(cs424p3 parent, String query){
-    if(query=null){
-      if(T == Place){
-        rows = Place.allByType(Place.CITY);
-      }
+    rows = Place.allByType(Place.CITY);
+
+        
+      
     }
   }
-  Table(cs424 parent){
+  Table(cs424p3 parent){
     this(parent, null);
   }
-}
 
+  public Iterator<T> iterator() {
+    return rows.iterator();
+  }
+}
+/*
 class DummySightingTable implements SightingTable {
   ArrayList<Sighting> sightingList;
-
 
   DummySightingTable(cs424p3 parent) {
     //sightingList = new ArrayList<Sighting>();
@@ -255,7 +258,7 @@ class DummySightingTable implements SightingTable {
     /*System.out.println("NUMBER OF SIGHTINGS IN CHICAGO: " + Place.findByName("Chicago", Place.CITY).sightingsCount());
     System.out.println("NUMBER OF SIGHTINGS IN Cook: " + Place.findByName("Cook", Place.COUNTY).sightingsCount());
     System.out.println("NUMBER OF SIGHTINGS IN ILLINOIS: " + Place.findByName("Illinois", Place.STATE).sightingsCount());
-    */
+   
     parent.places = Place.allByType(Place.CITY);
   }
 
@@ -263,4 +266,5 @@ class DummySightingTable implements SightingTable {
     return sightingList.iterator();
   }
 }
+*/
 
