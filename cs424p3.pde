@@ -55,7 +55,7 @@ void setup()
   
   smooth();
   
-  sightings = new DummySightingTable();
+  sightings = new DummySightingTable(this);
   
   rootView = new View(0, 0, width, height);
   font = loadFont("Helvetica-48.vlw");
