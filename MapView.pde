@@ -35,6 +35,7 @@ class MapView extends View {
     mmap.draw();
     smooth();
 
+    drawPlaces();
     drawSightings();
     if (showAirports)
         drawAirports();
@@ -83,6 +84,17 @@ class MapView extends View {
        Point2f p2 = mmap.locationPoint(new Location(41.97, -87.905));
        ellipse(p2.x,p2.y,map(zoomValue,minZoom,maxZoom,minDistSize,maxDistSize),map(zoomValue,minZoom,maxZoom,minDistSize,maxDistSize));
        image(airplaneImage,p2.x,p2.y,map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize),map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize));
+  }
+  
+  void drawPlaces() {
+    imageMode(CENTER);
+    float dotSize = map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
+    PImage icon = loadImage("yellow.png");
+    for (Iterator<Place> it = places.iterator(); it.hasNext();) {
+      Place place = it.next();
+      Point2f p = mmap.locationPoint(place.loc);
+      image(icon, p.x, p.y, dotSize, dotSize);
+    } 
   }
   
   void drawSightings(){

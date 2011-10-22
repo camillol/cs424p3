@@ -37,6 +37,10 @@ List<SightingType> sightingTypes;
 Sighting clickedSighting;
 Boolean showAirports=false;
 
+import de.bezier.data.sql.*;
+
+SQLite db;
+
 void setup()
 {
   size(1000, 700);
@@ -46,8 +50,15 @@ void setup()
   
   smooth();
   
+  /* load data */
+  db = new SQLite( this, "ufo.db" );
+  if (!db.connect()) println("DB connection failed!");
+  
+  loadCities();
+  
   sightings = new DummySightingTable();
   
+  /* setup UI */
   rootView = new View(0, 0, width, height);
   font = loadFont("Helvetica-48.vlw");
   
@@ -71,6 +82,15 @@ void setup()
       rootView.mouseWheel(mouseX, mouseY, evt.getWheelRotation());
     }
   });
+}
+
+void loadCities()
+{
+  db.query("select * from cities;");
+  places = new ArrayList<Place>();
+  while (db.next()) {
+    places.add(new Place(CITY, new Location(db.getFloat("lat"), db.getFloat("lon")), db.getString("name")));
+  }
 }
 
 void draw()
