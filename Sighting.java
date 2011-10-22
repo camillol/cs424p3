@@ -11,7 +11,7 @@ import java.awt.Color;
 import com.modestmaps.*;
 import com.modestmaps.geo.Location;
 import java.util.ArrayList;
-import java.sql.ResultSetMetaData;
+import java.sql.*;
 import javax.*;
 
 class Sighting {
@@ -59,8 +59,6 @@ class Sighting {
        city = Place.findById(city_id, Place.CITY); 
      return city;
   }
-  
-  
 }
 
 
@@ -111,38 +109,30 @@ class Place {
   public static final int COUNTY = 2;
   public static final int CITY   = 3;
 
-  Place(int id, int type, Location loc, String name) {
-    this.id = id;
-    this.type = type;
-    this.loc = loc;
-    this.name = name;
-    this.db = DataMapper.db;
-  }
-
-  Place(SQLite record) {
+  Place(ResultSet record) {
     int type = 0;
     boolean coordinates = false;
     try {
-      type = getTypeByRelationName(record.result.getMetaData().getTableName(1));
-      coordinates = DataMapper.columnExists(record.result.getMetaData(), "lat");
+      type = getTypeByRelationName(record.getMetaData().getTableName(1));
+      coordinates = DataMapper.columnExists(record.getMetaData(), "lat");
       if (coordinates && type < 3) {
         System.out.println("SHOULD NOT GET HERE");
       }
+      String relation_name = getRelationNameByType(type);
+      this.id = record.getInt( "id");
+      this.type = type;
+      if (coordinates)
+        this.loc = new Location(record.getFloat("lat"), record.getFloat("lon"));
+      if(coordinates)
+        System.out.println(loc);
+      if (!coordinates)
+        this.loc = new Location(0, 0);
+      this.name = record.getString("name");
+      this.db = DataMapper.db;
     }
     catch(Exception e) {
       e.printStackTrace();
     }
-    String relation_name = getRelationNameByType(type);
-    this.id = record.getInt( "id");
-    this.type = type;
-    if (coordinates)
-      this.loc = new Location(record.getFloat("lat"), record.getFloat("lon"));
-    if(coordinates)
-      System.out.println(loc);
-    if (!coordinates)
-      this.loc = new Location(0, 0);
-    this.name = record.getString("name");
-    this.db = DataMapper.db;
   }
 
   public static String getRelationalJoins(int type) {
@@ -210,7 +200,7 @@ class Place {
       String query = "SELECT * FROM " + Place.getRelationNameByType(type);
       DataMapper.db.query(query);
       while (DataMapper.db.next ()) {
-        places.add(new Place(DataMapper.db));
+        places.add(new Place(DataMapper.db.result));
       }
     }
     return places;
@@ -225,10 +215,11 @@ class Place {
   }
 
   public static Place find(int type, String whereClause) {
-  
-    DataMapper.db.query("SELECT * FROM " + getRelationNameByType(type) + " WHERE " + whereClause);
+    String query = "SELECT * FROM " + getRelationNameByType(type) + " WHERE " + whereClause;
+    DataMapper.db.query(query);
+    //java.sql.ResultSet res = DataMapper.db.connection.createStatement().executeQuery(query);
     DataMapper.db.next();
-    return new Place(DataMapper.db);
+    return new Place(DataMapper.db.result);
   }
 }
 
@@ -236,18 +227,36 @@ interface SightingTable {
   Iterator<Sighting> activeSightingIterator();
 }
 
+class Table<T> implements SightingTabple{
+  ArrayList<T> rows;
+  Table(cs424p3 parent, String query){
+    if(query=null){
+      if(T == Place){
+        rows = Place.allByType(Place.CITY);
+      }
+    }
+  }
+  Table(cs424 parent){
+    this(parent, null);
+  }
+}
+
 class DummySightingTable implements SightingTable {
   ArrayList<Sighting> sightingList;
 
-  DummySightingTable() {
+
+  DummySightingTable(cs424p3 parent) {
     //sightingList = new ArrayList<Sighting>();
     //Place chicago = new Place(0, new Location(41.881944, -87.627778), "Chicago");
-    //SightingType fruit = new SightingType(loadImage("green.png"), #00FF00, "fruit");
+    //SightingType fruit = new SightingType(loadImage("green.png"), color(0x00FF00), "fruit");
     //sightingList.add(new Sighting("A flying pineapple", fruit, 0.1, 0.2, new Date(), chicago));
+    
     sightingList = Place.findByName("Illinois", Place.STATE).sightings();
-    System.out.println("NUMBER OF SIGHTINGS IN CHICAGO: " + Place.findByName("Chicago", Place.CITY).sightingsCount());
+    /*System.out.println("NUMBER OF SIGHTINGS IN CHICAGO: " + Place.findByName("Chicago", Place.CITY).sightingsCount());
     System.out.println("NUMBER OF SIGHTINGS IN Cook: " + Place.findByName("Cook", Place.COUNTY).sightingsCount());
     System.out.println("NUMBER OF SIGHTINGS IN ILLINOIS: " + Place.findByName("Illinois", Place.STATE).sightingsCount());
+    */
+    parent.places = Place.allByType(Place.CITY);
   }
 
   public Iterator<Sighting> activeSightingIterator() {
