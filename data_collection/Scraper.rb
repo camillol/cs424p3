@@ -228,7 +228,9 @@ module Scraper
         DROP TABLE IF EXISTS shapes;
         CREATE TABLE shapes (
           id INTEGER PRIMARY KEY,
-          name STRING
+          name STRING,
+          group_reference INTEGER,
+          group_name STRING
         );
         
         DROP TABLE IF EXISTS sightings;
@@ -304,6 +306,21 @@ module Scraper
       db.execute("DELETE FROM sightings WHERE id in (#{result.map{|m| m[2].to_i}.join(", ")})")
       db.execute("DELETE FROM cities WHERE id in (#{result.map{|m| m[1].to_i}.join(", ")})")
       db.execute("DELETE FROM states WHERE id in (#{result.map{|m| m[0].to_i}.join(", ")})")
+    end
+  end
+
+  def self.group_shapes
+    db = SQLite3::Database.new('ufo.db')
+    db.transaction do
+      query = %{
+      UPDATE shapes SET group_reference=1, group_name='Polygon' WHERE name IN ('Rectangle','Hexagon','Diamond','Chevron');
+      UPDATE shapes SET group_reference=2, group_name='Variable' WHERE name IN ('changed','Changing','Unknown');
+      UPDATE shapes SET group_reference=3, group_name='Oval' WHERE name IN ('Crescent','Cylinder','Other','Teardrop','Cross','Cigar','Formation');
+      UPDATE shapes SET group_reference=4, group_name='Sphere' WHERE name in ('Disk','Round','Circle','Dome','Sphere','Egg','Oval');
+      UPDATE shapes SET group_reference=5, group_name='Cube' WHERE name in ('Delta','Triangle','pyramid','Cone');
+      UPDATE shapes SET group_reference=6, group_name='Flash' WHERE name in ('Flare','Light','Flash','Fireball');
+      }
+      db.execute_batch query
     end
   end
 end

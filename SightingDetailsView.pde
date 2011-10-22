@@ -16,7 +16,7 @@ class SightingDetailsView extends View {
       fill(viewBackgroundColor,220);
       stroke(viewBackgroundColor,220);
       rect(0,0, w, h);
-      text(_sighting.description,5,5);
+      text(_sighting.description_short,5,5);
     }
         
   }

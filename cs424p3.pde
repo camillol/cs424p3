@@ -46,9 +46,11 @@ Boolean showAirports=false;
 
 void setup()
 {
+  CoreExtensions.applet = this;
   size(1000, 700);
   setupG2D();
   DataMapper.connect(this); 
+  SightingType.loadImages();
   papplet = this;
   
   smooth();

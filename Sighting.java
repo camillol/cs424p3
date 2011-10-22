@@ -19,64 +19,81 @@ class Sighting {
   SightingType type;
   Date localTime;
   Place location;
+  int city_id;
+  Place city;
   String description_short;
   String description_long;
   public SQLite db;
 
 
-  Sighting(int id, SightingType type, Date localTime, Place location, String description_short, String description_long) {
-    this.id = id; 
-    this.type = type;
-    this.localTime = localTime;
-    this.location = location;
-    this.description_short = description_short;
-    this.description_long = description_long;
-    this.db = DataMapper.db;
-  }
-
-  Sighting(SQLite record, Place place){
-    try{
-      for(int i=1; i<40; i++){
+  Sighting(SQLite record, Place place) {
+    try {
+      for (int i=1; i<40; i++) {
         //System.out.println(record.result.getMetaData().getColumnName(i));
       }
     }
-    catch(Exception e){
+    catch(Exception e) {
     }
-    SightingType sightingType= new SightingType(record.getInt("shape_id"), record.getString("shape_name"));
+    SightingType sightingType = new SightingType(record.getInt("shape_id"), record.getString("shape_name"), record.getInt("group_reference"), record.getString("group_name"));
     DateFormat df = new SimpleDateFormat("yyyy.mm.dd hh:mm");
     Date occurred_at = null;
-    try{
+    try {
       occurred_at = df.parse(record.getString("occurred_at"));
     }
-    catch(ParseException e){
+    catch(ParseException e) {
       e.printStackTrace();
     }
 
-    new Sighting(record.getInt("sighting_id"), sightingType, 
-        occurred_at, place, record.getString("summary_description"), record.getString("full_description") );
+    this.id = record.getInt("sighting_id");
+    this.type = sightingType;
+    this.localTime = occurred_at;
+    this.city_id = city_id;
+    this.description_short = record.getString("summary_description");
+    this.description_long = record.getString("full_description");
+    this.db = DataMapper.db;
+    this.location = place;
   }
-
+  
+  public Place city(){
+    if(city==null)
+       city = Place.findById(city_id, Place.CITY); 
+     return city;
+  }
+  
+  
 }
 
 
 class SightingType {
   public int id;
-  public PImage icon;
   int colr;
   public String name;
+  public int groupReference;
+  public String groupName;
   public SQLite db;
 
-  SightingType(int id, String name, PImage icon, int colr) {
-    this(id, name); 
-    this.colr = colr;
-    this.icon = icon;
+  public static PImage [] icons;
+
+  public static void loadImages() {
+    DataMapper.db.query("SELECT max(group_reference) AS maximum FROM shapes");
+    DataMapper.db.next();
+    icons = new PImage[DataMapper.db.getInt("maximum") + 1];
+    DataMapper.db.query("SELECT group_reference, group_name  FROM shapes WHERE group_name IS NOT NULL GROUP BY 1, 2");
+    while (DataMapper.db.next ()) {
+      icons[DataMapper.db.getInt("group_reference")] =  CoreExtensions.applet.loadImage("shapes/" + DataMapper.db.getString("group_name") + ".png");
+    }
   }
 
-  SightingType(int id, String name){
+  SightingType(int id, String name, int groupReference, String groupName) {
     this.id = id;
     this.name = name;
+    this.groupReference = groupReference;
+    this.groupName = groupName;
     this.db = DataMapper.db;
-    //Load image data
+  }
+
+  public PImage getIcon() {
+    return SightingType.icons[groupReference];
   }
 }
 
@@ -102,13 +119,13 @@ class Place {
     this.db = DataMapper.db;
   }
 
-  Place(SQLite record){
+  Place(SQLite record) {
     int type = 0;
     boolean coordinates = false;
-    try{
+    try {
       type = getTypeByRelationName(record.result.getMetaData().getTableName(1));
       coordinates = DataMapper.columnExists(record.result.getMetaData(), "lat");
-      if(coordinates && type < 3){
+      if (coordinates && type < 3) {
         System.out.println("SHOULD NOT GET HERE");
       }
     }
@@ -118,30 +135,34 @@ class Place {
     String relation_name = getRelationNameByType(type);
     this.id = record.getInt( "id");
     this.type = type;
+    if (coordinates)
+      this.loc = new Location(record.getFloat("lat"), record.getFloat("lon"));
     if(coordinates)
-      this.loc = new Location(record.getFloat("lat") / 100, record.getFloat("lon") / 100);
+      System.out.println(loc);
+    if (!coordinates)
+      this.loc = new Location(0, 0);
     this.name = record.getString("name");
     this.db = DataMapper.db;
   }
 
-  public static String getRelationalJoins(int type){
+  public static String getRelationalJoins(int type) {
     String join_sightings = " JOIN sightings ON cities.id = sightings.city_id ";
     String join_cities = " JOIN cities ON counties.id = cities.county_id ";
     String join_counties = " JOIN counties ON states.id = counties.state_id ";
     String joins = "";
-    if(type < CITY)
+    if (type < CITY)
       joins = join_cities + joins;
-    if(type < COUNTY)
+    if (type < COUNTY)
       joins = join_counties + joins;
     joins = join_sightings + joins;
     return joins;
   }
 
-  public String getRelationalJoins(){
+  public String getRelationalJoins() {
     return getRelationalJoins(type);
   }
 
-  public int sightingsCount(){
+  public int sightingsCount() {
     String query = "SELECT count(1) AS total FROM " + getRelationNameByType(type) + getRelationalJoins() + " WHERE " + getRelationNameByType(type) + ".id = " + id;
     System.out.println(query);
     db.query(query);
@@ -149,57 +170,62 @@ class Place {
     return db.getInt("total");
   }
 
-  public ArrayList<Sighting> sightings(){
-    if(sightings == null){
+  public ArrayList<Sighting> sightings() {
+    if (sightings == null) {
       sightings = new ArrayList<Sighting>();
       String query = "SELECT *, shapes.name as shape_name, sightings.id as sighting_id FROM  " + getRelationNameByType(type) + getRelationalJoins() + " JOIN shapes ON shapes.id = sightings.shape_id WHERE " + getRelationNameByType(type) + ".id = " + id;
       db.query(query);
-      while(db.next()){
+      while (db.next ()) {
         sightings.add(new Sighting(db, this));
       }
     }
     return sightings;
   }
 
-  public static String getRelationNameByType(int type){
-    switch(type){
-      case STATE: return "states";
-      case COUNTY: return "counties";
-      case CITY: return "cities";
-      default: return null;
+  public static String getRelationNameByType(int type) {
+    switch(type) {
+    case STATE: 
+      return "states";
+    case COUNTY: 
+      return "counties";
+    case CITY: 
+      return "cities";
+    default: 
+      return null;
     }
   }
 
-  public static int getTypeByRelationName(String name){
-    for(int i=1; i<=3; ++i){
+  public static int getTypeByRelationName(String name) {
+    for (int i=1; i<=3; ++i) {
       String currentName = getRelationNameByType(i);
-      if(currentName.equals(name))
+      if (currentName.equals(name))
         return i;
     }
     return -1;
   }
 
-  public static ArrayList<Place> allByType(int type){
-    if(places==null){
+  public static ArrayList<Place> allByType(int type) {
+    if (places==null) {
       places = new ArrayList<Place>();
       String query = "SELECT * FROM " + Place.getRelationNameByType(type);
       DataMapper.db.query(query);
-      while(DataMapper.db.next()){
+      while (DataMapper.db.next ()) {
         places.add(new Place(DataMapper.db));
       }
     }
-    return places; 
+    return places;
   }
 
-  public static Place findById(int id, int type){
+  public static Place findById(int id, int type) {
     return find(type, getRelationNameByType(type) + ".id = " + id);
   }
-  
-  public static Place findByName(String name, int type){
+
+  public static Place findByName(String name, int type) {
     return find(type, getRelationNameByType(type) + ".name like '" + name + "'");
   }
 
-  public static Place find(int type, String whereClause){
+  public static Place find(int type, String whereClause) {
+  
     DataMapper.db.query("SELECT * FROM " + getRelationNameByType(type) + " WHERE " + whereClause);
     DataMapper.db.next();
     return new Place(DataMapper.db);
@@ -210,7 +236,7 @@ interface SightingTable {
   Iterator<Sighting> activeSightingIterator();
 }
 
-class DummySightingTable implements SightingTable{
+class DummySightingTable implements SightingTable {
   ArrayList<Sighting> sightingList;
 
   DummySightingTable() {
@@ -218,13 +244,13 @@ class DummySightingTable implements SightingTable{
     //Place chicago = new Place(0, new Location(41.881944, -87.627778), "Chicago");
     //SightingType fruit = new SightingType(loadImage("green.png"), #00FF00, "fruit");
     //sightingList.add(new Sighting("A flying pineapple", fruit, 0.1, 0.2, new Date(), chicago));
-    sightingList = Place.findByName("Chicago", Place.CITY).sightings();
+    sightingList = Place.findByName("Illinois", Place.STATE).sightings();
     System.out.println("NUMBER OF SIGHTINGS IN CHICAGO: " + Place.findByName("Chicago", Place.CITY).sightingsCount());
     System.out.println("NUMBER OF SIGHTINGS IN Cook: " + Place.findByName("Cook", Place.COUNTY).sightingsCount());
     System.out.println("NUMBER OF SIGHTINGS IN ILLINOIS: " + Place.findByName("Illinois", Place.STATE).sightingsCount());
   }
 
-  public Iterator<Sighting> activeSightingIterator(){
+  public Iterator<Sighting> activeSightingIterator() {
     return sightingList.iterator();
   }
 }
