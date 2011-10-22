@@ -33,7 +33,8 @@ PImage airplaneImage;
 
 SightingTable sightings;
 List<Place> places;
-List<SightingType> sightingTypes;
+Map<Integer,SightingType> sightingTypeMap;
+
 Sighting clickedSighting;
 Boolean showAirports=false;
 
@@ -54,6 +55,7 @@ void setup()
   db = new SQLite( this, "ufo.db" );
   if (!db.connect()) println("DB connection failed!");
   
+  loadSightingTypes();
   loadCities();
   
   sightings = new DummySightingTable();
