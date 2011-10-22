@@ -30,6 +30,8 @@ class SightingType {
   }
 }
 
+final static int CITY = 0;
+
 class Place {
   int type;  /* city, airport, military base */
   Location loc;
@@ -41,7 +43,6 @@ class Place {
     this.name = name;
   }
 }
-
 
 interface SightingTable {
   Iterator<Sighting> activeSightingIterator();

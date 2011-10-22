@@ -1,3 +1,5 @@
 git clone https://github.com/RandomEtc/modestmaps-processing.git
 
 Then copy the modestmaps directory within to the Processing Libraries folder.
+
+Get the SQLibrary from http://bezier.de/processing/libs/sql/
