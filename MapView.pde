@@ -10,7 +10,7 @@ class MapView extends View {
   float minZoom = 4;
   float maxZoom = 12;
   int minPointSize= 7;
-  int maxPointSize = 25;
+  int maxPointSize = 35;
   int minIconSize= 8;
   int maxIconSize = 25;
   int minDistSize = 1;
@@ -58,12 +58,9 @@ class MapView extends View {
     if (mmap.sc*sc > 16 && mmap.sc*sc < 800){
       mmap.sc *= sc;
       zoomValue = ceil(map((int)mmap.sc,16,800,minZoom,maxZoom));
-      println(zoomValue + " " + mmap.sc);
     }  
     mmap.tx += mx/mmap.sc;
     mmap.ty += my/mmap.sc;
-    
-    println("Map tx ty " + mmap.tx + " " + mmap.ty );
     return true;
   }
  
@@ -88,12 +85,17 @@ class MapView extends View {
   
   void drawPlaces() {
     imageMode(CENTER);
-    float dotSize = map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
     PImage icon = loadImage("yellow.png");
     for (Iterator<Place> it = places.iterator(); it.hasNext();) {
       Place place = it.next();
+      float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
+      float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
+   
       Point2f p = mmap.locationPoint(place.loc);
+      
       image(icon, p.x, p.y, dotSize, dotSize);
+     // dotSize = map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointSize);
+   //   ellipse(p.x,p.y,dotSize,dotSize);
     } 
   }
   

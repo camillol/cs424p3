@@ -60,6 +60,9 @@ class Place {
   }
 }
 
+int minCountSightings = 0;
+int maxCountSightings = 0;
+
 void loadCities()
 {
   db.query("select cities.*, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id group by cities.id;");
@@ -71,6 +74,8 @@ void loadCities()
       db.getString("name"),
       db.getInt("sighting_count")
     ));
+    minCountSightings = (db.getInt("sighting_count") < minCountSightings)?db.getInt("sighting_count"):minCountSightings;
+    maxCountSightings = (db.getInt("sighting_count") > maxCountSightings)?db.getInt("sighting_count"):maxCountSightings;
   }
 }
 
