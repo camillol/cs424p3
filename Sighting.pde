@@ -19,14 +19,21 @@ class Sighting {
 
 
 class SightingType {
+  int id;
   PImage icon;
   color colr;
   String name;
   
-  SightingType(PImage icon, color colr, String name) {
+  SightingType(int id, PImage icon, color colr, String name) {
+    this.id = id;
     this.icon = icon;
     this.colr = colr;
     this.name = name;
+  }
+
+  /* for dummy data */
+  SightingType(PImage icon, color colr, String name) {
+    this(-1, icon, colr, name);
   }
 }
 
@@ -34,19 +41,22 @@ final static int CITY = 0;
 
 class Place {
   int type;  /* city, airport, military base */
+  int id;
   Location loc;
   String name;
   int sightingCount;
   
-  Place(int type, Location loc, String name, int sightingCount) {
+  Place(int type, int id, Location loc, String name, int sightingCount) {
     this.type = type;
+    this.id = id;
     this.loc = loc;
     this.name = name;
     this.sightingCount = sightingCount;
   }
 
+  /* only for dummy data */
   Place(int type, Location loc, String name) {
-    this(type, loc, name, 0);
+    this(type, -1, loc, name, 0);
   }
 }
 
@@ -55,8 +65,44 @@ void loadCities()
   db.query("select cities.*, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id group by cities.id;");
   places = new ArrayList<Place>();
   while (db.next()) {
-    places.add(new Place(CITY, new Location(db.getFloat("lat"), db.getFloat("lon")), db.getString("name"), db.getInt("sighting_count")));
+    places.add(new Place(CITY,
+      db.getInt("id"),
+      new Location(db.getFloat("lat"), db.getFloat("lon")),
+      db.getString("name"),
+      db.getInt("sighting_count")
+    ));
   }
+}
+
+void loadSightingTypes()
+{
+  db.query("select * from sighting_types;");
+  sightingTypeMap = new HashMap<Integer, SightingType>();
+  while (db.next()) {
+    sightingTypeMap.put(db.getInt("id"), new SightingType(
+      db.getInt("id"),
+      loadImage(db.getString("img_name")),
+      color(db.getInt("color")),
+      db.getString("name")
+    ));
+  }
+}
+
+List<Sighting> sightingsForCity(Place p)
+{
+  db.query("select * from sightings join shapes on shape_id = shapes.id where city_id = "+p.id+";");
+  ArrayList<Sighting> sightings = new ArrayList<Sighting>();
+  while (db.next()) {
+    sightings.add(new Sighting(
+      db.getString("full_description"),
+      sightingTypeMap.get(db.getInt("type_id")),
+      0.0, /* TODO: fill in airport distance */
+      0.0, /* TODO: fill in military base distance */
+      db.getDate("occurred_at"),
+      p
+    ));
+  }
+  return sightings;
 }
 
 interface SightingTable {
