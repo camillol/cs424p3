@@ -3,7 +3,7 @@ class SettingsView extends View {
   HSlider monthSlider;
   HSlider timeSlider;
   Checkbox yearCheckbox, monthCheckbox, timeCheckbox;
-  Checkbox UFOType1,UFOType2,UFOType3,UFOType4,UFOType5,UFOType6,UFOType7;
+  Map<SightingType, Checkbox> typeCheckboxMap;
   Checkbox showAirport;
   
   int CHECKBOX_X = 450;
@@ -35,28 +35,18 @@ class SettingsView extends View {
     timeSlider = new HSlider(75,70,0,0,timeLabels,"",2);
     this.subviews.add(timeSlider);
     
-    UFOType1 = new Checkbox(CHECKBOX_X + 10 ,CHECKBOX_Y + 9 ,12,12,UFOTypeLabels[0],UFOImages[0]);
-    this.subviews.add(UFOType1);
+    int i = 0;
+    typeCheckboxMap = new HashMap<SightingType, Checkbox>();
+    for (SightingType st : sightingTypeMap.values()) {
+      int x_delta = (i / 4) * 160;
+      int y_delta = (i % 4) * 20;
+      Checkbox cb = new Checkbox(CHECKBOX_X + 10 + x_delta ,CHECKBOX_Y + 9 + y_delta, 12, 12, st.name, st.icon);
+      typeCheckboxMap.put(st, cb);
+      subviews.add(cb);
+      i++;
+    }
     
-    UFOType2 = new Checkbox(CHECKBOX_X + 10 ,CHECKBOX_Y + 29,12,12,UFOTypeLabels[1],UFOImages[1]);
-    this.subviews.add(UFOType2);
-    
-    UFOType3 = new Checkbox(CHECKBOX_X + 10 ,CHECKBOX_Y + 49,12,12,UFOTypeLabels[2],UFOImages[2]);
-    this.subviews.add(UFOType3);
-    
-    UFOType4 = new Checkbox(CHECKBOX_X + 10 ,CHECKBOX_Y + 69,12,12,UFOTypeLabels[3],UFOImages[3]);
-    this.subviews.add(UFOType4);
-    
-    UFOType5 = new Checkbox(CHECKBOX_X + 170 ,CHECKBOX_Y + 9,12,12,UFOTypeLabels[4],UFOImages[4]);
-    this.subviews.add(UFOType5);
-    
-    UFOType6 = new Checkbox(CHECKBOX_X + 170 ,CHECKBOX_Y + 29,12,12,UFOTypeLabels[5],UFOImages[5]);
-    this.subviews.add(UFOType6);
-    
-    UFOType7 = new Checkbox(CHECKBOX_X + 170,CHECKBOX_Y + 49,12,12,UFOTypeLabels[6],UFOImages[6]);
-    this.subviews.add(UFOType7);
-    
-    showAirport = new Checkbox(800,10,12,12,"Show airports","plane.png");
+    showAirport = new Checkbox(800,10,12,12,"Show airports",loadImage("plane.png"));
     this.subviews.add(showAirport);
     
     showView = false;
