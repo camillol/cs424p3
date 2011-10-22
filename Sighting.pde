@@ -36,11 +36,26 @@ class Place {
   int type;  /* city, airport, military base */
   Location loc;
   String name;
+  int sightingCount;
   
-  Place(int type, Location loc, String name) {
+  Place(int type, Location loc, String name, int sightingCount) {
     this.type = type;
     this.loc = loc;
     this.name = name;
+    this.sightingCount = sightingCount;
+  }
+
+  Place(int type, Location loc, String name) {
+    this(type, loc, name, 0);
+  }
+}
+
+void loadCities()
+{
+  db.query("select cities.*, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id group by cities.id;");
+  places = new ArrayList<Place>();
+  while (db.next()) {
+    places.add(new Place(CITY, new Location(db.getFloat("lat"), db.getFloat("lon")), db.getString("name"), db.getInt("sighting_count")));
   }
 }
 

@@ -84,15 +84,6 @@ void setup()
   });
 }
 
-void loadCities()
-{
-  db.query("select * from cities;");
-  places = new ArrayList<Place>();
-  while (db.next()) {
-    places.add(new Place(CITY, new Location(db.getFloat("lat"), db.getFloat("lon")), db.getString("name")));
-  }
-}
-
 void draw()
 {
   background(backgroundColor); 
