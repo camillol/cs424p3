@@ -74,9 +74,9 @@ class MapView extends View {
     // find start and end columns
 //    println("minX " + minX + " maxX " + maxX + " cols " + cols);
     int minCol = (int)floor(cols * (0-minX) / (maxX-minX));
-    int maxCol = (int)floor(cols * (w-minX) / (maxX-minX));
+    int maxCol = (int)ceil(cols * (w-minX) / (maxX-minX)) - 1;
     int minRow = (int)floor(rows * (0-minY) / (maxY-minY));
-    int maxRow = (int)floor(rows * (h-minY) / (maxY-minY));
+    int maxRow = (int)ceil(rows * (h-minY) / (maxY-minY)) - 1;
     
     minCol = constrain(minCol, 0, cols);
     maxCol = constrain(maxCol, 0, cols);
@@ -114,6 +114,32 @@ class MapView extends View {
       buf.background(255,0,0,128);
     }
     buf.text(coord.toString(), 50, 50);
+    
+    // we want to be compatible with drawing code that calls mmap.locationPoint
+    Location chiLoc = new Location(41.881944,-87.627778);
+    Point2f p = mmap.locationPoint(chiLoc);
+    Coordinate c1 = mmap.provider.locationCoordinate(chiLoc);
+    Coordinate c2 = c1.zoomTo(0);
+    Coordinate c3 = c1.zoomTo(coord.zoom);
+    
+    PMatrix2D m = new PMatrix2D();
+    m.translate(-(float)mmap.tx, -(float)mmap.ty);
+    m.scale(1.0/(float)mmap.sc);
+    m.translate(-mmap.width/2, -mmap.height/2);
+    float[] out = new float[2];
+    m.mult(new float[] { p.x, p.y }, out);
+    Coordinate c4 = new Coordinate(out[1] / mmap.TILE_HEIGHT, out[0] / mmap.TILE_WIDTH, 0.0);    // = c2
+    Coordinate c5 = c4.zoomTo(coord.zoom);    // = c3
+    Point2f p2 = new Point2f(
+      map(c5.column, coord.column, coord.column + 1, 0, mmap.TILE_WIDTH),
+      map(c5.row, coord.row, coord.row + 1, 0, mmap.TILE_HEIGHT)
+    );
+
+//    println("loc " + chiLoc + " p " + p + " c1 " + c1 + " c2 " + c2 + " c3 " + c3 + " out " + out[0] + " " + out[1] + " c4 " + c4 + " c5 " + c5 + " p2 " + p2);
+    
+    buf.imageMode(CENTER);
+    buf.image(tempIcon, p2.x, p2.y);
+    
     buf.endDraw();
     return buf;
   }
@@ -131,7 +157,7 @@ class MapView extends View {
       bufDirty = false;
     }
     drawOverlay();
-    image(buffer, 0, 0);
+//    image(buffer, 0, 0);
     drawPlacesInformationBox();
    // drawSightings();
     if (showAirports)
