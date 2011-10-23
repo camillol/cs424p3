@@ -22,9 +22,8 @@ class MapView extends View {
   
   PImage tempIcon;
   
-  PGraphics buffer;
-  boolean bufDirty;
   Map<Coordinate, PGraphics> buffers;
+  boolean USE_BUFFERS = true;
   
   MapView(float x_, float y_, float w_, float h_)
   {
@@ -39,9 +38,6 @@ class MapView extends View {
     mmap.setCenterZoom(new Location(39,-98), int(zoomValue));
     tempIcon = loadImage("yellow.png");
     
-    buffer = createGraphics(int(w), int(h), JAVA2D);
-    bufDirty = true;
-
     buffers = new LinkedHashMap<Coordinate, PGraphics>(MAX_BUFFERS_TO_KEEP, 0.75, true) {
       protected boolean removeEldestEntry(Map.Entry eldest) {
         return size() > MAX_BUFFERS_TO_KEEP;
@@ -106,51 +102,26 @@ class MapView extends View {
 //    println("images: " + count + " col " + minCol + " " + maxCol + " rows " + minRow + " " + maxRow);
   }
   
+  void applyMapToTileMatrix(PGraphics buffer, Coordinate tileCoord) {
+    buffer.translate(-tileCoord.column * mmap.TILE_WIDTH, -tileCoord.row * mmap.TILE_HEIGHT);
+    buffer.scale(pow(2, tileCoord.zoom));
+    buffer.translate(-(float)mmap.tx, -(float)mmap.ty);
+    buffer.scale(1.0/(float)mmap.sc);
+    buffer.translate(-mmap.width/2, -mmap.height/2);
+  }
+  
   PGraphics makeOverlayBuffer(Coordinate coord) {
-    println("makebuf: " + coord);
+//    println("makebuf: " + coord);
     PGraphics buf = createGraphics(mmap.TILE_WIDTH, mmap.TILE_HEIGHT, JAVA2D);
     buf.beginDraw();
-    if ((coord.row + coord.column) % 2 == 0) {
+ /*   if ((coord.row + coord.column) % 2 == 0) {
       buf.background(255,0,0,128);
     }
-    buf.text(coord.toString(), 50, 50);
+    buf.text(coord.toString(), 50, 50);*/
     
     // we want to be compatible with drawing code that calls mmap.locationPoint
-    Location chiLoc = new Location(41.881944,-87.627778);
-    Point2f p = mmap.locationPoint(chiLoc);
-    Coordinate c1 = mmap.provider.locationCoordinate(chiLoc);
-    Coordinate c2 = c1.zoomTo(0);
-    Coordinate c3 = c1.zoomTo(coord.zoom);
-    
-    PMatrix2D m = new PMatrix2D();
-    m.translate(-(float)mmap.tx, -(float)mmap.ty);
-    m.scale(1.0/(float)mmap.sc);
-    m.translate(-mmap.width/2, -mmap.height/2);
-    float[] out = new float[2];
-    m.mult(new float[] { p.x, p.y }, out);
-    Coordinate c4 = new Coordinate(out[1] / mmap.TILE_HEIGHT, out[0] / mmap.TILE_WIDTH, 0.0);    // = c2
-    Coordinate c5 = c4.zoomTo(coord.zoom);    // = c3
-    Point2f p2 = new Point2f(
-      map(c5.column, coord.column, coord.column + 1, 0, mmap.TILE_WIDTH),
-      map(c5.row, coord.row, coord.row + 1, 0, mmap.TILE_HEIGHT)
-    );
-
-    println("loc " + chiLoc + " p " + p + " c1 " + c1 + " c2 " + c2 + " c3 " + c3 + " out " + out[0] + " " + out[1] + " c4 " + c4 + " c5 " + c5 + " p2 " + p2);
-    
-    PMatrix2D m2 = new PMatrix2D();
-    
-    m2.translate(-coord.column * mmap.TILE_WIDTH, -coord.row * mmap.TILE_HEIGHT);
-    m2.scale(pow(2, coord.zoom));
-    m2.translate(-(float)mmap.tx, -(float)mmap.ty);
-    m2.scale(1.0/(float)mmap.sc);
-    m2.translate(-mmap.width/2, -mmap.height/2);
-
-    m2.mult(new float[] { p.x, p.y }, out);
-    println("scale " + mmap.sc + " zoom " + coord.zoom + " out " + out[0] + " " + out[1]);
-
-    
-    buf.imageMode(CENTER);
-    buf.image(tempIcon, p2.x, p2.y);
+    applyMapToTileMatrix(buf, coord);
+    drawPlaces(buf);
     
     buf.endDraw();
     return buf;
@@ -161,15 +132,9 @@ class MapView extends View {
     imageMode(CORNER);  // modestmaps needs this - I sent a patch, but who knows when it'll be committed
     mmap.draw();
 
-    if (bufDirty) {
-      buffer.beginDraw();
-//      buffer.background(255,0);
-      drawPlaces(buffer);
-      buffer.endDraw();
-      bufDirty = false;
-    }
-    drawOverlay();
-//    image(buffer, 0, 0);
+    if (USE_BUFFERS) drawOverlay();
+    else drawPlaces(papplet.g);
+
     drawPlacesInformationBox();
    // drawSightings();
     if (showAirports)
