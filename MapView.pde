@@ -8,7 +8,7 @@ class MapView extends View {
   InteractiveMap mmap;
   float zoomValue = 4;
   float minZoom = 4;
-  float maxZoom = 12;
+  float maxZoom = 15;
   int minPointSize= 5;
   int maxPointSize = 45;
   int minIconSize= 8;
@@ -225,9 +225,6 @@ class MapView extends View {
               clickedPlace = place;
             }        
           }
-          else if (clickedPlace == place){
-            clickedPlace = null;
-          }
       } 
   }
   
@@ -246,6 +243,7 @@ class MapView extends View {
       Point2f p = mmap.locationPoint(((Place)(newSighting.location)).loc);
       if (dist(mouseX,mouseY,p.x,p.y) < map(zoomValue,minZoom,maxZoom,minPointSize/2,maxPointSize/2)){
         textSize(normalFontSize);
+        textAlign(LEFT);
         strokeWeight(1);
         stroke(((SightingType)newSighting.type).colr);
         String textToPrint = dateFormat.format(newSighting.localTime);
@@ -263,12 +261,12 @@ class MapView extends View {
         textSize(smallFontSize);
         text("Click on it to see details",x_+5,y_+h_-10);
         if (mousePressed){
-          clickedSighting = newSighting;
+            clickedSighting = newSighting;
         }        
       }
-      else if (clickedSighting == newSighting){
-        clickedSighting = null;
-      }
+     // else if (clickedSighting == newSighting){
+       // clickedSighting = null;
+     // }
    }
   }
 }
