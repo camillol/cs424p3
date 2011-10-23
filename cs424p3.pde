@@ -5,15 +5,18 @@ PFont font;
 HBar hbar;
 HBar hbar2;
 Animator settingsAnimator;
+Animator detailsAnimator;
 
 PApplet papplet;
 MapView mapv;
 SettingsView settingsView;
 SightingDetailsView sightingDetailsView;
 DateFormat dateFormat= new SimpleDateFormat("EEEE MMMM dd, yyyy HH:mm");
+DateFormat shortDateFormat= new SimpleDateFormat("MM/dd/yyyy HH:mm");
 
 color backgroundColor = 0;
 color textColor = 255;
+color boldTextColor = #FFFF00;
 color viewBackgroundColor = #2D2A36;
 color airportAreaColor = #FFA500;
 color infoBoxBackground = #000000;
@@ -74,10 +77,11 @@ void setup()
   settingsView = new SettingsView(0,-100,width,125);
   rootView.subviews.add(settingsView);
   
-  sightingDetailsView = new SightingDetailsView(0,height-150,width,150);
+  sightingDetailsView = new SightingDetailsView(0,height,width,200);
   rootView.subviews.add(sightingDetailsView);
 
   settingsAnimator = new Animator(settingsView.y);
+  detailsAnimator = new Animator(sightingDetailsView.y);
   
   // I want to add true multitouch support, but let's have this as a stopgap for now
   addMouseWheelListener(new java.awt.event.MouseWheelListener() {
@@ -93,13 +97,8 @@ void draw()
   Animator.updateAll();
   
   settingsView.y = settingsAnimator.value;
-  
-  sightingDetailsView.place = mapv.clickedPlace;
-  if (sightingDetailsView.place==null)
-      sightingDetailsView.showView = false;
-  else 
-      sightingDetailsView.showView = true;
-      
+  sightingDetailsView.y = detailsAnimator.value;
+       
   rootView.draw();
 }
 
@@ -116,8 +115,16 @@ void mouseDragged()
 void mouseClicked()
 {
   showAirports = settingsView.showAirport.value;
-
  
+  
+  //if (sightingDetailsView.place==null)
+    //  detailsAnimator.target(height);
+  //else  {
+  if (sightingDetailsView.place!=mapv.clickedPlace){
+      sightingDetailsView.place = mapv.clickedPlace;
+      sightingDetailsView.setSightings(sightingsForCity(mapv.clickedPlace));
+      detailsAnimator.target(height-200);
+  }
   rootView.mouseClicked(mouseX, mouseY);
 }
 
