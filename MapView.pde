@@ -18,9 +18,13 @@ class MapView extends View {
   Sighting clickedSighting;
   Place clickedPlace;
   
+  int MAX_BUFFERS_TO_KEEP = 64;
+  
   PImage tempIcon;
+  
   PGraphics buffer;
   boolean bufDirty;
+  Map<Coordinate, PGraphics> buffers;
   
   MapView(float x_, float y_, float w_, float h_)
   {
@@ -31,11 +35,87 @@ class MapView extends View {
   String[] subdomains = new String[] { "otile1", "otile2", "otile3", "otile4"}; // optional
   mmap = new InteractiveMap(papplet, new TemplatedMapProvider(template, subdomains));*/
   
+    mmap.MAX_IMAGES_TO_KEEP = 64;
     mmap.setCenterZoom(new Location(39,-98), int(zoomValue));
     tempIcon = loadImage("yellow.png");
     
     buffer = createGraphics(int(w), int(h), JAVA2D);
     bufDirty = true;
+
+    buffers = new LinkedHashMap<Coordinate, PGraphics>(MAX_BUFFERS_TO_KEEP, 0.75, true) {
+      protected boolean removeEldestEntry(Map.Entry eldest) {
+        return size() > MAX_BUFFERS_TO_KEEP;
+      }
+    };
+  }
+  
+  void drawOverlay()
+  {
+    double sc = mmap.sc;
+    double tx = mmap.tx;
+    double ty = mmap.ty;
+    
+    // translate and scale, from the middle
+    pushMatrix();
+    translate(width/2, height/2);
+    scale((float)sc);
+    translate((float)tx, (float)ty);
+
+    // find the bounds of the ur-tile in screen-space:
+    float minX = screenX(0,0);
+    float minY = screenY(0,0);
+    float maxX = screenX(mmap.TILE_WIDTH, mmap.TILE_HEIGHT);
+    float maxY = screenY(mmap.TILE_WIDTH, mmap.TILE_HEIGHT);
+
+    int zoom = mmap.getZoom();
+    int cols = (int)pow(2,zoom);
+    int rows = (int)pow(2,zoom);
+
+    // find start and end columns
+//    println("minX " + minX + " maxX " + maxX + " cols " + cols);
+    int minCol = (int)floor(cols * (0-minX) / (maxX-minX));
+    int maxCol = (int)floor(cols * (w-minX) / (maxX-minX));
+    int minRow = (int)floor(rows * (0-minY) / (maxY-minY));
+    int maxRow = (int)floor(rows * (h-minY) / (maxY-minY));
+    
+    minCol = constrain(minCol, 0, cols);
+    maxCol = constrain(maxCol, 0, cols);
+    minRow = constrain(minRow, 0, rows);
+    maxRow = constrain(maxRow, 0, rows);
+
+    scale(1.0f/pow(2, zoom));
+    int count = 0;
+    for (int col = minCol; col <= maxCol; col++) {
+      for (int row = minRow; row <= maxRow; row++) {
+	// source coordinate wraps around the world:
+	Coordinate coord = mmap.provider.sourceCoordinate(new Coordinate(row,col,zoom));
+
+	// let's make sure we still have ints:
+	coord.row = round(coord.row);
+	coord.column = round(coord.column);
+	coord.zoom = round(coord.zoom);
+
+        if (!buffers.containsKey(coord))
+          buffers.put(coord, makeOverlayBuffer(coord));
+        
+        image(buffers.get(coord), coord.column*mmap.TILE_WIDTH, coord.row*mmap.TILE_HEIGHT, mmap.TILE_WIDTH, mmap.TILE_HEIGHT);
+        count++;
+      }
+    }
+    popMatrix();
+//    println("images: " + count + " col " + minCol + " " + maxCol + " rows " + minRow + " " + maxRow);
+  }
+  
+  PGraphics makeOverlayBuffer(Coordinate coord) {
+    println("makebuf: " + coord);
+    PGraphics buf = createGraphics(mmap.TILE_WIDTH, mmap.TILE_HEIGHT, JAVA2D);
+    buf.beginDraw();
+    if ((coord.row + coord.column) % 2 == 0) {
+      buf.background(255,0,0,128);
+    }
+    buf.text(coord.toString(), 50, 50);
+    buf.endDraw();
+    return buf;
   }
   
   void drawContent()
@@ -50,6 +130,7 @@ class MapView extends View {
       buffer.endDraw();
       bufDirty = false;
     }
+    drawOverlay();
     image(buffer, 0, 0);
     drawPlacesInformationBox();
    // drawSightings();
