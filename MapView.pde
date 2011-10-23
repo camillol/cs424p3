@@ -135,7 +135,19 @@ class MapView extends View {
       map(c5.row, coord.row, coord.row + 1, 0, mmap.TILE_HEIGHT)
     );
 
-//    println("loc " + chiLoc + " p " + p + " c1 " + c1 + " c2 " + c2 + " c3 " + c3 + " out " + out[0] + " " + out[1] + " c4 " + c4 + " c5 " + c5 + " p2 " + p2);
+    println("loc " + chiLoc + " p " + p + " c1 " + c1 + " c2 " + c2 + " c3 " + c3 + " out " + out[0] + " " + out[1] + " c4 " + c4 + " c5 " + c5 + " p2 " + p2);
+    
+    PMatrix2D m2 = new PMatrix2D();
+    
+    m2.translate(-coord.column * mmap.TILE_WIDTH, -coord.row * mmap.TILE_HEIGHT);
+    m2.scale(pow(2, coord.zoom));
+    m2.translate(-(float)mmap.tx, -(float)mmap.ty);
+    m2.scale(1.0/(float)mmap.sc);
+    m2.translate(-mmap.width/2, -mmap.height/2);
+
+    m2.mult(new float[] { p.x, p.y }, out);
+    println("scale " + mmap.sc + " zoom " + coord.zoom + " out " + out[0] + " " + out[1]);
+
     
     buf.imageMode(CENTER);
     buf.image(tempIcon, p2.x, p2.y);
