@@ -30,7 +30,7 @@ class ScrollList extends View {
     labels.clear();
     scroll.linesCount = 0;
     selectedIndex = 1;
-    scroll.currentLine = 0;
+    scroll.setCurrentLine(0);
   }
   
   void drawContent()

@@ -13,6 +13,7 @@ SettingsView settingsView;
 SightingDetailsView sightingDetailsView;
 DateFormat dateFormat= new SimpleDateFormat("EEEE MMMM dd, yyyy HH:mm");
 DateFormat shortDateFormat= new SimpleDateFormat("MM/dd/yyyy HH:mm");
+DateFormat dbDateFormat= new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
 
 color backgroundColor = 0;
 color textColor = 255;
