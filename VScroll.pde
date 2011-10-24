@@ -8,10 +8,16 @@ class VScroll extends View {
   int linesXSpace;
   float _y = 0;
   float _h = 12;
+  
   VScroll(float x_, float y_, float w_, float h_)
   {
     super(x_, y_, w_, h_);
     linesCount = currentLine = 1;
+  }
+  
+  void setCurrentLine (int _value){
+    currentLine = 0;
+    _y=0;
   }
   
   void drawContent()

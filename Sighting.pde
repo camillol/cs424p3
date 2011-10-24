@@ -95,18 +95,24 @@ void loadSightingTypes()
 
 List<Sighting> sightingsForCity(Place p)
 {
-  db.query("select * from sightings join shapes on shape_id = shapes.id where city_id = "+p.id+";");
+  db.query("select * from sightings join shapes on shape_id = shapes.id where city_id = "+p.id+" order by occurred_at;");
   ArrayList<Sighting> sightings = new ArrayList<Sighting>();
   while (db.next()) {
+    try{
     sightings.add(new Sighting(
       db.getString("full_description"),
       sightingTypeMap.get(db.getInt("type_id")),
       0.0, /* TODO: fill in airport distance */
       0.0, /* TODO: fill in military base distance */
-      db.getDate("occurred_at"),
+      dbDateFormat.parse(db.getString("occurred_at")),
       p
     ));
+    }
+    catch(Exception ex){
+      println(ex); 
+    }
   }
+
   return sightings;
 }
 
