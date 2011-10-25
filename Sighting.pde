@@ -81,7 +81,6 @@ int maxCountSightings;
 
 void loadCities()
 {
-  println("select cities.*, count(*) as sighting_count, count(distinct type_id) as types_count, type_id from cities join sightings on sightings.city_id = cities.id join shapes on shape_id = shapes.id group by cities.id");
   db.query("select cities.*, count(*) as sighting_count, count(distinct type_id) as types_count, type_id from cities join sightings on sightings.city_id = cities.id join shapes on shape_id = shapes.id group by cities.id");
   placeMap = new HashMap<Integer,Place>();
   minCountSightings = 1000;

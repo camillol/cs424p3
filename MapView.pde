@@ -157,23 +157,25 @@ class MapView extends View {
 
   boolean contentMouseWheel(float lx, float ly, int delta)
   {
-    float sc = 1.0;
-    if (delta < 0) {
-      sc = 1.05;
+    if ( ly > (settingsView.y+settingsView.h) && ly < (sightingDetailsView.y)){
+        float sc = 1.0;
+        if (delta < 0) {
+          sc = 1.05;
+        }
+        else if (delta > 0) {
+          sc = 1.0/1.05;
+        }
+        float mx = lx - w/2;
+        float my = ly - h/2;
+        mmap.tx -= mx/mmap.sc;
+        mmap.ty -= my/mmap.sc;
+        if (mmap.sc*sc > 16 && mmap.sc*sc < 900){
+          mmap.sc *= sc;
+          zoomValue = ceil(map((int)mmap.sc,16,900,minZoom,maxZoom));
+        }  
+        mmap.tx += mx/mmap.sc;
+        mmap.ty += my/mmap.sc;
     }
-    else if (delta > 0) {
-      sc = 1.0/1.05;
-    }
-    float mx = lx - w/2;
-    float my = ly - h/2;
-    mmap.tx -= mx/mmap.sc;
-    mmap.ty -= my/mmap.sc;
-    if (mmap.sc*sc > 16 && mmap.sc*sc < 900){
-      mmap.sc *= sc;
-      zoomValue = ceil(map((int)mmap.sc,16,900,minZoom,maxZoom));
-    }  
-    mmap.tx += mx/mmap.sc;
-    mmap.ty += my/mmap.sc;
     return true;
   }
  
@@ -193,8 +195,10 @@ class MapView extends View {
   
   boolean mouseDragged(float px, float py)
   {
-    mmap.mouseDragged();
-    return true;
+      if ( py > (settingsView.y+settingsView.h) && py < (sightingDetailsView.y)){
+          mmap.mouseDragged();
+      }
+      return true;
   }
   
   void drawAirports(){
@@ -208,13 +212,13 @@ class MapView extends View {
   
   void drawPlaces(PGraphics buffer, Iterable<Place> places) {
     buffer.imageMode(CENTER);
-    noFill();
+    buffer.strokeWeight(0.8);
     for (Place place : places) {
       if (place.sightingCount > 0){
         float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
         float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
         Point2f p = mmap.locationPoint(place.loc);
-        if (place.typeOfSightingCount > 1)
+        if (place.typeOfSightingCount > 1) 
             buffer.ellipse(p.x, p.y, dotSize, dotSize);
         else 
            buffer.image((sightingTypeMap.get(place.sightingType)).icon, p.x, p.y, dotSize, dotSize);
