@@ -28,7 +28,7 @@ class SightingDetailsView extends View {
     stroke(viewBackgroundColor,230);
     rect(0,0, w, h);
 
-    if (place!=null){
+    if (place!=null && sightings.size()>0){
       fill(boldTextColor);
       textSize(normalFontSize);
       text(place.name + " (Total # of Sightings = " + place.sightingCount + ")",(w+230-textWidth(place.name + " (Total # of Sightings = " + place.sightingCount + ")"))/2,5); 

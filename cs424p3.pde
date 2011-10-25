@@ -147,10 +147,7 @@ void mouseClicked()
       mapv.rebuildOverlay();
       detailsAnimator.target(height);  
   }
-  
 
-  
-  
   rootView.mouseClicked(mouseX, mouseY);
 }
 

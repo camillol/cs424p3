@@ -208,17 +208,17 @@ class MapView extends View {
   
   void drawPlaces(PGraphics buffer, Iterable<Place> places) {
     buffer.imageMode(CENTER);
+    noFill();
     for (Place place : places) {
       if (place.sightingCount > 0){
         float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
         float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
-     
         Point2f p = mmap.locationPoint(place.loc);
-        
-        buffer.image(tempIcon, p.x, p.y, dotSize, dotSize);
-      }
-      else{
-        println("There is a place with 0"); 
+        if (place.typeOfSightingCount > 1)
+            buffer.ellipse(p.x, p.y, dotSize, dotSize);
+        else 
+           buffer.image((sightingTypeMap.get(place.sightingType)).icon, p.x, p.y, dotSize, dotSize);
+            
       }
     } 
   }

@@ -50,18 +50,22 @@ class Place {
   Location loc;
   String name;
   int sightingCount;
+  int typeOfSightingCount;
+  int sightingType;
   
-  Place(int type, int id, Location loc, String name, int sightingCount) {
+  Place(int type, int id, Location loc, String name, int sightingCount,int typeOfSightingCount,int sightingType) {
     this.type = type;
     this.id = id;
     this.loc = loc;
     this.name = name;
     this.sightingCount = sightingCount;
+    this.typeOfSightingCount = typeOfSightingCount;
+    this.sightingType = sightingType;
   }
 
   /* only for dummy data */
   Place(int type, Location loc, String name) {
-    this(type, -1, loc, name, 0);
+    this(type, -1, loc, name, 0,0,0);
   }
 }
 
@@ -77,7 +81,8 @@ int maxCountSightings;
 
 void loadCities()
 {
-  db.query("select cities.*, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id group by cities.id");
+  println("select cities.*, count(*) as sighting_count, count(distinct type_id) as types_count, type_id from cities join sightings on sightings.city_id = cities.id join shapes on shape_id = shapes.id group by cities.id");
+  db.query("select cities.*, count(*) as sighting_count, count(distinct type_id) as types_count, type_id from cities join sightings on sightings.city_id = cities.id join shapes on shape_id = shapes.id group by cities.id");
   placeMap = new HashMap<Integer,Place>();
   minCountSightings = 1000;
   maxCountSightings = 0;
@@ -86,7 +91,9 @@ void loadCities()
       db.getInt("id"),
       new Location(db.getFloat("lat"), db.getFloat("lon")),
       db.getString("name"),
-      db.getInt("sighting_count")
+      db.getInt("sighting_count"),
+      db.getInt("types_count"),
+      db.getInt("type_id")
     ));
     minCountSightings = min(db.getInt("sighting_count"), minCountSightings);
     maxCountSightings = max(db.getInt("sighting_count"), maxCountSightings);
@@ -98,17 +105,18 @@ void loadCities()
 void reloadCitySightingCounts()
 {
   println("query db for sighting counts");
-  db.query("select cities.id, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id"
+  db.query("select cities.id, count(*) as sighting_count, count(distinct type_id) as types_count,type_id"
+    + " from cities join sightings on sightings.city_id = cities.id join shapes on shape_id = shapes.id"
     + " where occurred_at >= '"+yearMin+".01.01' and occurred_at < '"+yearMax+".01.01'"
     + " group by cities.id");
-//  db.query("select cities.*, count(*) as sighting_count, count(distinct type_id) as types_count from cities join sightings on sightings.city_id = cities.id join shapes on shape_id = shapes.id where occurred_at >= '"+yearMin+".01.01' and occurred_at < '"+yearMax+".01.01' group by cities.id");
   minCountSightings = 1000;
   maxCountSightings = 0;
   println("update objects");
   while (db.next()) {
     Place p = placeMap.get(db.getInt("cities.id"));
     p.sightingCount = db.getInt("sighting_count");
-    
+    p.typeOfSightingCount = db.getInt("types_count");
+    p.sightingType = db.getInt("type_id");
     minCountSightings = min(p.sightingCount, minCountSightings);
     maxCountSightings = max(p.sightingCount, maxCountSightings);
   }
