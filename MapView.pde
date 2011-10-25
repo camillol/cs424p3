@@ -25,6 +25,8 @@ class MapView extends View {
   Map<Coordinate, PGraphics> buffers;
   boolean USE_BUFFERS = true;
   
+  double TILE_EXPAND_FACTOR = 0.05;  // as a fraction of the tile size
+  
   MapView(float x_, float y_, float w_, float h_)
   {
     super(x_, y_, w_, h_);
@@ -114,14 +116,32 @@ class MapView extends View {
 //    println("makebuf: " + coord);
     PGraphics buf = createGraphics(mmap.TILE_WIDTH, mmap.TILE_HEIGHT, JAVA2D);
     buf.beginDraw();
- /*   if ((coord.row + coord.column) % 2 == 0) {
+/*    if ((coord.row + coord.column) % 2 == 0) {
       buf.background(255,0,0,128);
     }
     buf.text(coord.toString(), 50, 50);*/
     
     // we want to be compatible with drawing code that calls mmap.locationPoint
     applyMapToTileMatrix(buf, coord);
-    drawPlaces(buf);
+    
+    // only draw places inside this tile, but with a little margin to account for markers that cross tile boundaries
+    Location loc1 = mmap.provider.coordinateLocation(coord);
+    Coordinate coord2 = new Coordinate(coord.row + 1, coord.column + 1, coord.zoom);
+    Location loc2 = mmap.provider.coordinateLocation(coord2);
+    
+    double minLon = loc1.lon;
+    double maxLon = loc2.lon;
+    double minLat = loc2.lat;
+    double maxLat = loc1.lat;
+    double fudgeLat = (maxLat - minLat) * TILE_EXPAND_FACTOR;
+    double fudgeLon = (maxLon - minLon) * TILE_EXPAND_FACTOR;
+    
+    minLon -= fudgeLon;
+    maxLon += fudgeLon;
+    minLat -= fudgeLat;
+    maxLat += fudgeLat;
+    
+    drawPlaces(buf, placeTree.find(minLon, minLat, maxLon, maxLat));
     
     buf.endDraw();
     return buf;
@@ -133,7 +153,7 @@ class MapView extends View {
     mmap.draw();
 
     if (USE_BUFFERS) drawOverlay();
-    else drawPlaces(papplet.g);
+    else drawPlaces(papplet.g, places);
 
     drawPlacesInformationBox();
    // drawSightings();
@@ -183,10 +203,9 @@ class MapView extends View {
        image(airplaneImage,p2.x,p2.y,map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize),map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize));
   }
   
-  void drawPlaces(PGraphics buffer) {
+  void drawPlaces(PGraphics buffer, Iterable<Place> places) {
     buffer.imageMode(CENTER);
-    for (Iterator<Place> it = places.iterator(); it.hasNext();) {
-      Place place = it.next();
+    for (Place place : places) {
       float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
       float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
    
