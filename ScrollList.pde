@@ -51,15 +51,14 @@ class ScrollList extends View {
          if (labels.size()>i+firstIndex){
              if ((selectedIndex-1)==i+firstIndex){
                fill(activeScrollListColor);
-               rect(0,y,(labels.size()<(h/(textAscent() + textDescent()+ vSpaceBtwLabels)))?w:w-12,textAscent() + textDescent()+ vSpaceBtwLabels);
+               rect(0,y,(labels.size()<=(h/(textAscent() + textDescent()+ vSpaceBtwLabels)))?w:w-12,textAscent() + textDescent()+ vSpaceBtwLabels);
                fill(textActiveColor);
             }
             else{
               fill(textColor);
             }
             String _str = (String)labels.get(firstIndex+i);
-           // String textToPrint = (textWidth(_str)) > (w-5))?(_str.substring(0,(w-5)/textWidth(" ")-5))+"..":_str;
-            text(_str, x , y+ vSpaceBtwLabels);
+            text(str(i+firstIndex+1)+" - "+_str, x , y+ vSpaceBtwLabels);
          }
      }
   }

@@ -86,8 +86,8 @@ class SettingsView extends View {
         settingsAnimator.target((showView)?(-heightView+25):0);
         showView = !showView;    
     }
-        
     return true;
   }
+ 
 }
 

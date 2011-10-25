@@ -11,7 +11,8 @@ PApplet papplet;
 MapView mapv;
 SettingsView settingsView;
 SightingDetailsView sightingDetailsView;
-DateFormat dateFormat= new SimpleDateFormat("EEEE MMMM dd, yyyy HH:mm");
+DateFormat dateTimeFormat= new SimpleDateFormat("EEEE, MMMM dd, yyyy HH:mm");
+DateFormat dateFormat= new SimpleDateFormat("EEEE, MMMM dd, yyyy");
 DateFormat shortDateFormat= new SimpleDateFormat("MM/dd/yyyy HH:mm");
 DateFormat dbDateFormat= new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
 
@@ -41,6 +42,11 @@ Map<Integer,SightingType> sightingTypeMap;
 
 Sighting clickedSighting;
 Boolean showAirports=false;
+String yearMin,yearMax,monthMin,monthMax,timeMin,timeMax;
+Boolean btwMonths = false;
+Boolean btwTime = false;
+Boolean byType = false;
+Boolean isDragging = false;
 
 import de.bezier.data.sql.*;
 
@@ -62,6 +68,7 @@ void setup()
   
   loadSightingTypes();
   loadCities();
+  loadAirports();
   
   sightings = new DummySightingTable();
   
@@ -110,22 +117,55 @@ void mousePressed()
 
 void mouseDragged()
 {
+  isDragging = true;
   rootView.mouseDragged(mouseX, mouseY);
 }
 
 void mouseClicked()
-{
+{  
   showAirports = settingsView.showAirport.value;
- 
-  
-  //if (sightingDetailsView.place==null)
-    //  detailsAnimator.target(height);
-  //else  {
-  if (sightingDetailsView.place!=mapv.clickedPlace){
-      sightingDetailsView.place = mapv.clickedPlace;
-      sightingDetailsView.setSightings(sightingsForCity(mapv.clickedPlace));
-      detailsAnimator.target(height-200);
+  Boolean tmpByType = false;
+  for (SightingType st : sightingTypeMap.values()) {
+   Checkbox cb = settingsView.typeCheckboxMap.get(st);
+   tmpByType = (tmpByType || cb.value);
   }
+  
+  if (btwTime != settingsView.timeCheckbox.value || btwMonths != settingsView.monthCheckbox.value){
+      btwTime = settingsView.timeCheckbox.value;
+      btwMonths = settingsView.monthCheckbox.value;
+      byType = tmpByType;
+      loadCities();
+      detailsAnimator.target(height);  
+  }
+  
+
+  
+  
   rootView.mouseClicked(mouseX, mouseY);
+}
+
+void mouseReleased(){
+  if (isDragging){
+    if (yearMin != yearLabelsToPrint[settingsView.yearSlider.minIndex()] || yearMax != yearLabelsToPrint[settingsView.yearSlider.maxIndex()]){
+      yearMin =  yearLabelsToPrint[settingsView.yearSlider.minIndex()] ;
+      yearMax = yearLabelsToPrint[settingsView.yearSlider.maxIndex()];
+      loadCities();
+      detailsAnimator.target(height);
+    }
+    else if (monthMin != monthLabelsToPrint[settingsView.monthSlider.minIndex()] || monthMax != monthLabelsToPrint[settingsView.monthSlider.maxIndex()]){
+      monthMin =  monthLabelsToPrint[settingsView.monthSlider.minIndex()];
+      monthMax = monthLabelsToPrint[settingsView.monthSlider.maxIndex()];
+      loadCities();
+      detailsAnimator.target(height);
+    }
+    else  if (timeMin != timeLabels[settingsView.timeSlider.minIndex()]+":00" || timeMax != timeLabels[settingsView.timeSlider.maxIndex()]+":00"){
+      timeMin =  timeLabels[settingsView.timeSlider.minIndex()]+":00"; 
+      timeMax = timeLabels[settingsView.timeSlider.maxIndex()]+":00";
+      loadCities();
+      detailsAnimator.target(height);
+    }
+    
+  }
+  isDragging = false;
 }
 
