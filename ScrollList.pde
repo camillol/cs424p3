@@ -45,9 +45,9 @@ class ScrollList extends View {
       selectedItem =  constrain(selectedItem,1,labels.size()-firstIndex);
       int _value = selectedItem + firstIndex;
       selectedIndex = (labels.size() >= _value)?constrain(_value,1,labels.size()):constrain(firstIndex,1,labels.size());
-      for (int i = 0; i < h/spaceBtwLabels; i++) {
+      for (int i = 0; i < floor(h/spaceBtwLabels); i++) {
         float y = spaceBtwLabels*i;
-         if (labels.size()>i+firstIndex){
+         if (labels.size() > i+firstIndex){
              if ((selectedIndex-1)==i+firstIndex){
                fill(activeScrollListColor);
                rect(0,y,(labels.size()<=(h/(textAscent() + textDescent()+ vSpaceBtwLabels)))?w:w-12,textAscent() + textDescent()+ vSpaceBtwLabels);
