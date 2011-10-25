@@ -70,7 +70,9 @@ int maxCountSightings = 0;
 
 void loadCities()
 {
-  db.query("select cities.*, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id group by cities.id");
+  String query_ = "select cities.*, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id where occurred_at >= '"+yearMin+".01.01' and occurred_at < '"+yearMax+".01.01' group by cities.id";
+  println(query_);
+  db.query("select cities.*, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id where occurred_at >= '"+yearMin+".01.01' and occurred_at < '"+yearMax+".01.01' group by cities.id");
   places = new ArrayList<Place>();
   while (db.next()) {
     places.add(new Place(CITY,
@@ -114,7 +116,8 @@ void loadSightingTypes()
 
 List<Sighting> sightingsForCity(Place p)
 {
-  db.query("select * from sightings join shapes on shape_id = shapes.id where city_id = "+p.id+" order by occurred_at;");
+  db.query("select * from sightings join shapes on shape_id = shapes.id where city_id = "+p.id+" and occurred_at >= '"+yearMin+".01.01' and occurred_at < '"+yearMax+".01.01' order by occurred_at;");
+  
   ArrayList<Sighting> sightings = new ArrayList<Sighting>();
   while (db.next()) {
     try{

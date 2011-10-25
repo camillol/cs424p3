@@ -132,8 +132,10 @@ class MapView extends View {
     imageMode(CORNER);  // modestmaps needs this - I sent a patch, but who knows when it'll be committed
     mmap.draw();
 
-    if (USE_BUFFERS) drawOverlay();
-    else drawPlaces(papplet.g);
+   if (USE_BUFFERS) drawOverlay();
+   else drawPlaces(papplet.g);
+  
+ 
   
     if (showAirports)
         drawAirports();
@@ -197,12 +199,17 @@ class MapView extends View {
     buffer.imageMode(CENTER);
     for (Iterator<Place> it = places.iterator(); it.hasNext();) {
       Place place = it.next();
-      float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
-      float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
-   
-      Point2f p = mmap.locationPoint(place.loc);
-      
-      buffer.image(tempIcon, p.x, p.y, dotSize, dotSize);
+      if (place.sightingCount > 0){
+        float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
+        float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
+     
+        Point2f p = mmap.locationPoint(place.loc);
+        
+        buffer.image(tempIcon, p.x, p.y, dotSize, dotSize);
+      }
+      else{
+        println("There is a place with 0"); 
+      }
     } 
   }
   
