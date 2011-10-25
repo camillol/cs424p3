@@ -47,6 +47,11 @@ class MapView extends View {
     };
   }
   
+  void rebuildOverlay()
+  {
+    buffers.clear();
+  }
+  
   void drawOverlay()
   {
     double sc = mmap.sc;
@@ -141,7 +146,7 @@ class MapView extends View {
     mmap.draw();
 
     if (USE_BUFFERS) drawOverlay();
-    else drawPlaces(papplet.g, places);
+    else drawPlaces(papplet.g, placeMap.values());
   
     if (showAirports)
         drawAirports();

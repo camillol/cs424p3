@@ -72,27 +72,46 @@ class PlaceMBRConverter implements MBRConverter<Place> {
   double getMinY(Place p) { return p.loc.lat; }
 }
 
-int minCountSightings = 0;
-int maxCountSightings = 0;
+int minCountSightings;
+int maxCountSightings;
 
 void loadCities()
 {
-  String query_ = "select cities.*, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id where occurred_at >= '"+yearMin+".01.01' and occurred_at < '"+yearMax+".01.01' group by cities.id";
-  println(query_);
-  db.query("select cities.*, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id where occurred_at >= '"+yearMin+".01.01' and occurred_at < '"+yearMax+".01.01' group by cities.id");
-  places = new ArrayList<Place>();
+  db.query("select cities.*, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id group by cities.id");
+  placeMap = new HashMap<Integer,Place>();
+  minCountSightings = 1000;
+  maxCountSightings = 0;
   while (db.next()) {
-    places.add(new Place(CITY,
+    placeMap.put(db.getInt("id"), new Place(CITY,
       db.getInt("id"),
       new Location(db.getFloat("lat"), db.getFloat("lon")),
       db.getString("name"),
       db.getInt("sighting_count")
     ));
-    minCountSightings = (db.getInt("sighting_count") < minCountSightings)?db.getInt("sighting_count"):minCountSightings;
-    maxCountSightings = (db.getInt("sighting_count") > maxCountSightings)?db.getInt("sighting_count"):maxCountSightings;
+    minCountSightings = min(db.getInt("sighting_count"), minCountSightings);
+    maxCountSightings = max(db.getInt("sighting_count"), maxCountSightings);
   }
   placeTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
-  placeTree.load(places);
+  placeTree.load(placeMap.values());
+}
+
+void reloadCitySightingCounts()
+{
+  println("query db for sighting counts");
+  db.query("select cities.id, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id"
+    + " where occurred_at >= '"+yearMin+".01.01' and occurred_at < '"+yearMax+".01.01'"
+    + " group by cities.id");
+  minCountSightings = 1000;
+  maxCountSightings = 0;
+  println("update objects");
+  while (db.next()) {
+    Place p = placeMap.get(db.getInt("cities.id"));
+    p.sightingCount = db.getInt("sighting_count");
+    
+    minCountSightings = min(p.sightingCount, minCountSightings);
+    maxCountSightings = max(p.sightingCount, maxCountSightings);
+  }
+  println("done");
 }
 
 void loadAirports()
