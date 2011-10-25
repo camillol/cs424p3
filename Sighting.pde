@@ -106,7 +106,11 @@ void reloadCitySightingCounts()
 {
   stopWatch();
   print("query db for sighting counts...");
-  db.query("select cities.id, count(*) as sighting_count, count(distinct type_id) as types_count, type_id"
+ // String minValue = (byMonth)?(yearMin + "." + monthMin + ".01" + ((byTime)?(" "+timeMin):"") ):();
+//  String maxValue = yearMax;
+  
+ // println(minValue + ", " + maxValue);
+  db.query("select cities.id, count(*) as sighting_count, count(distinct type_id) as types_count,type_id"
     + " from cities join sightings on sightings.city_id = cities.id join shapes on shape_id = shapes.id"
     + " where occurred_at >= '"+yearMin+".01.01' and occurred_at < '"+yearMax+".01.01'"
     + " group by cities.id");
