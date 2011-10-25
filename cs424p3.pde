@@ -48,7 +48,7 @@ Boolean showAirports=false;
 String yearMin,yearMax,monthMin,monthMax,timeMin,timeMax;
 Boolean btwMonths = false;
 Boolean btwTime = false;
-Boolean byType = false;
+String byType = "";
 Boolean isDragging = false;
 
 import de.bezier.data.sql.*;
@@ -133,13 +133,15 @@ void mouseDragged()
 void mouseClicked()
 {  
   showAirports = settingsView.showAirport.value;
-  Boolean tmpByType = false;
+  String tmpByType = "";
   for (SightingType st : sightingTypeMap.values()) {
    Checkbox cb = settingsView.typeCheckboxMap.get(st);
-   tmpByType = (tmpByType || cb.value);
+   if (cb.value)
+       tmpByType = ((tmpByType.length() > 0)?(tmpByType+", "):tmpByType) + " " + st.id ;
   }
+  println(tmpByType);
   
-  if (btwTime != settingsView.timeCheckbox.value || btwMonths != settingsView.monthCheckbox.value){
+  if (btwTime != settingsView.timeCheckbox.value || btwMonths != settingsView.monthCheckbox.value || !byType.equals(tmpByType)){
       btwTime = settingsView.timeCheckbox.value;
       btwMonths = settingsView.monthCheckbox.value;
       byType = tmpByType;
