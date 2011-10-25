@@ -129,19 +129,7 @@ class MapView extends View {
     Coordinate coord2 = new Coordinate(coord.row + 1, coord.column + 1, coord.zoom);
     Location loc2 = mmap.provider.coordinateLocation(coord2);
     
-    double minLon = loc1.lon;
-    double maxLon = loc2.lon;
-    double minLat = loc2.lat;
-    double maxLat = loc1.lat;
-    double fudgeLat = (maxLat - minLat) * TILE_EXPAND_FACTOR;
-    double fudgeLon = (maxLon - minLon) * TILE_EXPAND_FACTOR;
-    
-    minLon -= fudgeLon;
-    maxLon += fudgeLon;
-    minLat -= fudgeLat;
-    maxLat += fudgeLat;
-    
-    drawPlaces(buf, placeTree.find(minLon, minLat, maxLon, maxLat));
+    drawPlaces(buf, placesInRect(loc1, loc2, TILE_EXPAND_FACTOR));
     
     buf.endDraw();
     return buf;
@@ -228,9 +216,12 @@ class MapView extends View {
   void drawPlacesInformationBox() {
     imageMode(CENTER);
     PImage icon = loadImage("yellow.png");
-    for (Iterator<Place> it = places.iterator(); it.hasNext();) {
-      Place place = it.next();
-      float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
+    
+    float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
+    Location loc1 = mmap.pointLocation(mouseX - maxPointValue, mouseY - maxPointValue);  // TODO: use local coordinates (although they're identical in this app)
+    Location loc2 = mmap.pointLocation(mouseX + maxPointValue, mouseY + maxPointValue);
+    
+    for (Place place : placesInRect(loc1, loc2, 0.0)) {
       float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
       Point2f p = mmap.locationPoint(place.loc); 
           if (dist(mouseX,mouseY,p.x,p.y) < dotSize/2 && p.y > (settingsView.y+settingsView.h) && p.y < (sightingDetailsView.y)){
