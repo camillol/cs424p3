@@ -242,12 +242,19 @@ module Scraper
           lon INTEGER
         );
 
+        DROP TABLE IF EXISTS sighting_types;
+        CREATE TABLE sighting_types (
+          id INTEGER PRIMARY KEY,
+          name STRING,
+          img_name STRING,
+          color INTEGER
+        );
+
         DROP TABLE IF EXISTS shapes;
         CREATE TABLE shapes (
           id INTEGER PRIMARY KEY,
           name STRING,
-          group_reference INTEGER,
-          group_name STRING
+          sighting_type_id INTEGER
         );
         
         DROP TABLE IF EXISTS sightings;
@@ -362,6 +369,31 @@ module Scraper
     db = SQLite3::Database.new('ufo.db')
     db.transaction do
       query = %{
+        INSERT INTO sighting_types(name, img_name) VALUES('polygon', 'blue.png');
+        INSERT INTO sighting_types(name, img_name) VALUES('changing', 'red.png');
+        INSERT INTO sighting_types(name, img_name) VALUES('unknown', 'green.png');
+        INSERT INTO sighting_types(name, img_name) VALUES('other', 'yelow.png');
+        INSERT INTO sighting_types(name, img_name) VALUES('round', 'orange.png');
+        INSERT INTO sighting_types(name, img_name) VALUES('triangle', 'purple.png');
+        INSERT INTO sighting_types(name, img_name) VALUES('light', 'star.png');
+        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'polygon') 
+          WHERE name IN ('Rectangle', 'Diamond', 'Chevron');
+        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'changing')
+          WHERE name IN ('Changing');
+        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'unknown')
+          WHERE name IN ('Unknown', 'Other');
+        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'other')
+          WHERE name IN ('Teardrop', 'Cigar', 'Cylinder', 'Crescent');
+        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'round')
+          WHERE name IN ('Circle', 'Sphere', 'Oval', 'Egg', 'Disk');
+        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'triangle')
+          WHERE name IN ('Triangle', 'Cone');
+        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'light')
+          WHERE name IN ('Light', 'Fireball', 'Flash');
+      }
+      
+=begin
+      query = %{
       UPDATE shapes SET group_reference=1, group_name='Polygon' WHERE name IN ('Rectangle','Hexagon','Diamond','Chevron');
       UPDATE shapes SET group_reference=2, group_name='Variable' WHERE name IN ('changed','Changing','Unknown');
       UPDATE shapes SET group_reference=3, group_name='Oval' WHERE name IN ('Crescent','Cylinder','Other','Teardrop','Cross','Cigar','Formation');
@@ -369,6 +401,7 @@ module Scraper
       UPDATE shapes SET group_reference=5, group_name='Cube' WHERE name in ('Delta','Triangle','pyramid','Cone');
       UPDATE shapes SET group_reference=6, group_name='Flash' WHERE name in ('Flare','Light','Flash','Fireball');
       }
+=end
       db.execute_batch query
     end
   end
