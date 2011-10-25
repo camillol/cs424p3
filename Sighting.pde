@@ -60,6 +60,13 @@ class Place {
   }
 }
 
+class PlaceMBRConverter implements MBRConverter<Place> {
+  double getMaxX(Place p) { return p.loc.lon; }
+  double getMinX(Place p) { return p.loc.lon; }
+  double getMaxY(Place p) { return p.loc.lat; }
+  double getMinY(Place p) { return p.loc.lat; }
+}
+
 int minCountSightings = 0;
 int maxCountSightings = 0;
 
@@ -77,6 +84,8 @@ void loadCities()
     minCountSightings = (db.getInt("sighting_count") < minCountSightings)?db.getInt("sighting_count"):minCountSightings;
     maxCountSightings = (db.getInt("sighting_count") > maxCountSightings)?db.getInt("sighting_count"):maxCountSightings;
   }
+  placeTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
+  placeTree.load(places);
 }
 
 void loadSightingTypes()

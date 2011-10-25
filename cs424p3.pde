@@ -1,3 +1,5 @@
+import org.khelekore.prtree.*;
+
 View rootView;
 
 PFont font;
@@ -36,6 +38,7 @@ PImage airplaneImage;
 
 SightingTable sightings;
 List<Place> places;
+PRTree<Place> placeTree;
 Map<Integer,SightingType> sightingTypeMap;
 
 Sighting clickedSighting;
@@ -47,8 +50,8 @@ SQLite db;
 
 void setup()
 {
-  size(1000, 700);  // OPENGL seems to be slower than the default
-  setupG2D();
+  size(1000, 700, OPENGL);  // OPENGL seems to be slower than the default
+//  setupG2D();
   
   papplet = this;
   
