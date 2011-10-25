@@ -142,6 +142,7 @@ void mouseClicked()
   println(tmpByType);
   
   if (btwTime != settingsView.timeCheckbox.value || btwMonths != settingsView.monthCheckbox.value || !byType.equals(tmpByType)){
+    println("Entro mouseClicked");
       btwTime = settingsView.timeCheckbox.value;
       btwMonths = settingsView.monthCheckbox.value;
       byType = tmpByType;
@@ -155,21 +156,23 @@ void mouseClicked()
 
 void mouseReleased(){
   if (isDragging){
-    if (yearMin != yearLabelsToPrint[settingsView.yearSlider.minIndex()] || yearMax != yearLabelsToPrint[settingsView.yearSlider.maxIndex()]){
+    if (!yearMin.equals(yearLabelsToPrint[settingsView.yearSlider.minIndex()]) || !yearMax.equals(yearLabelsToPrint[settingsView.yearSlider.maxIndex()])){
+      println("Entro byYear");
       yearMin =  yearLabelsToPrint[settingsView.yearSlider.minIndex()] ;
       yearMax = yearLabelsToPrint[settingsView.yearSlider.maxIndex()];
       reloadCitySightingCounts();
       mapv.rebuildOverlay();
       detailsAnimator.target(height);
     }
-    else if (monthMin != monthLabels[settingsView.monthSlider.minIndex()] || monthMax != monthLabels[settingsView.monthSlider.maxIndex()]){
+    else if (!monthMin.equals(monthLabels[settingsView.monthSlider.minIndex()]) || !monthMax.equals(monthLabels[settingsView.monthSlider.maxIndex()])){
+      println("Entro byMonth");
       monthMin =  monthLabels[settingsView.monthSlider.minIndex()];
       monthMax = monthLabels[settingsView.monthSlider.maxIndex()];
       reloadCitySightingCounts();
       mapv.rebuildOverlay();
       detailsAnimator.target(height);
     }
-    else  if (timeMin != timeLabels[settingsView.timeSlider.minIndex()]+":00" || timeMax != timeLabels[settingsView.timeSlider.maxIndex()]+":00"){
+    else  if (!timeMin.equals(timeLabels[settingsView.timeSlider.minIndex()]+":00") || !timeMax.equals(timeLabels[settingsView.timeSlider.maxIndex()]+":00")){
       timeMin =  timeLabels[settingsView.timeSlider.minIndex()]+":00"; 
       timeMax = timeLabels[settingsView.timeSlider.maxIndex()]+":00";
       reloadCitySightingCounts();
