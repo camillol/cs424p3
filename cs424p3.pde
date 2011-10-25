@@ -70,6 +70,10 @@ void setup()
   if (!db.connect()) println("DB connection failed!");
   yearMin = yearLabelsToPrint[0];
   yearMax = yearLabelsToPrint[yearLabelsToPrint.length-1];
+  monthMin = monthLabels[0];
+  monthMax = monthLabels[monthLabels.length-1];
+  timeMin = timeLabels[0]+":00";
+  timeMax = timeLabels[timeLabels.length-1]+":00";
   
   loadSightingTypes();
   loadCities();
@@ -159,9 +163,9 @@ void mouseReleased(){
       mapv.rebuildOverlay();
       detailsAnimator.target(height);
     }
-    else if (monthMin != monthLabelsToPrint[settingsView.monthSlider.minIndex()] || monthMax != monthLabelsToPrint[settingsView.monthSlider.maxIndex()]){
-      monthMin =  monthLabelsToPrint[settingsView.monthSlider.minIndex()];
-      monthMax = monthLabelsToPrint[settingsView.monthSlider.maxIndex()];
+    else if (monthMin != monthLabels[settingsView.monthSlider.minIndex()] || monthMax != monthLabels[settingsView.monthSlider.maxIndex()]){
+      monthMin =  monthLabels[settingsView.monthSlider.minIndex()];
+      monthMax = monthLabels[settingsView.monthSlider.maxIndex()];
       reloadCitySightingCounts();
       mapv.rebuildOverlay();
       detailsAnimator.target(height);
