@@ -39,7 +39,7 @@ String[] UFOImages = {"blue.png","green.png","star.png","orange.png","purple.png
 PImage airplaneImage;
 
 SightingTable sightings;
-List<Place> places;
+Map<Integer,Place> placeMap;
 PRTree<Place> placeTree;
 Map<Integer,SightingType> sightingTypeMap;
 
@@ -139,7 +139,8 @@ void mouseClicked()
       btwTime = settingsView.timeCheckbox.value;
       btwMonths = settingsView.monthCheckbox.value;
       byType = tmpByType;
-      loadCities();
+      reloadCitySightingCounts();
+      mapv.rebuildOverlay();
       detailsAnimator.target(height);  
   }
   
@@ -154,19 +155,22 @@ void mouseReleased(){
     if (yearMin != yearLabelsToPrint[settingsView.yearSlider.minIndex()] || yearMax != yearLabelsToPrint[settingsView.yearSlider.maxIndex()]){
       yearMin =  yearLabelsToPrint[settingsView.yearSlider.minIndex()] ;
       yearMax = yearLabelsToPrint[settingsView.yearSlider.maxIndex()];
-      loadCities();
+      reloadCitySightingCounts();
+      mapv.rebuildOverlay();
       detailsAnimator.target(height);
     }
     else if (monthMin != monthLabelsToPrint[settingsView.monthSlider.minIndex()] || monthMax != monthLabelsToPrint[settingsView.monthSlider.maxIndex()]){
       monthMin =  monthLabelsToPrint[settingsView.monthSlider.minIndex()];
       monthMax = monthLabelsToPrint[settingsView.monthSlider.maxIndex()];
-      loadCities();
+      reloadCitySightingCounts();
+      mapv.rebuildOverlay();
       detailsAnimator.target(height);
     }
     else  if (timeMin != timeLabels[settingsView.timeSlider.minIndex()]+":00" || timeMax != timeLabels[settingsView.timeSlider.maxIndex()]+":00"){
       timeMin =  timeLabels[settingsView.timeSlider.minIndex()]+":00"; 
       timeMax = timeLabels[settingsView.timeSlider.maxIndex()]+":00";
-      loadCities();
+      reloadCitySightingCounts();
+      mapv.rebuildOverlay();
       detailsAnimator.target(height);
     }
     
