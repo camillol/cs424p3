@@ -24,16 +24,37 @@ class SightingDetailsView extends View {
   
   void drawContent()
   {  
-    fill(viewBackgroundColor,220);
-    stroke(viewBackgroundColor,220);
+    fill(viewBackgroundColor,230);
+    stroke(viewBackgroundColor,230);
     rect(0,0, w, h);
+
     if (place!=null){
       fill(boldTextColor);
-       text(place.name + " (Total # of Sightings = " + place.sightingCount + ")",(w+230-textWidth(place.name + " (Total # of Sightings = " + place.sightingCount + ")"))/2,5);
-       Sighting newSighting = sightings.get(sightingSList.selectedIndex-1);   
-     fill(textColor);  
-       text(newSighting.description,230,25, w - 260,80);
+      textSize(normalFontSize);
+      text(place.name + " (Total # of Sightings = " + place.sightingCount + ")",(w+230-textWidth(place.name + " (Total # of Sightings = " + place.sightingCount + ")"))/2,5); 
+      Sighting newSighting = sightings.get(sightingSList.selectedIndex-1);   
+      fill(textColor);  
+      text("Local time: "+ dateTimeFormat.format(newSighting.localTime),230,25);
+      text("Reported time: " + dateFormat.format(newSighting.reportedTime),550,25);
+      text("Type of UFO: "+(newSighting.type).name, 230,42);
+      text("Shape: " +newSighting.shapeName,550,42);
+      text("Full description: " + newSighting.description,230,60, w - 250,130);
     }
+    textSize(smallFontSize);
+    noFill();
+    stroke(textColor);
+    rect(w-45,5, 8, 8);
+    text("x",w-43,5);
+    text("Close",w-35,5);
+  }
+  
+   boolean contentClicked(float lx, float ly)
+  {
+    if(lx > w-45 && lx < w - 10  && ly> 5 && ly < 17){
+        detailsAnimator.target(height);
+    }
+        
+    return true;
   }
 }
 

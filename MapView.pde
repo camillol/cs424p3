@@ -134,12 +134,12 @@ class MapView extends View {
 
     if (USE_BUFFERS) drawOverlay();
     else drawPlaces(papplet.g);
-
-    drawPlacesInformationBox();
-   // drawSightings();
+  
     if (showAirports)
         drawAirports();
-  //  drawSightingsInformationBox();
+        
+    drawPlacesInformationBox();
+
   }
 
   boolean contentMouseWheel(float lx, float ly, int delta)
@@ -155,17 +155,26 @@ class MapView extends View {
     float my = ly - h/2;
     mmap.tx -= mx/mmap.sc;
     mmap.ty -= my/mmap.sc;
-    if (mmap.sc*sc > 16 && mmap.sc*sc < 800){
+    if (mmap.sc*sc > 16 && mmap.sc*sc < 900){
       mmap.sc *= sc;
-      zoomValue = ceil(map((int)mmap.sc,16,800,minZoom,maxZoom));
+      zoomValue = ceil(map((int)mmap.sc,16,900,minZoom,maxZoom));
     }  
     mmap.tx += mx/mmap.sc;
     mmap.ty += my/mmap.sc;
     return true;
   }
  
-  boolean mouseClicked(float px, float py)
+  boolean contentClicked(float px, float py)
   {
+    if (clickedPlace == null){
+      detailsAnimator.target(height);
+    }
+    else if (sightingDetailsView.place!=clickedPlace){
+      sightingDetailsView.place = clickedPlace;
+      sightingDetailsView.setSightings(sightingsForCity(mapv.clickedPlace));
+      detailsAnimator.target(height-200);
+    }
+    
     return true;
   }
   
@@ -176,6 +185,7 @@ class MapView extends View {
   }
   
   void drawAirports(){
+       imageMode(CENTER);
        noStroke();
        fill(airportAreaColor,40);
        Point2f p2 = mmap.locationPoint(new Location(41.97, -87.905));
@@ -204,7 +214,7 @@ class MapView extends View {
       float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
       float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
       Point2f p = mmap.locationPoint(place.loc); 
-          if (dist(mouseX,mouseY,p.x,p.y) < dotSize/2){
+          if (dist(mouseX,mouseY,p.x,p.y) < dotSize/2 && p.y > (settingsView.y+settingsView.h) && p.y < (sightingDetailsView.y)){
             textSize(normalFontSize);
             strokeWeight(1);
             String textToPrint = "Click on it to see details";
@@ -217,7 +227,7 @@ class MapView extends View {
             float w_ = textWidth(textToPrint)+10;
             float x_ = (p.x+w_ > w)?w-w_-5:p.x;
             float h_ = (textAscent() + textDescent()) *3 + 10;
-            float y_ = (p.y+h_ > h)?h-h_-5:p.y;
+            float y_ = (p.y+h_ > sightingDetailsView.y)?sightingDetailsView.y-h_-5:p.y;
             rect(x_,y_,w_,h_);
             fill(textColor);
             text(place.name, x_ + (w_ - textWidth(place.name))/2 ,y_+5);
@@ -267,9 +277,6 @@ class MapView extends View {
             clickedSighting = newSighting;
         }        
       }
-     // else if (clickedSighting == newSighting){
-       // clickedSighting = null;
-     // }
    }
   }
 }
