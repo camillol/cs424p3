@@ -5,14 +5,18 @@ class Sighting {
   float airportDist;
   float militaryDist;
   Date localTime;
+  Date reportedTime;
   Place location;
+  String shapeName;
   
-  Sighting(String desc, SightingType type, float airportDist, float milDist, Date localTime, Place location) {
+  Sighting(String desc, SightingType type, String shapeName, float airportDist, float milDist, Date localTime,Date reportedTime, Place location) {
     this.description = desc;
     this.type = type;
+    this.shapeName = shapeName;
     this.airportDist = airportDist;
     this.militaryDist = milDist;
     this.localTime = localTime;
+    this.reportedTime = reportedTime;
     this.location = location;
   }
 }
@@ -38,6 +42,7 @@ class SightingType {
 }
 
 final static int CITY = 0;
+final static int AIRPORT = 1;
 
 class Place {
   int type;  /* city, airport, military base */
@@ -72,7 +77,7 @@ int maxCountSightings = 0;
 
 void loadCities()
 {
-  db.query("select cities.*, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id group by cities.id;");
+  db.query("select cities.*, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id group by cities.id");
   places = new ArrayList<Place>();
   while (db.next()) {
     places.add(new Place(CITY,
@@ -86,6 +91,20 @@ void loadCities()
   }
   placeTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
   placeTree.load(places);
+}
+
+void loadAirports()
+{
+ /* db.query("select cities.*, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id group by cities.id");
+  airports = new ArrayList<Airport>();
+  while (db.next()) {
+    places.add(new Place(AIRPORT,
+      db.getInt("id"),
+      new Location(db.getFloat("lat"), db.getFloat("lon")),
+      db.getString("name"),
+      db.getInt("sighting_count")
+    ));
+  }*/
 }
 
 void loadSightingTypes()
@@ -104,18 +123,26 @@ void loadSightingTypes()
 
 List<Sighting> sightingsForCity(Place p)
 {
-  db.query("select * from sightings join shapes on shape_id = shapes.id where city_id = "+p.id+";");
+  db.query("select * from sightings join shapes on shape_id = shapes.id where city_id = "+p.id+" order by occurred_at;");
   ArrayList<Sighting> sightings = new ArrayList<Sighting>();
   while (db.next()) {
+    try{
     sightings.add(new Sighting(
       db.getString("full_description"),
       sightingTypeMap.get(db.getInt("type_id")),
+      db.getString("name"),
       0.0, /* TODO: fill in airport distance */
       0.0, /* TODO: fill in military base distance */
-      db.getDate("occurred_at"),
+      dbDateFormat.parse(db.getString("occurred_at")),
+      dbDateFormat.parse(db.getString("posted_at")),
       p
     ));
+    }
+    catch(Exception ex){
+      println(ex); 
+    }
   }
+
   return sightings;
 }
 
@@ -129,18 +156,7 @@ class DummySightingTable implements SightingTable {
   DummySightingTable() {
       sightingList = new ArrayList<Sighting>();
 
-    PImage image_ = loadImage(UFOImages[0]);
-    Place ohare = new Place(0, new Location(41.97, -87.905), "O'Hare");
-    SightingType circle2 = new SightingType(image_, UFOColors[2], UFOTypeLabels[2]);
-    sightingList.add(new Sighting("A flying circle2", circle2, 0.5, 0.2, new Date(), ohare));
-    image_ = loadImage(UFOImages[1]);
-    Place newYork = new Place(0, new Location(40.664274,-73.938500), "New York");
-    SightingType circle = new SightingType(image_, UFOColors[1], UFOTypeLabels[1]);
-    sightingList.add(new Sighting("A flying circle", circle, 0.3, 0.3, new Date(), newYork));
-    image_ = loadImage(UFOImages[2]);
-    Place chicago = new Place(0, new Location(41.881944,-87.627778), "Chicago");
-    SightingType fruit = new SightingType(image_, UFOColors[0], UFOTypeLabels[0]);
-    sightingList.add(new Sighting("A flying pineapple", fruit, 0.1, 0.2, new Date(), chicago));
+  
   }
   
   Iterator<Sighting> activeSightingIterator() {
