@@ -3,7 +3,6 @@ color scrollListColor = #2D2A36;
 color activeScrollListColor = 0;
 color textActiveColor = #FFFF00;
 
-
 class ScrollList extends View {
   ArrayList labels;
   int firstIndex = 0;

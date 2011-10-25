@@ -101,6 +101,7 @@ void reloadCitySightingCounts()
   db.query("select cities.id, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id"
     + " where occurred_at >= '"+yearMin+".01.01' and occurred_at < '"+yearMax+".01.01'"
     + " group by cities.id");
+//  db.query("select cities.*, count(*) as sighting_count, count(distinct type_id) as types_count from cities join sightings on sightings.city_id = cities.id join shapes on shape_id = shapes.id where occurred_at >= '"+yearMin+".01.01' and occurred_at < '"+yearMax+".01.01' group by cities.id");
   minCountSightings = 1000;
   maxCountSightings = 0;
   println("update objects");
