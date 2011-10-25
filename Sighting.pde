@@ -65,6 +65,13 @@ class Place {
   }
 }
 
+class PlaceMBRConverter implements MBRConverter<Place> {
+  double getMaxX(Place p) { return p.loc.lon; }
+  double getMinX(Place p) { return p.loc.lon; }
+  double getMaxY(Place p) { return p.loc.lat; }
+  double getMinY(Place p) { return p.loc.lat; }
+}
+
 int minCountSightings = 0;
 int maxCountSightings = 0;
 
@@ -84,6 +91,8 @@ void loadCities()
     minCountSightings = (db.getInt("sighting_count") < minCountSightings)?db.getInt("sighting_count"):minCountSightings;
     maxCountSightings = (db.getInt("sighting_count") > maxCountSightings)?db.getInt("sighting_count"):maxCountSightings;
   }
+  placeTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
+  placeTree.load(places);
 }
 
 void loadAirports()
@@ -98,6 +107,23 @@ void loadAirports()
       db.getInt("sighting_count")
     ));
   }*/
+}
+
+Iterable<Place> placesInRect(Location locTopLeft, Location locBottomRight, double expandFactor)
+{
+  double minLon = locTopLeft.lon;
+  double maxLon = locBottomRight.lon;
+  double minLat = locBottomRight.lat;
+  double maxLat = locTopLeft.lat;
+  double fudgeLat = (maxLat - minLat) * expandFactor;
+  double fudgeLon = (maxLon - minLon) * expandFactor;
+  
+  minLon -= fudgeLon;
+  maxLon += fudgeLon;
+  minLat -= fudgeLat;
+  maxLat += fudgeLat;
+  
+  return placeTree.find(minLon, minLat, maxLon, maxLat);
 }
 
 void loadSightingTypes()

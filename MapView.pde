@@ -25,6 +25,8 @@ class MapView extends View {
   Map<Coordinate, PGraphics> buffers;
   boolean USE_BUFFERS = true;
   
+  double TILE_EXPAND_FACTOR = 0.05;  // as a fraction of the tile size
+  
   MapView(float x_, float y_, float w_, float h_)
   {
     super(x_, y_, w_, h_);
@@ -114,14 +116,20 @@ class MapView extends View {
 //    println("makebuf: " + coord);
     PGraphics buf = createGraphics(mmap.TILE_WIDTH, mmap.TILE_HEIGHT, JAVA2D);
     buf.beginDraw();
- /*   if ((coord.row + coord.column) % 2 == 0) {
+/*    if ((coord.row + coord.column) % 2 == 0) {
       buf.background(255,0,0,128);
     }
     buf.text(coord.toString(), 50, 50);*/
     
     // we want to be compatible with drawing code that calls mmap.locationPoint
     applyMapToTileMatrix(buf, coord);
-    drawPlaces(buf);
+    
+    // only draw places inside this tile, but with a little margin to account for markers that cross tile boundaries
+    Location loc1 = mmap.provider.coordinateLocation(coord);
+    Coordinate coord2 = new Coordinate(coord.row + 1, coord.column + 1, coord.zoom);
+    Location loc2 = mmap.provider.coordinateLocation(coord2);
+    
+    drawPlaces(buf, placesInRect(loc1, loc2, TILE_EXPAND_FACTOR));
     
     buf.endDraw();
     return buf;
@@ -132,10 +140,8 @@ class MapView extends View {
     imageMode(CORNER);  // modestmaps needs this - I sent a patch, but who knows when it'll be committed
     mmap.draw();
 
-   if (USE_BUFFERS) drawOverlay();
-   else drawPlaces(papplet.g);
-  
- 
+    if (USE_BUFFERS) drawOverlay();
+    else drawPlaces(papplet.g, places);
   
     if (showAirports)
         drawAirports();
@@ -195,10 +201,9 @@ class MapView extends View {
        image(airplaneImage,p2.x,p2.y,map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize),map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize));
   }
   
-  void drawPlaces(PGraphics buffer) {
+  void drawPlaces(PGraphics buffer, Iterable<Place> places) {
     buffer.imageMode(CENTER);
-    for (Iterator<Place> it = places.iterator(); it.hasNext();) {
-      Place place = it.next();
+    for (Place place : places) {
       if (place.sightingCount > 0){
         float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
         float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
@@ -216,9 +221,12 @@ class MapView extends View {
   void drawPlacesInformationBox() {
     imageMode(CENTER);
     PImage icon = loadImage("yellow.png");
-    for (Iterator<Place> it = places.iterator(); it.hasNext();) {
-      Place place = it.next();
-      float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
+    
+    float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
+    Location loc1 = mmap.pointLocation(mouseX - maxPointValue, mouseY - maxPointValue);  // TODO: use local coordinates (although they're identical in this app)
+    Location loc2 = mmap.pointLocation(mouseX + maxPointValue, mouseY + maxPointValue);
+    
+    for (Place place : placesInRect(loc1, loc2, 0.0)) {
       float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
       Point2f p = mmap.locationPoint(place.loc); 
           if (dist(mouseX,mouseY,p.x,p.y) < dotSize/2 && p.y > (settingsView.y+settingsView.h) && p.y < (sightingDetailsView.y)){
