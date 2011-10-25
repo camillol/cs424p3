@@ -2,6 +2,7 @@ git clone https://github.com/RandomEtc/modestmaps-processing.git
 
 Then copy the modestmaps directory within to the Processing Libraries folder.
 
-Get the SQLibrary from http://bezier.de/processing/libs/sql/
+Get the SQLibrary from https://github.com/downloads/camillol/sqlibrary/SQLibrary-0.1.1.zip
+IMPORTANT! Do not get the one at http://bezier.de/processing/libs/sql/ - it is horribly slow with SQLite.
 
 Get prtree.jar from http://khelekore.org/prtree/git.shtml and install it as Libraries/prtree/library/prtree.jar
