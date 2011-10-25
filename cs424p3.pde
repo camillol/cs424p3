@@ -65,6 +65,8 @@ void setup()
   /* load data */
   db = new SQLite( this, "ufo.db" );
   if (!db.connect()) println("DB connection failed!");
+  yearMin = yearLabelsToPrint[0];
+  yearMax = yearLabelsToPrint[yearLabelsToPrint.length-1];
   
   loadSightingTypes();
   loadCities();
