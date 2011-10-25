@@ -68,6 +68,9 @@ void setup()
   /* load data */
   db = new SQLite( this, "ufo.db" );
   if (!db.connect()) println("DB connection failed!");
+  db.execute("PRAGMA cache_size=100000;");
+  
+  
   yearMin = yearLabelsToPrint[0];
   yearMax = yearLabelsToPrint[yearLabelsToPrint.length-1];
   monthMin = monthLabels[0];
@@ -78,6 +81,7 @@ void setup()
   loadSightingTypes();
   loadCities();
   loadAirports();
+  reloadCitySightingCounts();
   
   sightings = new DummySightingTable();
   
@@ -179,5 +183,14 @@ void mouseReleased(){
     
   }
   isDragging = false;
+}
+
+float lastTime;
+
+float stopWatch()
+{
+  float x = lastTime;
+  lastTime = millis();
+  return lastTime - x;
 }
 
