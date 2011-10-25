@@ -107,6 +107,23 @@ void loadAirports()
   }*/
 }
 
+Iterable<Place> placesInRect(Location locTopLeft, Location locBottomRight, double expandFactor)
+{
+  double minLon = locTopLeft.lon;
+  double maxLon = locBottomRight.lon;
+  double minLat = locBottomRight.lat;
+  double maxLat = locTopLeft.lat;
+  double fudgeLat = (maxLat - minLat) * expandFactor;
+  double fudgeLon = (maxLon - minLon) * expandFactor;
+  
+  minLon -= fudgeLon;
+  maxLon += fudgeLon;
+  minLat -= fudgeLat;
+  maxLat += fudgeLat;
+  
+  return placeTree.find(minLon, minLat, maxLon, maxLat);
+}
+
 void loadSightingTypes()
 {
   db.query("select * from sighting_types;");
