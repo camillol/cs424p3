@@ -236,34 +236,36 @@ class MapView extends View {
     Location loc2 = mmap.pointLocation(mouseX + maxPointValue, mouseY + maxPointValue);
     
     for (Place place : placesInRect(loc1, loc2, 0.0)) {
-      float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
-      Point2f p = mmap.locationPoint(place.loc); 
-          if (dist(mouseX,mouseY,p.x,p.y) < dotSize/2 && p.y > (settingsView.y+settingsView.h) && p.y < (sightingDetailsView.y)){
-            textSize(normalFontSize);
-            strokeWeight(1);
-            String textToPrint = "Click on it to see details";
-            String numOfSightings = "Total # of sightings = " + str(place.sightingCount);
-            if (textToPrint.length() < place.name.length())
-                  textToPrint = place.name;
-            if (textToPrint.length() < numOfSightings.length())
-                  textToPrint = numOfSightings;
-            fill(infoBoxBackground);
-            float w_ = textWidth(textToPrint)+10;
-            float x_ = (p.x+w_ > w)?w-w_-5:p.x;
-            float h_ = (textAscent() + textDescent()) *3 + 10;
-            float y_ = (p.y+h_ > sightingDetailsView.y)?sightingDetailsView.y-h_-5:p.y;
-            rect(x_,y_,w_,h_);
-            fill(textColor);
-            text(place.name, x_ + (w_ - textWidth(place.name))/2 ,y_+5);
-            text(numOfSightings,x_ + (w_ - textWidth(numOfSightings))/2, (y_+ h_/3)+5);
-            textSize(smallFontSize);
-            text("Click on it to see details",x_+5,y_+h_-10);
-            if (mousePressed){
-              clickedPlace = place;
-            }        
-          }
-      } 
-  }
+      if (place.sightingCount > 0){
+          float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
+          Point2f p = mmap.locationPoint(place.loc); 
+              if (dist(mouseX,mouseY,p.x,p.y) < dotSize/2 && p.y > (settingsView.y+settingsView.h) && p.y < (sightingDetailsView.y)){
+                textSize(normalFontSize);
+                strokeWeight(1);
+                String textToPrint = "Click on it to see details";
+                String numOfSightings = "Total # of sightings = " + str(place.sightingCount);
+                if (textToPrint.length() < place.name.length())
+                      textToPrint = place.name;
+                if (textToPrint.length() < numOfSightings.length())
+                      textToPrint = numOfSightings;
+                fill(infoBoxBackground);
+                float w_ = textWidth(textToPrint)+10;
+                float x_ = (p.x+w_ > w)?w-w_-5:p.x;
+                float h_ = (textAscent() + textDescent()) *3 + 10;
+                float y_ = (p.y+h_ > sightingDetailsView.y)?sightingDetailsView.y-h_-5:p.y;
+                rect(x_,y_,w_,h_);
+                fill(textColor);
+                text(place.name, x_ + (w_ - textWidth(place.name))/2 ,y_+5);
+                text(numOfSightings,x_ + (w_ - textWidth(numOfSightings))/2, (y_+ h_/3)+5);
+                textSize(smallFontSize);
+                text("Click on it to see details",x_+5,y_+h_-10);
+                if (mousePressed){
+                  clickedPlace = place;
+                }        
+              }
+          } 
+     }
+  } 
   
   void drawSightings(){
    imageMode(CENTER);
