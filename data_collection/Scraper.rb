@@ -216,6 +216,9 @@ module Scraper
 
         DROP INDEX IF EXISTS military_bases_id;
         DROP INDEX IF EXISTS military_bases_lat_lon;
+
+        DROP INDEX IF EXISTS city_proximities_city_id_relation_id_relation;
+        DROP INDEX IF EXISTS city_proximities_distance;
         
 
         DROP TABLE IF EXISTS states;
@@ -230,6 +233,14 @@ module Scraper
           state_id INTEGER,
           name STRING,
           population_density INTEGER
+        );
+
+        DROP TABLE IF EXISTS city_proximities;
+        CREATE TABLE city_proximities (
+          city_id INTEGER,
+          distance INTEGER,
+          relation_id INTEGER,
+          relation STRING
         );
 
         DROP TABLE IF EXISTS cities;
@@ -342,6 +353,25 @@ module Scraper
 
       db.execute "CREATE INDEX military_bases_id ON military_bases(id)"
       db.execute "CREATE INDEX military_bases_lat_lon ON military_bases(lat, lon)"
+
+      db.execute "CREATE INDEX city_proximities_city_id_relation_id_relation ON city_proximities(city_id, relation_id, relation)"
+      db.execute "CREATE INDEX city_proximities_distance ON city_proximities(distance)"
+    end
+  end
+
+  def self.calculate_distances
+    db = SQLite3::Database.new('ufo.db')
+    db.transaction do
+      db.execute("SELECT id, lat, lon FROM cities WHERE lat IS NOT NULL AND lon IS NOT NULL").each do |city|
+        %w(airports military_bases).each do |relation|
+          db.execute("SELECT id, lat, lon FROM #{relation} WHERE lat IS NOT NULL AND lon IS NOT NULL").each do |other|
+            d = distance(city[1], city[2], other[1], other[2]).round
+            puts "#{city[0]}, #{other[0]}, #{relation}, #{d}"
+            db.execute("INSERT INTO city_proximities (city_id, relation_id, relation, distance) VALUES (?, ?, ?, ?)", 
+            city[0], other[0], relation, d)
+          end
+        end
+      end
     end
   end
 
@@ -534,6 +564,21 @@ class Time
     DateTime.new(year, month, day, hour, min, seconds, offset)
   end
 
+end
+
+def distance(lat1, lng1, lat2, lng2, miles = false)
+  pi80 = Math::PI / 180;
+  lat1 *= pi80;
+  lng1 *= pi80;
+  lat2 *= pi80;
+  lng2 *= pi80;
+  r = 6372.797; # mean radius of Earth in km
+  dlat = lat2 - lat1;
+  dlng = lng2 - lng1;
+  a = Math.sin(dlat / 2) * Math.sin(dlat / 2) + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dlng / 2) * Math.sin(dlng / 2);
+  c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  km = r * c;
+  return (miles ? (km * 0.621371192) : km);
 end
 
 if ARGV[0] == "scrape"
