@@ -102,22 +102,90 @@ void loadCities()
   println(stopWatch());
 }
 
+String getStringQueryByDateTime(){
+  
+  ArrayList queryString = new ArrayList();
+  String finalQueryString="";
+  String string_;
+  
+  if (!yearMin.equals(yearLabelsToPrint[0]) || !yearMax.equals(yearLabelsToPrint[yearLabelsToPrint.length-1])){
+     for(int i = int(yearMin); i<= int(yearMax); i++){
+       if (!btwMonths || (btwMonths && (monthMin.equals(monthLabels[0]) && monthMax.equals(monthLabels[monthLabels.length-1])))){
+         if (!btwTime || (btwTime && (timeMin.equals(timeLabels[0]) && timeMax.equals(timeLabels[timeLabels.length-1])))){
+           queryString.add(i+".%.%");
+         }
+         else{
+           for(int j = int(timeMin) ; j <= int(timeMax) ; j++){
+              queryString.add(i+"%"+nf(j,2)+":%:%"); 
+           }
+         }
+        }
+        else{
+         for(int j= int(monthMin); j<= int(monthMax);j++){
+             if (!btwTime || (btwTime && (timeMin.equals(timeLabels[0]) && timeMax.equals(timeLabels[timeLabels.length-1])))){
+               queryString.add(i+"."+nf(j,2)+".%");
+             }
+             else{
+               for(int m = int(timeMin) ; m <= int(timeMax);m++){
+                  queryString.add(i+"."+nf(j,2)+".% "+nf(m,2)+":%:%");
+               }
+             }
+         }   
+       }
+     } 
+  }
+  else{
+       if (!btwMonths || (btwMonths && (monthMin.equals(monthLabels[0]) && monthMax.equals(monthLabels[monthLabels.length-1])))){
+         if (btwTime && (!timeMin.equals(timeLabels[0]) || !timeMax.equals(timeLabels[timeLabels.length-1]))){
+           for(int j = int(timeMin) ; j <= int(timeMax) ; j++){
+              queryString.add("%"+nf(j,2)+":%:%"); 
+           }
+         }
+        }
+        else{
+         for(int j= int(monthMin); j<= int(monthMax);j++){
+            if (!btwTime || (btwTime && (timeMin.equals(timeLabels[0]) && timeMax.equals(timeLabels[timeLabels.length-1])))){
+               queryString.add("%."+nf(j,2)+".%");
+             }
+             else{
+               for(int m = int(timeMin) ; m <= int(timeMax);m++){
+                  queryString.add("%."+nf(j,2)+".% "+nf(m,2)+":%:%");
+               }
+             }
+         }   
+       }
+  }
+
+  for (int i=0; i< queryString.size();i++){
+     finalQueryString = finalQueryString + ((finalQueryString.length() > 0)?(" or occurred_at like '" +queryString.get(i)+"'"):(" occurred_at like '" +queryString.get(i)+"'"));
+  }
+  println("query " + finalQueryString);
+  return finalQueryString;
+}
+
 void reloadCitySightingCounts()
 {
   stopWatch();
   print("query db for sighting counts...");
- // String minValue = (byMonth)?(yearMin + "." + monthMin + ".01" + ((byTime)?(" "+timeMin):"") ):();
-//  String maxValue = yearMax;
-  
- // println(minValue + ", " + maxValue);
+  String stringQuery = getStringQueryByDateTime();
+   
   db.query("select cities.id, count(*) as sighting_count, count(distinct type_id) as types_count,type_id"
     + " from cities join sightings on sightings.city_id = cities.id join shapes on shape_id = shapes.id"
-    + " where occurred_at >= '"+yearMin+".01.01' and occurred_at < '"+yearMax+".01.01'"
+    + ((stringQuery.length() > 0)?(" where "+stringQuery):"")
     + " group by cities.id");
+  
   minCountSightings = 1000;
   maxCountSightings = 0;
   println(stopWatch());
   print("update objects...");
+ 
+  //Clean the places values
+  for (Place pl : placeMap.values()) {
+    pl.sightingCount = 0;
+    pl.typeOfSightingCount = 0;
+    pl.sightingType = 0;
+  }
+  
   while (db.next()) {
     Place p = placeMap.get(db.getInt("id"));
     p.sightingCount = db.getInt("sighting_count");
@@ -176,7 +244,9 @@ void loadSightingTypes()
 
 List<Sighting> sightingsForCity(Place p)
 {
-  db.query("select * from sightings join shapes on shape_id = shapes.id where city_id = "+p.id+" and occurred_at >= '"+yearMin+".01.01' and occurred_at < '"+yearMax+".01.01' order by occurred_at;");
+  String stringQuery = getStringQueryByDateTime();
+  
+  db.query("select * from sightings join shapes on shape_id = shapes.id where city_id = "+p.id+((stringQuery.length() > 0)?(" and ("+stringQuery+")"):"")+" order by occurred_at;");
   
   ArrayList<Sighting> sightings = new ArrayList<Sighting>();
   while (db.next()) {
