@@ -16,7 +16,7 @@ SightingDetailsView sightingDetailsView;
 DateFormat dateTimeFormat= new SimpleDateFormat("EEEE, MMMM dd, yyyy HH:mm");
 DateFormat dateFormat= new SimpleDateFormat("EEEE, MMMM dd, yyyy");
 DateFormat shortDateFormat= new SimpleDateFormat("MM/dd/yyyy HH:mm");
-DateFormat dbDateFormat= new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+DateFormat dbDateFormat= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 color backgroundColor = 0;
 color textColor = 255;
@@ -28,6 +28,7 @@ color[] UFOColors = {#000000,#ffffff,#555555,#333333,#444444,#555555,#666666};
 
 int normalFontSize = 13;
 int smallFontSize = 9 ;
+
 String[] monthLabelsToPrint = {"January","February","March","April","May","June","July","August","September","October","November","December"};
 String[] monthLabels = {"01","02","03","04","05","06","07","08","09","10","11","12"};
 String[] yearLabels = {"'00","'01","'02","'03","'04","'05","'06","'07","'08","'09","'10","'11"};
@@ -45,11 +46,12 @@ Map<Integer,SightingType> sightingTypeMap;
 
 Sighting clickedSighting;
 Boolean showAirports=false;
-String yearMin,yearMax,monthMin,monthMax,timeMin,timeMax;
 Boolean btwMonths = false;
 Boolean btwTime = false;
 String byType = "";
 Boolean isDragging = false;
+
+SightingsFilter activeFilter;
 
 import de.bezier.data.sql.*;
 
@@ -70,14 +72,8 @@ void setup()
   if (!db.connect()) println("DB connection failed!");
   db.execute("PRAGMA cache_size=100000;");
   
-  
-  yearMin = yearLabelsToPrint[0];
-  yearMax = yearLabelsToPrint[yearLabelsToPrint.length-1];
-  monthMin = monthLabels[0];
-  monthMax = monthLabels[monthLabels.length-1];
-  timeMin = timeLabels[0];
-  timeMax = timeLabels[timeLabels.length-1];
-  
+  activeFilter = new SightingsFilter();
+
   loadSightingTypes();
   loadCities();
   loadAirports();
@@ -146,46 +142,39 @@ void mouseClicked()
   println(tmpByType);
   
   if (btwTime != settingsView.timeCheckbox.value || btwMonths != settingsView.monthCheckbox.value || !byType.equals(tmpByType)){
-      btwTime = settingsView.timeCheckbox.value;
-      btwMonths = settingsView.monthCheckbox.value;
-      byType = tmpByType;
-      monthMin =  monthLabels[settingsView.monthSlider.minIndex()];
-      monthMax = monthLabels[settingsView.monthSlider.maxIndex()];
-      timeMin =  timeLabels[settingsView.timeSlider.minIndex()]; 
-      timeMax = timeLabels[settingsView.timeSlider.maxIndex()];
-   
-      reloadCitySightingCounts();
-      mapv.rebuildOverlay();
-      detailsAnimator.target(height);  
+    btwTime = settingsView.timeCheckbox.value;
+    btwMonths = settingsView.monthCheckbox.value;;
+    updateFilter();
   }
 
   rootView.mouseClicked(mouseX, mouseY);
 }
 
+void updateFilter()
+{
+  SightingsFilter newFilter = new SightingsFilter();
+  newFilter.viewMinYear = 2000 + settingsView.yearSlider.minIndex();
+  newFilter.viewMaxYear = 2000 + settingsView.yearSlider.maxIndex();
+  if (btwMonths) {
+    newFilter.viewMinMonth =  1 + settingsView.monthSlider.minIndex();
+    newFilter.viewMaxMonth =  1 + settingsView.monthSlider.maxIndex();
+  }
+  if (btwTime) {
+    newFilter.viewMinHour =  1 + settingsView.timeSlider.minIndex();
+    newFilter.viewMaxHour =  1 + settingsView.timeSlider.maxIndex();
+  }
+  
+  if (!newFilter.equals(activeFilter)) {
+    activeFilter = newFilter;
+    reloadCitySightingCounts();
+    mapv.rebuildOverlay();
+    detailsAnimator.target(height);
+  }
+}
+
 void mouseReleased(){
-  if (isDragging){
-    if (!yearMin.equals(yearLabelsToPrint[settingsView.yearSlider.minIndex()]) || !yearMax.equals(yearLabelsToPrint[settingsView.yearSlider.maxIndex()])){
-      yearMin =  yearLabelsToPrint[settingsView.yearSlider.minIndex()] ;
-      yearMax = yearLabelsToPrint[settingsView.yearSlider.maxIndex()];
-      reloadCitySightingCounts();
-      mapv.rebuildOverlay();
-      detailsAnimator.target(height);
-    }
-    else if (btwMonths && (!monthMin.equals(monthLabels[settingsView.monthSlider.minIndex()]) || !monthMax.equals(monthLabels[settingsView.monthSlider.maxIndex()]))){
-      monthMin =  monthLabels[settingsView.monthSlider.minIndex()];
-      monthMax = monthLabels[settingsView.monthSlider.maxIndex()];
-      reloadCitySightingCounts();
-      mapv.rebuildOverlay();
-      detailsAnimator.target(height);
-    }
-    else  if (btwTime && (!timeMin.equals(timeLabels[settingsView.timeSlider.minIndex()]) || !timeMax.equals(timeLabels[settingsView.timeSlider.maxIndex()]))){
-      timeMin =  timeLabels[settingsView.timeSlider.minIndex()]; 
-      timeMax = timeLabels[settingsView.timeSlider.maxIndex()];
-      reloadCitySightingCounts();
-      mapv.rebuildOverlay();
-      detailsAnimator.target(height);
-    }
-    
+  if (isDragging) {
+    updateFilter();
   }
   isDragging = false;
 }
