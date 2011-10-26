@@ -102,76 +102,45 @@ void loadCities()
   println(stopWatch());
 }
 
-String getStringQueryByDateTime(){
+class SightingsFilter {
+  final static int yearFirst = 2000, yearLast = 2011;
+  int viewMinYear = yearFirst, viewMaxYear = yearLast;
+  int viewMinMonth = 1, viewMaxMonth = 12;
+  int viewMinHour = 0, viewMaxHour = 23;
   
-  ArrayList queryString = new ArrayList();
-  String finalQueryString="";
-  String string_;
+  String whereClause()
+  {
+    StringBuffer where = new StringBuffer();
+    
+    if (viewMinYear > yearFirst) where.append("cast(strftime('%Y',occurred_at) as integer) >= " + viewMinYear + " and ");
+    if (viewMaxYear < yearLast) where.append("cast(strftime('%Y',occurred_at) as integer) <= " + viewMaxYear + " and ");
+    if (viewMinMonth > 1) where.append("cast(strftime('%m',occurred_at) as integer) >= " + viewMinMonth + " and ");
+    if (viewMaxMonth < 12) where.append("cast(strftime('%m',occurred_at) as integer) <= " + viewMaxMonth + " and ");
+    if (viewMinHour > 0) where.append("cast(strftime('%H',occurred_at) as integer) >= " + viewMinHour + " and ");
+    if (viewMaxHour < 23) where.append("cast(strftime('%H',occurred_at) as integer) <= " + viewMaxHour + " and ");
+    
+    where.append("1 ");
+    return where.toString();
+  }
   
-  if (!yearMin.equals(yearLabelsToPrint[0]) || !yearMax.equals(yearLabelsToPrint[yearLabelsToPrint.length-1])){
-     for(int i = int(yearMin); i<= int(yearMax); i++){
-       if (!btwMonths || (btwMonths && (monthMin.equals(monthLabels[0]) && monthMax.equals(monthLabels[monthLabels.length-1])))){
-         if (!btwTime || (btwTime && (timeMin.equals(timeLabels[0]) && timeMax.equals(timeLabels[timeLabels.length-1])))){
-           queryString.add(i+".%.%");
-         }
-         else{
-           for(int j = int(timeMin) ; j <= int(timeMax) ; j++){
-              queryString.add(i+"%"+nf(j,2)+":%:%"); 
-           }
-         }
-        }
-        else{
-         for(int j= int(monthMin); j<= int(monthMax);j++){
-             if (!btwTime || (btwTime && (timeMin.equals(timeLabels[0]) && timeMax.equals(timeLabels[timeLabels.length-1])))){
-               queryString.add(i+"."+nf(j,2)+".%");
-             }
-             else{
-               for(int m = int(timeMin) ; m <= int(timeMax);m++){
-                  queryString.add(i+"."+nf(j,2)+".% "+nf(m,2)+":%:%");
-               }
-             }
-         }   
-       }
-     } 
+  boolean equals(SightingsFilter other)
+  {
+    return viewMinYear == other.viewMinYear &&
+      viewMaxYear == other.viewMaxYear &&
+      viewMinMonth == other.viewMinMonth &&
+      viewMaxMonth == other.viewMaxMonth &&
+      viewMinHour == other.viewMinHour &&
+      viewMaxHour == other.viewMaxHour;
   }
-  else{
-       if (!btwMonths || (btwMonths && (monthMin.equals(monthLabels[0]) && monthMax.equals(monthLabels[monthLabels.length-1])))){
-         if (btwTime && (!timeMin.equals(timeLabels[0]) || !timeMax.equals(timeLabels[timeLabels.length-1]))){
-           for(int j = int(timeMin) ; j <= int(timeMax) ; j++){
-              queryString.add("%"+nf(j,2)+":%:%"); 
-           }
-         }
-        }
-        else{
-         for(int j= int(monthMin); j<= int(monthMax);j++){
-            if (!btwTime || (btwTime && (timeMin.equals(timeLabels[0]) && timeMax.equals(timeLabels[timeLabels.length-1])))){
-               queryString.add("%."+nf(j,2)+".%");
-             }
-             else{
-               for(int m = int(timeMin) ; m <= int(timeMax);m++){
-                  queryString.add("%."+nf(j,2)+".% "+nf(m,2)+":%:%");
-               }
-             }
-         }   
-       }
-  }
-
-  for (int i=0; i< queryString.size();i++){
-     finalQueryString = finalQueryString + ((finalQueryString.length() > 0)?(" or occurred_at like '" +queryString.get(i)+"'"):(" occurred_at like '" +queryString.get(i)+"'"));
-  }
-  println("query " + finalQueryString);
-  return finalQueryString;
 }
 
 void reloadCitySightingCounts()
 {
   stopWatch();
   print("query db for sighting counts...");
-  String stringQuery = getStringQueryByDateTime();
-   
   db.query("select cities.id, count(*) as sighting_count, count(distinct type_id) as types_count,type_id"
     + " from cities join sightings on sightings.city_id = cities.id join shapes on shape_id = shapes.id"
-    + ((stringQuery.length() > 0)?(" where "+stringQuery):"")
+    + " where " + activeFilter.whereClause()
     + " group by cities.id");
   
   minCountSightings = 1000;
@@ -244,9 +213,9 @@ void loadSightingTypes()
 
 List<Sighting> sightingsForCity(Place p)
 {
-  String stringQuery = getStringQueryByDateTime();
-  
-  db.query("select * from sightings join shapes on shape_id = shapes.id where city_id = "+p.id+((stringQuery.length() > 0)?(" and ("+stringQuery+")"):"")+" order by occurred_at;");
+  db.query("select * from sightings join shapes on shape_id = shapes.id"
+    + " where city_id = " + p.id + " and " + activeFilter.whereClause()
+    + " order by occurred_at;");
   
   ArrayList<Sighting> sightings = new ArrayList<Sighting>();
   while (db.next()) {
