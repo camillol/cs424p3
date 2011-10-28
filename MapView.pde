@@ -212,7 +212,7 @@ class MapView extends View {
   
   void drawPlaces(PGraphics buffer, Iterable<Place> places) {
     buffer.imageMode(CENTER);
-    buffer.strokeWeight(0.8);
+    strokeWeight(0.8);
     for (Place place : places) {
       if (place.sightingCount > 0){
         float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);

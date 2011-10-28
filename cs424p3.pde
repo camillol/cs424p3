@@ -160,8 +160,8 @@ void updateFilter()
     newFilter.viewMaxMonth =  1 + settingsView.monthSlider.maxIndex();
   }
   if (btwTime) {
-    newFilter.viewMinHour =  1 + settingsView.timeSlider.minIndex();
-    newFilter.viewMaxHour =  1 + settingsView.timeSlider.maxIndex();
+    newFilter.viewMinHour =  settingsView.timeSlider.minIndex();
+    newFilter.viewMaxHour =  settingsView.timeSlider.maxIndex();
   }
   
   if (!newFilter.equals(activeFilter)) {
