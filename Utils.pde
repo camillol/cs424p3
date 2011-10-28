@@ -8,7 +8,7 @@ int clipIdx;
 
 void setupG2D()
 {
-  g2 = ((PGraphicsJava2D)g).g2;
+  //g2 = ((PGraphicsJava2D)g).g2;
   clipStack = new Shape[32];
   clipIdx = 0;
 }
