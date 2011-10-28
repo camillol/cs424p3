@@ -364,11 +364,18 @@ module Scraper
     db.transaction do
       db.execute("SELECT id, lat, lon FROM cities WHERE lat IS NOT NULL AND lon IS NOT NULL").each do |city|
         %w(airports military_bases).each do |relation|
+          smallest_distance_query = nil
           db.execute("SELECT id, lat, lon FROM #{relation} WHERE lat IS NOT NULL AND lon IS NOT NULL").each do |other|
             d = distance(city[1], city[2], other[1], other[2]).round
             puts "#{city[0]}, #{other[0]}, #{relation}, #{d}"
-            db.execute("INSERT INTO city_proximities (city_id, relation_id, relation, distance) VALUES (?, ?, ?, ?)", 
-            city[0], other[0], relation, d)
+            query = ["INSERT INTO city_proximities (city_id, relation_id, relation, distance) VALUES (?, ?, ?, ?)", 
+                    city[0], other[0], relation, d]
+            if smallest_distance_query.nil? or smallest_distance_query.last < d
+              smallest_distance_query = query
+            end
+          end
+          if smallest_distance_query
+            db.execute(*smallest_distance_query)
           end
         end
       end
