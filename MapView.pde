@@ -158,6 +158,9 @@ class MapView extends View {
        drawMilitaryBases(papplet.g,militaryBaseMap.values());
     
         
+    if (showWeatherStation)
+       drawWeatherStations(papplet.g,weatherStationMap.values());
+ 
     drawPlacesInformationBox();
 
   }
@@ -224,14 +227,26 @@ class MapView extends View {
   void drawMilitaryBases(PGraphics buffer, Iterable<Place> militaryBases){
       buffer.imageMode(CENTER);
       buffer.noStroke();
-      buffer.fill(airportAreaColor,40);
+      buffer.fill(militaryBaseColor,40);
       for (Place militaryBase : militaryBases) {   
         float pointSize =  map(zoomValue, minZoom, maxZoom, minDistSize, maxDistSize);
         float iconSize = map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize);
         Point2f p = mmap.locationPoint(militaryBase.loc);
-        println("mb lat,lon " +militaryBase.loc + " x,y " + p.x + " " +p.y);
         buffer.ellipse(p.x,p.y,pointSize,pointSize);
         buffer.image(militaryBaseImage,p.x,p.y,iconSize,iconSize);
+      } 
+  }
+  
+  void drawWeatherStations(PGraphics buffer, Iterable<Place> weatherStations){
+      buffer.imageMode(CENTER);
+      buffer.noStroke();
+      buffer.fill(weatherStationColor,40);
+      for (Place weatherStation : weatherStations) {   
+        float pointSize =  map(zoomValue, minZoom, maxZoom, minDistSize, maxDistSize);
+        float iconSize = map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize);
+        Point2f p = mmap.locationPoint(weatherStation.loc);
+        buffer.ellipse(p.x,p.y,pointSize,pointSize);
+        buffer.image(weatherStationImage,p.x,p.y,iconSize,iconSize);
       } 
   }
   

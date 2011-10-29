@@ -6,6 +6,7 @@ class SettingsView extends View {
   Map<SightingType, Checkbox> typeCheckboxMap;
   Checkbox showAirport;
   Checkbox showMilitaryBases;
+  Checkbox showWeatherStation;
   
   int CHECKBOX_X = 450;
   int CHECKBOX_Y = 10;
@@ -48,11 +49,14 @@ class SettingsView extends View {
       i++;
     }
     
-    showAirport = new Checkbox(800,10,12,12,"Show airports",airplaneImage);
+    showAirport = new Checkbox(7500,10,12,12,"Show airports",airplaneImage);
     this.subviews.add(showAirport);
     
-    showMilitaryBases = new Checkbox(800,30,12,12,"Show military bases",militaryBaseImage);
+    showMilitaryBases = new Checkbox(7500,30,12,12,"Show military bases",militaryBaseImage);
     this.subviews.add(showMilitaryBases);
+    
+    showWeatherStation = new Checkbox(750,50,12,12,"Show weather stations",weatherStationImage);
+    this.subviews.add(showWeatherStation);
     
     showView = false;
   }

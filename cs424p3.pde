@@ -24,6 +24,7 @@ color boldTextColor = #FFFF00;
 color viewBackgroundColor = #2D2A36;
 color airportAreaColor = #FFA500;
 color militaryBaseColor = #CC0000;
+color weatherStationColor = #FFFF00;
 color infoBoxBackground = #000000;
 color[] UFOColors = {#000000,#ffffff,#555555,#333333,#444444,#555555,#666666};
 
@@ -40,19 +41,23 @@ String[] UFOImages = {"blue.png","green.png","star.png","orange.png","purple.png
 
 PImage airplaneImage;
 PImage militaryBaseImage;
+PImage weatherStationImage;
 
 SightingTable sightings;
 Map<Integer,Place> placeMap;
 Map<Integer,Place> airportsMap;
 Map<Integer,Place> militaryBaseMap;
+Map<Integer,Place> weatherStationMap;
 PRTree<Place> placeTree;
 PRTree<Place> airportsTree;
 PRTree<Place> militaryBaseTree;
+PRTree<Place> weatherStationTree;
 Map<Integer,SightingType> sightingTypeMap;
 
 Sighting clickedSighting;
 Boolean showAirports=false;
 Boolean showMilitaryBases = false;
+Boolean showWeatherStation = false;
 Boolean btwMonths = false;
 Boolean btwTime = false;
 String byType = "";
@@ -85,6 +90,7 @@ void setup()
   loadCities();
   loadAirports();
   loadMilitaryBases();
+  loadWeatherStations();
   reloadCitySightingCounts();
   
   sightings = new DummySightingTable();
@@ -95,6 +101,7 @@ void setup()
   
   airplaneImage = loadImage("plane.png");
   militaryBaseImage = loadImage("irkickflash2.png");
+  weatherStationImage = loadImage("irkickflash1.png");
   
   mapv = new MapView(0,0,width,height);
   rootView.subviews.add(mapv);
@@ -143,6 +150,7 @@ void mouseClicked()
 {  
   showAirports = settingsView.showAirport.value;
   showMilitaryBases = settingsView.showMilitaryBases.value;
+  showWeatherStation = settingsView.showWeatherStation.value;
 
   String tmpByType = "";
   int i = 0;

@@ -47,6 +47,8 @@ class SightingType {
 
 final static int CITY = 0;
 final static int AIRPORT = 1;
+final static int MILITARY_BASE = 2;
+final static int WEATHER_STATION = 3;
 
 class Place {
   int type;  /* city, airport, military base */
@@ -204,7 +206,7 @@ void loadMilitaryBases()
   militaryBaseMap = new HashMap<Integer,Place>();
 
   while (db.next()) {
-    militaryBaseMap.put(db.getInt("id"), new Place(AIRPORT,
+    militaryBaseMap.put(db.getInt("id"), new Place(MILITARY_BASE,
       db.getInt("id"),
       new Location((db.getFloat("lat")/100), (db.getFloat("lon")/100)),
       db.getString("name"),
@@ -216,6 +218,29 @@ void loadMilitaryBases()
   
   militaryBaseTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
   militaryBaseTree.load(militaryBaseMap.values());
+  println(stopWatch());
+}
+
+void loadWeatherStations()
+{
+  stopWatch();
+  print("Loading weather stations...");
+  db.query("select * from military_bases");
+  weatherStationMap = new HashMap<Integer,Place>();
+
+  while (db.next()) {
+    weatherStationMap.put(db.getInt("id"), new Place(WEATHER_STATION,
+      db.getInt("id"),
+      new Location((db.getFloat("lat")/100), (db.getFloat("lon")/100)),
+      db.getString("name"),
+      0
+    ));
+  }
+  println(stopWatch());
+  print("Building weather stations bases R-tree...");
+  
+  weatherStationTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
+  weatherStationTree.load(weatherStationMap.values());
   println(stopWatch());
 }
 
