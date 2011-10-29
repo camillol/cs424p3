@@ -42,6 +42,7 @@ class SettingsView extends View {
       int x_delta = (i / 4) * 160;
       int y_delta = (i % 4) * 20;
       Checkbox cb = new Checkbox(CHECKBOX_X + 10 + x_delta ,CHECKBOX_Y + 9 + y_delta, 12, 12, st.name, st.icon);
+      cb.value = true;
       typeCheckboxMap.put(st, cb);
       subviews.add(cb);
       i++;

@@ -145,12 +145,16 @@ void mouseClicked()
   showMilitaryBases = settingsView.showMilitaryBases.value;
 
   String tmpByType = "";
+  int i = 0;
   for (SightingType st : sightingTypeMap.values()) {
    Checkbox cb = settingsView.typeCheckboxMap.get(st);
-   if (cb.value)
+   if (cb.value){
+       i++;
        tmpByType = ((tmpByType.length() > 0)?(tmpByType+", "):tmpByType) + " " + st.id ;
+    }
   }
-  
+  tmpByType = (i == settingsView.typeCheckboxMap.size())?(tmpByType = ""):((i==0)?("-1"):tmpByType);
+ 
   if (btwTime != settingsView.timeCheckbox.value || btwMonths != settingsView.monthCheckbox.value || !byType.equals(tmpByType)){
     btwTime = settingsView.timeCheckbox.value;
     btwMonths = settingsView.monthCheckbox.value;
