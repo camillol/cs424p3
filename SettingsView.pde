@@ -5,6 +5,7 @@ class SettingsView extends View {
   Checkbox yearCheckbox, monthCheckbox, timeCheckbox;
   Map<SightingType, Checkbox> typeCheckboxMap;
   Checkbox showAirport;
+  Checkbox showMilitaryBases;
   
   int CHECKBOX_X = 450;
   int CHECKBOX_Y = 10;
@@ -48,6 +49,9 @@ class SettingsView extends View {
     
     showAirport = new Checkbox(800,10,12,12,"Show airports",loadImage("plane.png"));
     this.subviews.add(showAirport);
+    
+    showMilitaryBases = new Checkbox(800,40,12,12,"Show military bases",loadImage("irkickflash2.png"));
+    this.subviews.add(showMilitaryBases);
     
     showView = false;
   }
