@@ -23,6 +23,7 @@ color textColor = 255;
 color boldTextColor = #FFFF00;
 color viewBackgroundColor = #2D2A36;
 color airportAreaColor = #FFA500;
+color militaryBaseColor = #CC0000;
 color infoBoxBackground = #000000;
 color[] UFOColors = {#000000,#ffffff,#555555,#333333,#444444,#555555,#666666};
 
@@ -38,16 +39,20 @@ String[] UFOTypeLabels = {"UFOType 1","UFOType 2","UFOType 3","UFOType 4","UFOTy
 String[] UFOImages = {"blue.png","green.png","star.png","orange.png","purple.png","red.png","yellow.png"};
 
 PImage airplaneImage;
+PImage militaryBaseImage;
 
 SightingTable sightings;
 Map<Integer,Place> placeMap;
 Map<Integer,Place> airportsMap;
+Map<Integer,Place> militaryBaseMap;
 PRTree<Place> placeTree;
 PRTree<Place> airportsTree;
+PRTree<Place> militaryBaseTree;
 Map<Integer,SightingType> sightingTypeMap;
 
 Sighting clickedSighting;
 Boolean showAirports=false;
+Boolean showMilitaryBases = false;
 Boolean btwMonths = false;
 Boolean btwTime = false;
 String byType = "";
@@ -79,6 +84,7 @@ void setup()
   loadSightingTypes();
   loadCities();
   loadAirports();
+  loadMilitaryBases();
   reloadCitySightingCounts();
   
   sightings = new DummySightingTable();
@@ -88,6 +94,7 @@ void setup()
   font = loadFont("Helvetica-48.vlw");
   
   airplaneImage = loadImage("plane.png");
+  militaryBaseImage = loadImage("irkickflash2.png");
   
   mapv = new MapView(0,0,width,height);
   rootView.subviews.add(mapv);
@@ -135,6 +142,8 @@ void mouseDragged()
 void mouseClicked()
 {  
   showAirports = settingsView.showAirport.value;
+  showMilitaryBases = settingsView.showMilitaryBases.value;
+
   String tmpByType = "";
   for (SightingType st : sightingTypeMap.values()) {
    Checkbox cb = settingsView.typeCheckboxMap.get(st);

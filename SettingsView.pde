@@ -47,10 +47,10 @@ class SettingsView extends View {
       i++;
     }
     
-    showAirport = new Checkbox(800,10,12,12,"Show airports",loadImage("plane.png"));
+    showAirport = new Checkbox(800,10,12,12,"Show airports",airplaneImage);
     this.subviews.add(showAirport);
     
-    showMilitaryBases = new Checkbox(800,40,12,12,"Show military bases",loadImage("irkickflash2.png"));
+    showMilitaryBases = new Checkbox(800,30,12,12,"Show military bases",militaryBaseImage);
     this.subviews.add(showMilitaryBases);
     
     showView = false;
