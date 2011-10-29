@@ -72,14 +72,15 @@ DataSource data;
 
 void setup()
 {
+  
+  
   size(1000, 700);  // OPENGL seems to be slower than the default
 //  setupG2D();
   
   papplet = this;
   
   smooth();
-//  noSmooth();
-  
+
   /* load data */
   data = new SQLiteDataSource();
   

@@ -1,4 +1,4 @@
-int spaceBtwLines = 13;
+int spaceBtwLines = 10;
 int markSize = 10;
 color sliderColor = 150;
 color activeSliderColor = 255;
