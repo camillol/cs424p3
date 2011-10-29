@@ -28,13 +28,13 @@ class SettingsView extends View {
     timeCheckbox = new Checkbox(10,70,12,12,"Time:");
     this.subviews.add(timeCheckbox);
     
-    yearSlider = new HSlider(75,10,0,0,yearLabels,"",3);
+    yearSlider = new HSlider(80,10,0,0,yearLabels,"",3);
     this.subviews.add(yearSlider);
 
-    monthSlider = new HSlider(75,40,0,0,monthLabels,"",2);
+    monthSlider = new HSlider(80,40,0,0,monthLabels,"",2);
     this.subviews.add(monthSlider);
 
-    timeSlider = new HSlider(75,70,0,0,timeLabels,"",2);
+    timeSlider = new HSlider(80,70,0,0,timeLabels,"",2);
     this.subviews.add(timeSlider);
     
     int i = 0;
@@ -49,13 +49,13 @@ class SettingsView extends View {
       i++;
     }
     
-    showAirport = new Checkbox(7500,10,12,12,"Show airports",airplaneImage);
+    showAirport = new Checkbox(780,10,12,12,"Show airports",airplaneImage);
     this.subviews.add(showAirport);
     
-    showMilitaryBases = new Checkbox(7500,30,12,12,"Show military bases",militaryBaseImage);
+    showMilitaryBases = new Checkbox(780,30,12,12,"Show military bases",militaryBaseImage);
     this.subviews.add(showMilitaryBases);
     
-    showWeatherStation = new Checkbox(750,50,12,12,"Show weather stations",weatherStationImage);
+    showWeatherStation = new Checkbox(780,50,12,12,"Show weather stations",weatherStationImage);
     this.subviews.add(showWeatherStation);
     
     showView = false;
@@ -82,6 +82,7 @@ class SettingsView extends View {
     line(CHECKBOX_X,h-30,CHECKBOX_X+CHECKBOX_W,h-30);
     line(CHECKBOX_X+CHECKBOX_W,CHECKBOX_Y,CHECKBOX_X+CHECKBOX_W,h-30);
     
+    fill(boldTextColor);
     textAlign(LEFT,TOP);
     title = "MAP " + ((yearSlider.minIndex()!=yearSlider.maxIndex())?("From: "+yearLabelsToPrint[yearSlider.minIndex()] + " To: " + yearLabelsToPrint[yearSlider.maxIndex()]):("Year: "+yearLabelsToPrint[yearSlider.minIndex()]));
     title = title + ((monthCheckbox.value)?((monthSlider.minIndex()!=monthSlider.maxIndex())?(" - " + monthLabelsToPrint[monthSlider.minIndex()] + " to " + monthLabelsToPrint[monthSlider.maxIndex()]):(" - " +  monthLabelsToPrint[monthSlider.minIndex()])):(""));

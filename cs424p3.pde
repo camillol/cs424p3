@@ -13,6 +13,7 @@ PApplet papplet;
 MapView mapv;
 SettingsView settingsView;
 SightingDetailsView sightingDetailsView;
+
 DateFormat dateTimeFormat= new SimpleDateFormat("EEEE, MMMM dd, yyyy HH:mm");
 DateFormat dateFormat= new SimpleDateFormat("EEEE, MMMM dd, yyyy");
 DateFormat shortDateFormat= new SimpleDateFormat("MM/dd/yyyy HH:mm");
@@ -105,7 +106,6 @@ void setup()
   
   mapv = new MapView(0,0,width,height);
   rootView.subviews.add(mapv);
-  
   
   settingsView = new SettingsView(0,-100,width,125);
   rootView.subviews.add(settingsView);

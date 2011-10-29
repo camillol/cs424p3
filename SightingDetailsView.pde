@@ -50,14 +50,14 @@ class SightingDetailsView extends View {
     textSize(smallFontSize);
     noFill();
     stroke(textColor);
-    rect(w-45,5, 8, 8);
-    text("x",w-43,5);
+    rect(w-46,4, 8, 9);
+    text("x",w-45,4);
     text("Close",w-35,5);
   }
   
    boolean contentClicked(float lx, float ly)
   {
-    if(lx > w-45 && lx < w - 10  && ly> 5 && ly < 17){
+    if(lx > w-46 && lx < w - 5  && ly> 4 && ly < 16){
         detailsAnimator.target(height);
     }
         
