@@ -28,7 +28,7 @@ color infoBoxBackground = #000000;
 color[] UFOColors = {#000000,#ffffff,#555555,#333333,#444444,#555555,#666666};
 
 int normalFontSize = 13;
-int smallFontSize = 9 ;
+int smallFontSize = 10 ;
 
 String[] monthLabelsToPrint = {"January","February","March","April","May","June","July","August","September","October","November","December"};
 String[] monthLabels = {"01","02","03","04","05","06","07","08","09","10","11","12"};
@@ -91,7 +91,7 @@ void setup()
   
   /* setup UI */
   rootView = new View(0, 0, width, height);
-  font = loadFont("Helvetica-48.vlw");
+  font = loadFont("Courier-20.vlw");
   
   airplaneImage = loadImage("plane.png");
   militaryBaseImage = loadImage("irkickflash2.png");

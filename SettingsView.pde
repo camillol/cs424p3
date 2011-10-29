@@ -62,8 +62,8 @@ class SettingsView extends View {
     fill(viewBackgroundColor,220);
     stroke(viewBackgroundColor,220);
     rect(0,0, w, h-25);
-    rect(0,h-25,95,25);
     textFont(font,normalFontSize);
+    rect(0,h-25,textWidth("Show Settings")+10,25);
     textAlign(LEFT,TOP);
     fill(textColor);
     text((showView)?"Hide Settings":"Show Settings",5,h-20);
@@ -87,7 +87,7 @@ class SettingsView extends View {
   
   boolean contentPressed(float lx, float ly)
   {
-    if(lx > 0 && lx <95 && ly>h-25 && ly < h){
+    if(lx > 0 && lx < textWidth("Show Settings")+10 && ly>h-25 && ly < h){
         settingsAnimator.target((showView)?(-heightView+25):0);
         showView = !showView;    
     }
