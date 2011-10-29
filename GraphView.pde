@@ -24,26 +24,6 @@ class Button extends View {
   }
 }
 
-class Bucket {
-  String label;
-  Map<SightingType, Integer> counts;
-  
-  Bucket(String label)
-  {
-    this.label = label;
-    counts = new HashMap<SightingType, Integer>();
-  }
-}
-
-/*
-  bucket sets we need to support:
-  - distance from airport
-  - population density
-  - time of day
-  - month
-  - season??
-*/
-
 class GraphView extends View {
   List<Bucket> buckets;
   int maxTotal;
@@ -56,32 +36,13 @@ class GraphView extends View {
   
   void fillBuckets()
   {
-    buckets = new ArrayList();
-    
-    /* let's just do months for a start */
-    db.query("select cast(strftime('%m',occurred_at) as integer) as month, type_id, count(*) as sighting_count"
-      + " from sightings join shapes on shape_id = shapes.id group by month, type_id;");
-    
-    int prev_m = -1;
-    int total = maxTotal = 0;
-    Bucket bucket = null;
-    
-    while (db.next()) {
-      int m = db.getInt("month");
-      SightingType type = sightingTypeMap.get(db.getInt("type_id"));
-      int count = db.getInt("sighting_count");
-      
-      if (m != prev_m) {
-        if (total > maxTotal) maxTotal = total;
-        total = 0;
-        bucket = new Bucket(str(m));
-        buckets.add(bucket);
-        prev_m = m;
-      }
-      bucket.counts.put(type, count);
-      total += count;
+    buckets = data.sightingCountsByMonth();
+    maxTotal = 0;
+    for (Bucket bucket : buckets) {
+      int total = 0;
+      for (int count : bucket.counts.values()) total += count;
+      if (total > maxTotal) maxTotal = total;
     }
-    if (total > maxTotal) maxTotal = total;
   }
   
   void drawContent()

@@ -196,7 +196,7 @@ class MapView extends View {
     }
     else if (sightingDetailsView.place!=clickedPlace){
       sightingDetailsView.place = clickedPlace;
-      sightingDetailsView.setSightings(sightingsForCity(mapv.clickedPlace));
+      sightingDetailsView.setSightings(data.sightingsForCity(mapv.clickedPlace));
       detailsAnimator.target(height-200);
     }
     
@@ -304,45 +304,6 @@ class MapView extends View {
               }
           } 
      }
-  } 
-  
-  void drawSightings(){
-   imageMode(CENTER);
-   for (Iterator<Sighting> sightingList = sightings.activeSightingIterator(); sightingList.hasNext();) {
-      Sighting newSighting = sightingList.next();
-      Point2f p = mmap.locationPoint(((Place)(newSighting.location)).loc);
-      image(((SightingType)newSighting.type).icon,p.x,p.y,map(zoomValue,minZoom,maxZoom,minPointSize,maxPointSize),map(zoomValue,minZoom,maxZoom,minPointSize,maxPointSize));
-   }
-  }
-  
-  void drawSightingsInformationBox(){
-   for (Iterator<Sighting> sightingList = sightings.activeSightingIterator(); sightingList.hasNext();) {
-      Sighting newSighting = sightingList.next();
-      Point2f p = mmap.locationPoint(((Place)(newSighting.location)).loc);
-      if (dist(mouseX,mouseY,p.x,p.y) < map(zoomValue,minZoom,maxZoom,minPointSize/2,maxPointSize/2)){
-        textSize(normalFontSize);
-        textAlign(LEFT);
-        strokeWeight(1);
-        stroke(((SightingType)newSighting.type).colr);
-        String textToPrint = dateFormat.format(newSighting.localTime);
-        if (dateFormat.format(newSighting.localTime).length() < ((Place)(newSighting.location)).name.length())
-              textToPrint = ((Place)(newSighting.location)).name;
-        fill(infoBoxBackground);
-        float w_ = textWidth(textToPrint)+10;
-        float x_ = (p.x+w_ > w)?w-w_-5:p.x;
-        float h_ = (textAscent() + textDescent()) *3 + 10;
-        float y_ = (p.y+h_ > h)?h-h_-5:p.y;
-        rect(x_,y_,w_,h_);
-        fill(textColor);
-        text(dateFormat.format(newSighting.localTime), x_ + (w_ - textWidth(dateFormat.format(newSighting.localTime)))/2 ,y_+5);
-        text(((Place)(newSighting.location)).name,x_ + (w_ - textWidth(((Place)(newSighting.location)).name))/2, (y_+ h_/2));
-        textSize(smallFontSize);
-        text("Click on it to see details",x_+5,y_+h_-10);
-        if (mousePressed){
-            clickedSighting = newSighting;
-        }        
-      }
-   }
   }
 }
 

@@ -47,7 +47,6 @@ PImage airplaneImage;
 PImage militaryBaseImage;
 PImage weatherStationImage;
 
-SightingTable sightings;
 Map<Integer,Place> placeMap;
 Map<Integer,Place> airportsMap;
 Map<Integer,Place> militaryBaseMap;
@@ -69,9 +68,7 @@ Boolean isDragging = false;
 
 SightingsFilter activeFilter;
 
-import de.bezier.data.sql.*;
-
-SQLite db;
+DataSource data;
 
 void setup()
 {
@@ -84,20 +81,16 @@ void setup()
 //  noSmooth();
   
   /* load data */
-  db = new SQLite( this, "ufo.db" );
-  if (!db.connect()) println("DB connection failed!");
-  db.execute("PRAGMA cache_size=100000;");
+  data = new SQLiteDataSource();
   
   activeFilter = new SightingsFilter();
 
-  loadSightingTypes();
-  loadCities();
-  loadAirports();
-  loadMilitaryBases();
-  loadWeatherStations();
-  reloadCitySightingCounts();
-  
-  sightings = new DummySightingTable();
+  data.loadSightingTypes();
+  data.loadCities();
+  data.loadAirports();
+  data.loadMilitaryBases();
+  data.loadWeatherStations();
+  data.reloadCitySightingCounts();
   
   /* setup UI */
   rootView = new View(0, 0, width, height);
@@ -206,7 +199,7 @@ void updateFilter()
   
   if (!newFilter.equals(activeFilter)) {
     activeFilter = newFilter;
-    reloadCitySightingCounts();
+    data.reloadCitySightingCounts();
     mapv.rebuildOverlay();
     detailsAnimator.target(height);
   }
