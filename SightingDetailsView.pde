@@ -37,14 +37,14 @@ class SightingDetailsView extends View {
       Sighting newSighting = sightings.get(sightingSList.selectedIndex-1);   
       fill(textColor);  
       text("Local time: "+ dateTimeFormat.format(newSighting.localTime),230,25);
-      text("Reported time: " + dateFormat.format(newSighting.reportedTime),550,25);
+      text("Reported time: " + dateFormat.format(newSighting.reportedTime),600,25);
       String typeOfUFO = "Type of UFO: "+(newSighting.type).name;
       text(typeOfUFO, 230,42);
       imageMode(CORNER);
       image((newSighting.type).icon,235 + textWidth(typeOfUFO),42,12,12);
-      text("Shape: " +newSighting.shapeName,550,42);
+      text("Shape: " +newSighting.shapeName,600,42);
       text("Weather Condition: "+ newSighting.weather,230,59);
-      text("Temperature: " + newSighting.temperature + " °F  /  " + str(int((MULTIPLICATOR_VALUE * (newSighting.temperature - 32))))+" °C",550,59);
+      text("Temperature: " + newSighting.temperature + " °F  /  " + str(int((MULTIPLICATOR_VALUE * (newSighting.temperature - 32))))+" °C",600,59);
       text("Full description: " + newSighting.description,230,79, w - 250,120);
     }
     textSize(smallFontSize);
