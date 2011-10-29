@@ -41,7 +41,9 @@ PImage airplaneImage;
 
 SightingTable sightings;
 Map<Integer,Place> placeMap;
+Map<Integer,Place> airportsMap;
 PRTree<Place> placeTree;
+PRTree<Place> airportsTree;
 Map<Integer,SightingType> sightingTypeMap;
 
 Sighting clickedSighting;
@@ -139,12 +141,13 @@ void mouseClicked()
    if (cb.value)
        tmpByType = ((tmpByType.length() > 0)?(tmpByType+", "):tmpByType) + " " + st.id ;
   }
-  println(tmpByType);
   
   if (btwTime != settingsView.timeCheckbox.value || btwMonths != settingsView.monthCheckbox.value || !byType.equals(tmpByType)){
     btwTime = settingsView.timeCheckbox.value;
-    btwMonths = settingsView.monthCheckbox.value;;
+    btwMonths = settingsView.monthCheckbox.value;
+    byType = tmpByType;
     updateFilter();
+    println("updating filters...");
   }
 
   rootView.mouseClicked(mouseX, mouseY);
@@ -163,8 +166,10 @@ void updateFilter()
     newFilter.viewMinHour =  settingsView.timeSlider.minIndex();
     newFilter.viewMaxHour =  settingsView.timeSlider.maxIndex();
   }
+  newFilter.viewUFOType = byType;
   
   if (!newFilter.equals(activeFilter)) {
+    println("updating values...");
     activeFilter = newFilter;
     reloadCitySightingCounts();
     mapv.rebuildOverlay();
