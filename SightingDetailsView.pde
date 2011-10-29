@@ -1,3 +1,5 @@
+static float MULTIPLICATOR_VALUE = 0.5556; 
+
 class SightingDetailsView extends View {
 
   boolean showView = false;
@@ -36,9 +38,14 @@ class SightingDetailsView extends View {
       fill(textColor);  
       text("Local time: "+ dateTimeFormat.format(newSighting.localTime),230,25);
       text("Reported time: " + dateFormat.format(newSighting.reportedTime),550,25);
-      text("Type of UFO: "+(newSighting.type).name, 230,42);
+      String typeOfUFO = "Type of UFO: "+(newSighting.type).name;
+      text(typeOfUFO, 230,42);
+      imageMode(CORNER);
+      image((newSighting.type).icon,235 + textWidth(typeOfUFO),42,12,12);
       text("Shape: " +newSighting.shapeName,550,42);
-      text("Full description: " + newSighting.description,230,60, w - 250,130);
+      text("Weather Condition: "+ newSighting.weather,230,59);
+      text("Temperature: " + newSighting.temperature + " °F  /  " + str(int((MULTIPLICATOR_VALUE * (newSighting.temperature - 32))))+" °C",550,59);
+      text("Full description: " + newSighting.description,230,79, w - 250,120);
     }
     textSize(smallFontSize);
     noFill();
