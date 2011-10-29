@@ -107,6 +107,7 @@ class SightingsFilter {
   int viewMinYear = yearFirst, viewMaxYear = yearLast;
   int viewMinMonth = 1, viewMaxMonth = 12;
   int viewMinHour = 0, viewMaxHour = 23;
+  String viewUFOType = "";
   
   String whereClause()
   {
@@ -118,6 +119,7 @@ class SightingsFilter {
     if (viewMaxMonth < 12) where.append("cast(strftime('%m',occurred_at) as integer) <= " + viewMaxMonth + " and ");
     if (viewMinHour > 0) where.append("cast(strftime('%H',occurred_at) as integer) >= " + viewMinHour + " and ");
     if (viewMaxHour < 23) where.append("cast(strftime('%H',occurred_at) as integer) <= " + viewMaxHour + " and ");
+    if (viewUFOType.length() > 0) where.append("type_id IN ("+viewUFOType+") and ");
     
     where.append("1 ");
     return where.toString();
@@ -130,7 +132,8 @@ class SightingsFilter {
       viewMinMonth == other.viewMinMonth &&
       viewMaxMonth == other.viewMaxMonth &&
       viewMinHour == other.viewMinHour &&
-      viewMaxHour == other.viewMaxHour;
+      viewMaxHour == other.viewMaxHour &&
+      viewUFOType == other.viewUFOType;
   }
 }
 
@@ -168,16 +171,25 @@ void reloadCitySightingCounts()
 
 void loadAirports()
 {
- /* db.query("select cities.*, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id group by cities.id");
-  airports = new ArrayList<Airport>();
+  stopWatch();
+  print("Loading airports...");
+  db.query("select * from airports");
+  airportsMap = new HashMap<Integer,Place>();
+
   while (db.next()) {
-    places.add(new Place(AIRPORT,
+    airportsMap.put(db.getInt("id"), new Place(AIRPORT,
       db.getInt("id"),
-      new Location(db.getFloat("lat"), db.getFloat("lon")),
+      new Location((db.getFloat("lat")/100), (db.getFloat("lon")/100)),
       db.getString("name"),
-      db.getInt("sighting_count")
+      0
     ));
-  }*/
+  }
+  println(stopWatch());
+  print("Building airport R-tree...");
+  
+  airportsTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
+  airportsTree.load(airportsMap.values());
+  println(stopWatch());
 }
 
 Iterable<Place> placesInRect(Location locTopLeft, Location locBottomRight, double expandFactor)
@@ -195,6 +207,23 @@ Iterable<Place> placesInRect(Location locTopLeft, Location locBottomRight, doubl
   maxLat += fudgeLat;
   
   return placeTree.find(minLon, minLat, maxLon, maxLat);
+}
+
+Iterable<Place> aiportsInRect(Location locTopLeft, Location locBottomRight, double expandFactor)
+{
+  double minLon = locTopLeft.lon;
+  double maxLon = locBottomRight.lon;
+  double minLat = locBottomRight.lat;
+  double maxLat = locTopLeft.lat;
+  double fudgeLat = (maxLat - minLat) * expandFactor;
+  double fudgeLon = (maxLon - minLon) * expandFactor;
+  
+  minLon -= fudgeLon;
+  maxLon += fudgeLon;
+  minLat -= fudgeLat;
+  maxLat += fudgeLat;
+  
+  return airportsTree.find(minLon, minLat, maxLon, maxLat);
 }
 
 void loadSightingTypes()

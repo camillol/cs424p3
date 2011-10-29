@@ -11,10 +11,10 @@ class MapView extends View {
   float maxZoom = 15;
   int minPointSize= 5;
   int maxPointSize = 45;
-  int minIconSize= 8;
+  int minIconSize= 10;
   int maxIconSize = 25;
   int minDistSize = 1;
-  int maxDistSize = 100;
+  int maxDistSize = 150;
   Sighting clickedSighting;
   Place clickedPlace;
   
@@ -135,6 +135,8 @@ class MapView extends View {
     Location loc2 = mmap.provider.coordinateLocation(coord2);
     
     drawPlaces(buf, placesInRect(loc1, loc2, TILE_EXPAND_FACTOR));
+  //  if (showAirports)
+    //    drawAirports(buf,placesInRect(loc1,loc2,TILE_EXPAND_FACTOR));
     
     buf.endDraw();
     return buf;
@@ -146,10 +148,15 @@ class MapView extends View {
     mmap.draw();
 
     if (USE_BUFFERS) drawOverlay();
-    else drawPlaces(papplet.g, placeMap.values());
-  
+    else{
+      drawPlaces(papplet.g, placeMap.values());
+      
+    }
+    
     if (showAirports)
-        drawAirports();
+        drawAirports(papplet.g, airportsMap.values());
+  
+    
         
     drawPlacesInformationBox();
 
@@ -201,18 +208,23 @@ class MapView extends View {
       return true;
   }
   
-  void drawAirports(){
-       imageMode(CENTER);
-       noStroke();
-       fill(airportAreaColor,40);
-       Point2f p2 = mmap.locationPoint(new Location(41.97, -87.905));
-       ellipse(p2.x,p2.y,map(zoomValue,minZoom,maxZoom,minDistSize,maxDistSize),map(zoomValue,minZoom,maxZoom,minDistSize,maxDistSize));
-       image(airplaneImage,p2.x,p2.y,map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize),map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize));
+  void drawAirports(PGraphics buffer, Iterable<Place> airports){
+      buffer.imageMode(CENTER);
+      buffer.noStroke();
+      buffer.fill(airportAreaColor,40);
+      for (Place airport : airports) {
+          float pointSize =  map(zoomValue, minZoom, maxZoom, minDistSize, maxDistSize);
+          float iconSize = map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize);
+          Point2f p = mmap.locationPoint(airport.loc);
+    
+          buffer.ellipse(p.x,p.y,pointSize,pointSize);
+          buffer.image(airplaneImage,p.x,p.y,iconSize,iconSize);
+      } 
   }
   
   void drawPlaces(PGraphics buffer, Iterable<Place> places) {
     buffer.imageMode(CENTER);
-    strokeWeight(0.8);
+    buffer.strokeWeight(0.8);
     for (Place place : places) {
       if (place.sightingCount > 0){
         float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
