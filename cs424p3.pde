@@ -11,6 +11,7 @@ Animator detailsAnimator;
 
 PApplet papplet;
 MapView mapv;
+GraphView graphView;
 SettingsView settingsView;
 SightingDetailsView sightingDetailsView;
 DateFormat dateTimeFormat= new SimpleDateFormat("EEEE, MMMM dd, yyyy HH:mm");
@@ -115,6 +116,9 @@ void setup()
       rootView.mouseWheel(mouseX, mouseY, evt.getWheelRotation());
     }
   });
+
+  graphView = new GraphView(10, 10, width-20, height-20);
+  rootView.subviews.add(graphView);
 }
 
 void draw()

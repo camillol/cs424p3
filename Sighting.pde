@@ -261,7 +261,7 @@ void loadSightingTypes()
     sightingTypeMap.put(db.getInt("id"), new SightingType(
       db.getInt("id"),
       loadImage(db.getString("img_name")),
-      color(db.getInt("color")),
+      color(unhex("FF"+db.getString("color"))),
       db.getString("name")
     ));
   }
