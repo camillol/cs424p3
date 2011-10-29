@@ -66,7 +66,7 @@ SQLite db;
 
 void setup()
 {
-  size(1000, 700, OPENGL);  // OPENGL seems to be slower than the default
+  size(1000, 700);  // OPENGL seems to be slower than the default
 //  setupG2D();
   
   papplet = this;

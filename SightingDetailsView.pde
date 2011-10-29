@@ -26,6 +26,7 @@ class SightingDetailsView extends View {
   
   void drawContent()
   {  
+
     fill(viewBackgroundColor,230);
     stroke(viewBackgroundColor,230);
     rect(0,0, w, h);
