@@ -32,16 +32,28 @@ class SightingType {
   color colr;
   String name;
   
+  boolean active;
+  Animator activeAnimator;
+  
   SightingType(int id, PImage icon, color colr, String name) {
     this.id = id;
     this.icon = icon;
     this.colr = colr;
     this.name = name;
+    
+    active = true;
+    activeAnimator = new Animator(1.0);
   }
 
   /* for dummy data */
   SightingType(PImage icon, color colr, String name) {
     this(-1, icon, colr, name);
+  }
+  
+  void setActive(boolean act)
+  {
+    active = act;
+    activeAnimator.target(active ? 1.0 : 0.0);
   }
 }
 
@@ -113,7 +125,7 @@ class SightingsFilter {
   int viewMinYear = yearFirst, viewMaxYear = yearLast;
   int viewMinMonth = 1, viewMaxMonth = 12;
   int viewMinHour = 0, viewMaxHour = 23;
-  String viewUFOType = "";
+  Collection<SightingType> activeTypes = null;
   
   String whereClause()
   {
@@ -125,7 +137,16 @@ class SightingsFilter {
     if (viewMaxMonth < 12) where.append("cast(strftime('%m',occurred_at) as integer) <= " + viewMaxMonth + " and ");
     if (viewMinHour > 0) where.append("cast(strftime('%H',occurred_at) as integer) >= " + viewMinHour + " and ");
     if (viewMaxHour < 23) where.append("cast(strftime('%H',occurred_at) as integer) <= " + viewMaxHour + " and ");
-    if (viewUFOType.length() > 0) where.append("type_id IN ("+viewUFOType+") and ");
+    if (activeTypes != null && activeTypes.size() < sightingTypeMap.size()) {
+      where.append("type_id IN (");
+      boolean first = true;
+      for (SightingType st : activeTypes) {
+        if (first) first = false;
+        else where.append(",");
+        where.append(st.id);
+      }
+      where.append(") and ");
+    }
     
     where.append("1 ");
     return where.toString();
@@ -139,7 +160,7 @@ class SightingsFilter {
       viewMaxMonth == other.viewMaxMonth &&
       viewMinHour == other.viewMinHour &&
       viewMaxHour == other.viewMaxHour &&
-      viewUFOType == other.viewUFOType;
+      activeTypes.equals(other.activeTypes);
   }
 }
 

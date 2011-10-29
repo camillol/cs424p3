@@ -126,7 +126,7 @@ void setup()
     }
   });
 
-  graphView = new GraphView(10, 10, width-20, height-20);
+  graphView = new GraphView(10, 100, width-20, height-120);
   
   graphButton = new Button(width-80, 0, 80, 20, "Graph");
   rootView.subviews.add(graphButton);
@@ -140,6 +140,21 @@ void buttonClicked(Button button)
     if (graphOn) rootView.subviews.add(graphView);
     else rootView.subviews.remove(graphView);
   }
+}
+
+void buttonClicked(Checkbox button)
+{
+  showAirports = settingsView.showAirport.value;
+  showMilitaryBases = settingsView.showMilitaryBases.value;
+  showWeatherStation = settingsView.showWeatherStation.value;
+
+  for (Entry<SightingType, Checkbox> entry : settingsView.typeCheckboxMap.entrySet()) {
+    entry.getKey().setActive(entry.getValue().value);
+  }
+  btwTime = settingsView.timeCheckbox.value;
+  btwMonths = settingsView.monthCheckbox.value;
+  
+  updateFilter();
 }
 
 void draw()
@@ -165,30 +180,7 @@ void mouseDragged()
 }
 
 void mouseClicked()
-{  
-  showAirports = settingsView.showAirport.value;
-  showMilitaryBases = settingsView.showMilitaryBases.value;
-  showWeatherStation = settingsView.showWeatherStation.value;
-
-  String tmpByType = "";
-  int i = 0;
-  for (SightingType st : sightingTypeMap.values()) {
-   Checkbox cb = settingsView.typeCheckboxMap.get(st);
-   if (cb.value){
-       i++;
-       tmpByType = ((tmpByType.length() > 0)?(tmpByType+", "):tmpByType) + " " + st.id ;
-    }
-  }
-  tmpByType = (i == settingsView.typeCheckboxMap.size())?(tmpByType = ""):((i==0)?("-1"):tmpByType);
- 
-  if (btwTime != settingsView.timeCheckbox.value || btwMonths != settingsView.monthCheckbox.value || !byType.equals(tmpByType)){
-    btwTime = settingsView.timeCheckbox.value;
-    btwMonths = settingsView.monthCheckbox.value;
-    byType = tmpByType;
-    updateFilter();
-    println("updating filters...");
-  }
-
+{
   rootView.mouseClicked(mouseX, mouseY);
 }
 
@@ -205,10 +197,14 @@ void updateFilter()
     newFilter.viewMinHour =  settingsView.timeSlider.minIndex();
     newFilter.viewMaxHour =  settingsView.timeSlider.maxIndex();
   }
-  newFilter.viewUFOType = byType;
+  
+  List<SightingType> activeTypes = new ArrayList<SightingType>();
+  for (SightingType type : sightingTypeMap.values()) {
+    if (type.active) activeTypes.add(type);
+  }
+  newFilter.activeTypes = activeTypes;
   
   if (!newFilter.equals(activeFilter)) {
-    println("updating values...");
     activeFilter = newFilter;
     reloadCitySightingCounts();
     mapv.rebuildOverlay();

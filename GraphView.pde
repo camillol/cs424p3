@@ -95,9 +95,10 @@ class GraphView extends View {
     for (Bucket bucket : buckets) {
       float bary = h;
       for (Entry<SightingType,Integer> entry : bucket.counts.entrySet()) {
-        float barh = map(entry.getValue(), 0, maxTotal, 0, h);
+        SightingType st = entry.getKey();
+        float barh = map(entry.getValue(), 0, maxTotal, 0, h) * st.activeAnimator.value;
         bary -= barh;
-        fill(entry.getKey().colr);
+        fill(st.colr);
         rect(barx, bary, barw, barh);
       }
       barx += barw;
