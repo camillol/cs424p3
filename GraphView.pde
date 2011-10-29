@@ -1,5 +1,29 @@
 import java.util.Map.*;  /* workaround for Processing not recognizing Map.Entry<> generic */
 
+class Button extends View {
+  String label;
+  
+  Button(float x_, float y_, float w_, float h_, String label)
+  {
+    super(x_, y_, w_, h_);
+    this.label = label;
+  }
+  
+  void drawContent()
+  {
+    rect(0,0,w,h);
+    fill(255);
+    textAlign(LEFT, TOP);
+    text(label,0,0);
+  }
+  
+  boolean contentClicked(float lx, float ly)
+  {
+    buttonClicked(this);
+    return true;
+  }
+}
+
 class Bucket {
   String label;
   Map<SightingType, Integer> counts;

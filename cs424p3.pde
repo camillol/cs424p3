@@ -12,6 +12,8 @@ Animator detailsAnimator;
 PApplet papplet;
 MapView mapv;
 GraphView graphView;
+Button graphButton;
+boolean graphOn;
 SettingsView settingsView;
 SightingDetailsView sightingDetailsView;
 
@@ -125,7 +127,19 @@ void setup()
   });
 
   graphView = new GraphView(10, 10, width-20, height-20);
-  rootView.subviews.add(graphView);
+  
+  graphButton = new Button(width-80, 0, 80, 20, "Graph");
+  rootView.subviews.add(graphButton);
+  graphOn = false;
+}
+
+void buttonClicked(Button button)
+{
+  if (button == graphButton) {
+    graphOn = !graphOn;
+    if (graphOn) rootView.subviews.add(graphView);
+    else rootView.subviews.remove(graphView);
+  }
 }
 
 void draw()
