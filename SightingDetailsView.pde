@@ -11,7 +11,7 @@ class SightingDetailsView extends View {
   {
     super(x_, y_, w_, h_);
     
-    sightingSList = new ScrollList(5,5,200,180);
+    sightingSList = new ScrollList(5,15,200,170);
     this.subviews.add(sightingSList);
     
   }
@@ -38,27 +38,27 @@ class SightingDetailsView extends View {
       Sighting newSighting = sightings.get(sightingSList.selectedIndex-1);   
       fill(textColor);  
       text("Local time: "+ dateTimeFormat.format(newSighting.localTime),230,25);
-      text("Reported time: " + dateFormat.format(newSighting.reportedTime),550,25);
+      text("Reported time: " + dateFormat.format(newSighting.reportedTime),600,25);
       String typeOfUFO = "Type of UFO: "+(newSighting.type).name;
       text(typeOfUFO, 230,42);
       imageMode(CORNER);
       image((newSighting.type).icon,235 + textWidth(typeOfUFO),42,12,12);
-      text("Shape: " +newSighting.shapeName,550,42);
+      text("Shape: " +newSighting.shapeName,600,42);
       text("Weather Condition: "+ newSighting.weather,230,59);
-      text("Temperature: " + newSighting.temperature + " °F  /  " + str(int((MULTIPLICATOR_VALUE * (newSighting.temperature - 32))))+" °C",550,59);
+      text("Temperature: " + newSighting.temperature + " °F  /  " + str(int((MULTIPLICATOR_VALUE * (newSighting.temperature - 32))))+" °C",600,59);
       text("Full description: " + newSighting.description,230,79, w - 250,120);
     }
     textSize(smallFontSize);
     noFill();
     stroke(textColor);
-    rect(w-45,5, 8, 8);
-    text("x",w-43,5);
+    rect(w-46,4, 8, 9);
+    text("x",w-45,4);
     text("Close",w-35,5);
   }
   
    boolean contentClicked(float lx, float ly)
   {
-    if(lx > w-45 && lx < w - 10  && ly> 5 && ly < 17){
+    if(lx > w-46 && lx < w - 5  && ly> 4 && ly < 16){
         detailsAnimator.target(height);
     }
         
