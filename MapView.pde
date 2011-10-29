@@ -156,6 +156,8 @@ class MapView extends View {
     if (showAirports)
         drawAirports(papplet.g, airportsMap.values());
   
+    if (showMilitaryBases)
+       drawMilitaryBases(papplet.g,militaryBaseMap.values());
     
         
     drawPlacesInformationBox();
@@ -216,9 +218,22 @@ class MapView extends View {
           float pointSize =  map(zoomValue, minZoom, maxZoom, minDistSize, maxDistSize);
           float iconSize = map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize);
           Point2f p = mmap.locationPoint(airport.loc);
-    
           buffer.ellipse(p.x,p.y,pointSize,pointSize);
           buffer.image(airplaneImage,p.x,p.y,iconSize,iconSize);
+      } 
+  }
+  
+  void drawMilitaryBases(PGraphics buffer, Iterable<Place> militaryBases){
+      buffer.imageMode(CENTER);
+      buffer.noStroke();
+      buffer.fill(airportAreaColor,40);
+      for (Place militaryBase : militaryBases) {   
+        float pointSize =  map(zoomValue, minZoom, maxZoom, minDistSize, maxDistSize);
+        float iconSize = map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize);
+        Point2f p = mmap.locationPoint(militaryBase.loc);
+        println("mb lat,lon " +militaryBase.loc + " x,y " + p.x + " " +p.y);
+        buffer.ellipse(p.x,p.y,pointSize,pointSize);
+        buffer.image(militaryBaseImage,p.x,p.y,iconSize,iconSize);
       } 
   }
   

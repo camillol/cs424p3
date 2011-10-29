@@ -196,6 +196,29 @@ void loadAirports()
   println(stopWatch());
 }
 
+void loadMilitaryBases()
+{
+  stopWatch();
+  print("Loading military bases...");
+  db.query("select * from military_bases");
+  militaryBaseMap = new HashMap<Integer,Place>();
+
+  while (db.next()) {
+    militaryBaseMap.put(db.getInt("id"), new Place(AIRPORT,
+      db.getInt("id"),
+      new Location((db.getFloat("lat")/100), (db.getFloat("lon")/100)),
+      db.getString("name"),
+      0
+    ));
+  }
+  println(stopWatch());
+  print("Building military bases R-tree...");
+  
+  militaryBaseTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
+  militaryBaseTree.load(militaryBaseMap.values());
+  println(stopWatch());
+}
+
 Iterable<Place> placesInRect(Location locTopLeft, Location locBottomRight, double expandFactor)
 {
   double minLon = locTopLeft.lon;
