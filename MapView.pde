@@ -20,7 +20,6 @@ class MapView extends View {
   
   int MAX_BUFFERS_TO_KEEP = 64;
   
-  PImage tempIcon;
   
   Map<Coordinate, PGraphics> buffers;
   boolean USE_BUFFERS = true;
@@ -38,7 +37,6 @@ class MapView extends View {
   
     mmap.MAX_IMAGES_TO_KEEP = 64;
     mmap.setCenterZoom(new Location(39,-98), int(zoomValue));
-    tempIcon = loadImage("yellow.png");
     
     buffers = new LinkedHashMap<Coordinate, PGraphics>(MAX_BUFFERS_TO_KEEP, 0.75, true) {
       protected boolean removeEldestEntry(Map.Entry eldest) {
@@ -160,6 +158,9 @@ class MapView extends View {
        drawMilitaryBases(papplet.g,militaryBaseMap.values());
     
         
+    if (showWeatherStation)
+       drawWeatherStations(papplet.g,weatherStationMap.values());
+ 
     drawPlacesInformationBox();
 
   }
@@ -226,14 +227,26 @@ class MapView extends View {
   void drawMilitaryBases(PGraphics buffer, Iterable<Place> militaryBases){
       buffer.imageMode(CENTER);
       buffer.noStroke();
-      buffer.fill(airportAreaColor,40);
+      buffer.fill(militaryBaseColor,40);
       for (Place militaryBase : militaryBases) {   
         float pointSize =  map(zoomValue, minZoom, maxZoom, minDistSize, maxDistSize);
         float iconSize = map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize);
         Point2f p = mmap.locationPoint(militaryBase.loc);
-        println("mb lat,lon " +militaryBase.loc + " x,y " + p.x + " " +p.y);
         buffer.ellipse(p.x,p.y,pointSize,pointSize);
         buffer.image(militaryBaseImage,p.x,p.y,iconSize,iconSize);
+      } 
+  }
+  
+  void drawWeatherStations(PGraphics buffer, Iterable<Place> weatherStations){
+      buffer.imageMode(CENTER);
+      buffer.noStroke();
+      buffer.fill(weatherStationColor,40);
+      for (Place weatherStation : weatherStations) {   
+        float pointSize =  map(zoomValue, minZoom, maxZoom, minDistSize, maxDistSize);
+        float iconSize = map(zoomValue,minZoom,maxZoom,minIconSize,maxIconSize);
+        Point2f p = mmap.locationPoint(weatherStation.loc);
+        buffer.ellipse(p.x,p.y,pointSize,pointSize);
+        buffer.image(weatherStationImage,p.x,p.y,iconSize,iconSize);
       } 
   }
   
@@ -256,7 +269,6 @@ class MapView extends View {
   
   void drawPlacesInformationBox() {
     imageMode(CENTER);
-    PImage icon = loadImage("yellow.png");
     
     float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
     Location loc1 = mmap.pointLocation(mouseX - maxPointValue, mouseY - maxPointValue);  // TODO: use local coordinates (although they're identical in this app)
@@ -278,14 +290,14 @@ class MapView extends View {
                 fill(infoBoxBackground);
                 float w_ = textWidth(textToPrint)+10;
                 float x_ = (p.x+w_ > w)?w-w_-5:p.x;
-                float h_ = (textAscent() + textDescent()) *3 + 10;
+                float h_ = (textAscent() + textDescent()) * 3 + 15;
                 float y_ = (p.y+h_ > sightingDetailsView.y)?sightingDetailsView.y-h_-5:p.y;
                 rect(x_,y_,w_,h_);
                 fill(textColor);
                 text(place.name, x_ + (w_ - textWidth(place.name))/2 ,y_+5);
                 text(numOfSightings,x_ + (w_ - textWidth(numOfSightings))/2, (y_+ h_/3)+5);
                 textSize(smallFontSize);
-                text("Click on it to see details",x_+5,y_+h_-10);
+                text("Click on it to see details",x_+5,y_+h_-12);
                 if (mousePressed){
                   clickedPlace = place;
                 }        

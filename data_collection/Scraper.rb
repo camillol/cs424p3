@@ -8,6 +8,7 @@ require 'chronic'
 require "sqlite3"
 require 'progressbar'
 require 'fastercsv'
+require 'date'
 
 
 #TODO add method that will write the data into flat file OR database
@@ -36,7 +37,6 @@ module Scraper
     #url = URI.encode("http://maps.googleapis.com/maps/api/geocode/xml?address=#{row[2].gsub(/(\(.*?\))/, '')}, #{row[1]}&sensor=false")
     db.execute("SELECT c.id, s.name_abbreviation, c.name, s.id FROM cities c JOIN states s ON c.state_id = s.id WHERE lat is null or lon is null or c.county_id is null").each do |row|
       url = URI.encode("http://maps.googleapis.com/maps/api/geocode/xml?address=#{row[2].gsub(/(\(.*?\))/, '')},#{row[1]}&sensor=false")
-      puts url
       #url = URI.encode("http://dev.virtualearth.net/REST/v1/Locations/#{row[2].gsub(/(\(.*?\))/, '')},#{row[1]}?o=xml&key=AglK4wns9bo4A1oV_robGjdXYuKww4c7lM5b6fbgIh-WXJAurJpfJIlCJIbHmT7V")
       html = Nokogiri.HTML(open(url))
       lat_doc, lon_doc, county_doc = nil, nil, nil
@@ -85,15 +85,25 @@ module Scraper
     end
   end
 
-  def self.open(url_string)
+  def self.open(url_string, j=0)
     url = URI.parse(url_string)
-    host_rel_path = "#{url.scheme}://#{url.host + SITE_DIRECTORY}"
+    #host_rel_path = "#{url.scheme}://#{url.host + SITE_DIRECTORY}"
     request = Net::HTTP.new(url.host, url.port)
     request.read_timeout = 60
     try = 0
     response = nil
     begin
-      response = request.get(url.request_uri).body
+      response = request.get(url.request_uri)
+      loc = response['location']
+      raise "Too many redirects" if j > 2
+
+      if loc and url_string.include? "findweather/getForecast?"
+        puts "ABOUT..."
+        x = open("#{url.scheme}://" + url.host + loc + "&format=xml", j+=1)
+        return x
+      else
+        response = response.body
+      end
     rescue Exception => e
       try+=1
       if try < 10
@@ -201,6 +211,15 @@ module Scraper
         DROP INDEX IF EXISTS sightings_index_city_id;
         DROP INDEX IF EXISTS sightings_index_occurred_at;
         
+        DROP INDEX IF EXISTS airports_index_id;
+        DROP INDEX IF EXISTS airports_index_lat_lon;
+
+        DROP INDEX IF EXISTS military_bases_id;
+        DROP INDEX IF EXISTS military_bases_lat_lon;
+
+        DROP INDEX IF EXISTS city_proximities_city_id_relation_id_relation;
+        DROP INDEX IF EXISTS city_proximities_distance;
+        
 
         DROP TABLE IF EXISTS states;
         CREATE TABLE states (
@@ -212,7 +231,16 @@ module Scraper
         CREATE TABLE counties (
           id INTEGER PRIMARY KEY,
           state_id INTEGER,
-          name STRING
+          name STRING,
+          population_density INTEGER
+        );
+
+        DROP TABLE IF EXISTS city_proximities;
+        CREATE TABLE city_proximities (
+          city_id INTEGER,
+          distance INTEGER,
+          relation_id INTEGER,
+          relation STRING
         );
 
         DROP TABLE IF EXISTS cities;
@@ -225,10 +253,19 @@ module Scraper
           lon INTEGER
         );
 
+        DROP TABLE IF EXISTS sighting_types;
+        CREATE TABLE sighting_types (
+          id INTEGER PRIMARY KEY,
+          name STRING,
+          img_name STRING,
+          color INTEGER
+        );
+
         DROP TABLE IF EXISTS shapes;
         CREATE TABLE shapes (
           id INTEGER PRIMARY KEY,
-          name STRING
+          name STRING,
+          sighting_type_id INTEGER
         );
         
         DROP TABLE IF EXISTS sightings;
@@ -240,7 +277,25 @@ module Scraper
           full_description STRING, 
           occurred_at TIMESTAMP,
           reported_at TIMESTAMP,
-          posted_at TIMESTAMP
+          posted_at TIMESTAMP,
+          temperature INTEGER,
+          weather_conditions STRING
+        );
+
+        DROP TABLE IF EXISTS airports;
+        CREATE TABLE airports(
+          ID INTEGER PRIMARY KEY,
+          name STRING,
+          city STRING,
+          lat INTEGER,
+          lon INTEGR);
+      
+        DROP TABLE IF EXISTS military_bases;
+        CREATE TABLE military_bases(
+          ID INTEGER PRIMARY KEY,
+          name STRING,
+          lat INTEGER,
+          lon INTEGER
         );
       }
 
@@ -292,6 +347,46 @@ module Scraper
       db.execute "CREATE INDEX sightings_index_shape_id ON sightings(shape_id)"
       db.execute "CREATE INDEX sightings_index_city_id ON sightings(city_id)"
       db.execute "CREATE INDEX sightings_index_occurred_at ON sightings(occurred_at);"
+
+      db.execute "CREATE INDEX airports_index_id ON airports(id)"
+      db.execute "CREATE INDEX airports_index_lat_lon ON airports(lat, lon)"
+
+      db.execute "CREATE INDEX military_bases_id ON military_bases(id)"
+      db.execute "CREATE INDEX military_bases_lat_lon ON military_bases(lat, lon)"
+
+      db.execute "CREATE INDEX city_proximities_city_id_relation_id_relation ON city_proximities(city_id, relation_id, relation)"
+      db.execute "CREATE INDEX city_proximities_distance ON city_proximities(distance)"
+    end
+  end
+
+  def self.calculate_distances
+    db = SQLite3::Database.new('ufo.db')
+    db.transaction do
+      db.execute("SELECT id, lat, lon FROM cities WHERE lat IS NOT NULL AND lon IS NOT NULL").each do |city|
+        %w(airports military_bases).each do |relation|
+          smallest_distance_query = nil
+          db.execute("SELECT id, lat, lon FROM #{relation} WHERE lat IS NOT NULL AND lon IS NOT NULL").each do |other|
+            d = distance(city[1], city[2], other[1], other[2]).round
+            puts "#{city[0]}, #{other[0]}, #{relation}, #{d}"
+            query = ["INSERT INTO city_proximities (city_id, relation_id, relation, distance) VALUES (?, ?, ?, ?)", 
+                    city[0], other[0], relation, d]
+            if smallest_distance_query.nil? or smallest_distance_query.last < d
+              smallest_distance_query = query
+            end
+          end
+          if smallest_distance_query
+            db.execute(*smallest_distance_query)
+          end
+        end
+      end
+    end
+  end
+
+  def self.add_population_density
+    db = SQLite3::Database.new('ufo.db')
+    file_path = File.join(File.expand_path(File.dirname(__FILE__)), "../data", "population_density_by_county.csv")
+    FasterCSV.foreach(file_path, :headers => true) do |line|
+      db.execute("UPDATE counties SET population_density = ? FROM counties c JOIN states s ON s.id = c.state_id WHERE c.name like ? AND s.name like ?", line[6].to_f * 100 , line[5].gsub(/County.*/i, '').strip, line[2].strip)
     end
   end
 
@@ -305,6 +400,134 @@ module Scraper
       db.execute("DELETE FROM cities WHERE id in (#{result.map{|m| m[1].to_i}.join(", ")})")
       db.execute("DELETE FROM states WHERE id in (#{result.map{|m| m[0].to_i}.join(", ")})")
     end
+  end
+
+  def self.group_shapes
+    db = SQLite3::Database.new('ufo.db')
+    db.transaction do
+      query = %{
+        INSERT INTO sighting_types(name, img_name) VALUES('polygon', 'blue.png');
+        INSERT INTO sighting_types(name, img_name) VALUES('changing', 'red.png');
+        INSERT INTO sighting_types(name, img_name) VALUES('unknown', 'green.png');
+        INSERT INTO sighting_types(name, img_name) VALUES('other', 'yelow.png');
+        INSERT INTO sighting_types(name, img_name) VALUES('round', 'orange.png');
+        INSERT INTO sighting_types(name, img_name) VALUES('triangle', 'purple.png');
+        INSERT INTO sighting_types(name, img_name) VALUES('light', 'star.png');
+        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'polygon') 
+          WHERE name IN ('Rectangle', 'Diamond', 'Chevron');
+        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'changing')
+          WHERE name IN ('Changing');
+        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'unknown')
+          WHERE name IN ('Unknown', 'Other');
+        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'other')
+          WHERE name IN ('Teardrop', 'Cigar', 'Cylinder', 'Crescent');
+        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'round')
+          WHERE name IN ('Circle', 'Sphere', 'Oval', 'Egg', 'Disk');
+        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'triangle')
+          WHERE name IN ('Triangle', 'Cone');
+        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'light')
+          WHERE name IN ('Light', 'Fireball', 'Flash');
+      }
+      
+=begin
+      query = %{
+      UPDATE shapes SET group_reference=1, group_name='Polygon' WHERE name IN ('Rectangle','Hexagon','Diamond','Chevron');
+      UPDATE shapes SET group_reference=2, group_name='Variable' WHERE name IN ('changed','Changing','Unknown');
+      UPDATE shapes SET group_reference=3, group_name='Oval' WHERE name IN ('Crescent','Cylinder','Other','Teardrop','Cross','Cigar','Formation');
+      UPDATE shapes SET group_reference=4, group_name='Sphere' WHERE name in ('Disk','Round','Circle','Dome','Sphere','Egg','Oval');
+      UPDATE shapes SET group_reference=5, group_name='Cube' WHERE name in ('Delta','Triangle','pyramid','Cone');
+      UPDATE shapes SET group_reference=6, group_name='Flash' WHERE name in ('Flare','Light','Flash','Fireball');
+      }
+=end
+      db.execute_batch query
+    end
+  end
+
+  def self.insert_airports
+    degrees_to_decimal = lambda do |d,m,s,dir|
+        deg = d+(((m*60)+(s))/3600.0)
+        deg *= -1 if %w(W U S).include?(dir.upcase)
+        return (deg * 100).round
+    end
+    data = File.new(File.join("../", "data", "GlobalAirportDatabase.txt"))
+    db = SQLite3::Database.new('ufo.db')
+    db.transaction do
+      db.execute("DELETE FROM airports") 
+      while line = data.gets do
+        columns = line.split(":")
+        if columns[4] == "USA"
+          lat = degrees_to_decimal.call(columns[5].to_i, columns[6].to_i, columns[7].to_i, columns[8])
+          lon = degrees_to_decimal.call(columns[9].to_i, columns[10].to_i, columns[11].to_i, columns[12])
+          db.execute("INSERT INTO airports(name,city,lat,lon) VALUES(?, ?, ?, ?)", columns[0], columns[2], lat, lon)
+        end
+      end
+    end
+  end
+
+  def self.add_weather_conditions
+    j = 0
+    db = SQLite3::Database.new('ufo.db')
+    db.execute('SELECT states.name_abbreviation, c.name, s.occurred_at, s.id AS sighting_id FROM sightings s JOIN cities c ON c.id = s.city_id JOIN states ON states.id = c.state_id WHERE temperature IS NULL or weather_conditions IS NULL').each do |sighting|
+      state = sighting[0] 
+      #break if (j+=1) > 10
+      city = sighting[1]
+      puts sighting[2]
+      occurred_at = DateTime.parse sighting[2]
+      url = "http://www.wunderground.com/cgi-bin/findweather/getForecast?airportorwmo=query&historytype=DailyHistory&backurl=%2Fhistory%2Findex.html&code=#{URI.encode(city)}%2C+#{URI.encode(state)}&month=#{occurred_at.month}&day=#{occurred_at.day}&year=#{occurred_at.year}"
+      result = open(url)
+      if result and result.is_a? String
+        result = result.split "\n"
+        if result.length < 500
+          #find proper row
+          result.each_with_index do |row, i|
+            next if i < 2
+            fields = row.strip_html.split(",")
+            next if fields.empty?
+            next if fields[0].include? "No daily or hourly history data available"
+            day_time = DateTime.parse(fields[0])
+            #Get proper time
+            event = Time.mktime(occurred_at.year, occurred_at.month, occurred_at.day, day_time.strftime("%H"), day_time.strftime("%M")).to_datetime
+            if result.length == i + 1 or occurred_at < event
+              temperature = fields[1].to_f.round
+              condition = fields[11]
+              puts "temperature: #{temperature} condition: #{condition} #{i}/#{result.length}"
+              db.execute("UPDATE sightings SET temperature = ?, weather_conditions = ? WHERE id = ?", temperature, condition, sighting[3])
+              break
+            end
+          end
+        else
+          puts "Error took place with url: #{url}"
+        end
+      end
+    end
+  end
+
+  def self.insert_military_bases
+    data = IO.read(File.join("../", "data", "world_military_bases.kml"))
+    db = SQLite3::Database.new('ufo.db')
+    xml_doc = Nokogiri.XML(data)
+    db.transaction do
+      db.execute "DELETE FROM military_bases"
+      xml_doc.xpath("//xmlns:Placemark").each do |place_mark|
+        name = place_mark.xpath("xmlns:name").first.content
+        lon, lat = *place_mark.xpath("xmlns:Point/xmlns:coordinates").first.content.split(",").map{|x| (x.to_f * 100).round}
+        #puts "#{name} lat #{lat} lon#{lon}"
+        db.execute("INSERT INTO military_bases (name, lat, lon) VALUES( ?, ?, ?)", name, lat, lon)
+      end
+    end
+  end
+
+  #ENTIRE PROCESS CAN TAKE UPTO 24H
+  def self.migrate
+    Scraper.scrape
+    Scraper.createdb
+    Scraper.update_coordinates_counties_from_api
+    Scraper.update_city_coordinates
+    Scraper.add_population_density
+    Scraper.group_shapes
+    Scraper.insert_airports
+    Scraper.add_weather_conditions
+    Scraper.insert_military_bases
   end
 end
 
@@ -334,6 +557,35 @@ class String
     end
     result
   end
+
+end
+
+class Time
+  def to_datetime
+    # Convert seconds + microseconds into a fractional number of seconds
+    seconds = sec + Rational(usec, 10**6)
+
+    # Convert a UTC offset measured in minutes to one measured in a
+    # fraction of a day.
+    offset = Rational(utc_offset, 60 * 60 * 24)
+    DateTime.new(year, month, day, hour, min, seconds, offset)
+  end
+
+end
+
+def distance(lat1, lng1, lat2, lng2, miles = false)
+  pi80 = Math::PI / 180;
+  lat1 *= pi80;
+  lng1 *= pi80;
+  lat2 *= pi80;
+  lng2 *= pi80;
+  r = 6372.797; # mean radius of Earth in km
+  dlat = lat2 - lat1;
+  dlng = lng2 - lng1;
+  a = Math.sin(dlat / 2) * Math.sin(dlat / 2) + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dlng / 2) * Math.sin(dlng / 2);
+  c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  km = r * c;
+  return (miles ? (km * 0.621371192) : km);
 end
 
 if ARGV[0] == "scrape"
