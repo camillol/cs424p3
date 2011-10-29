@@ -8,8 +8,10 @@ class Sighting {
   Date reportedTime;
   Place location;
   String shapeName;
+  String weather;
+  int temperature;
   
-  Sighting(String desc, SightingType type, String shapeName, float airportDist, float milDist, Date localTime,Date reportedTime, Place location) {
+  Sighting(String desc, SightingType type, String shapeName, float airportDist, float milDist, Date localTime,Date reportedTime, Place location,String weather, int temperature) {
     this.description = desc;
     this.type = type;
     this.shapeName = shapeName;
@@ -18,6 +20,8 @@ class Sighting {
     this.localTime = localTime;
     this.reportedTime = reportedTime;
     this.location = location;
+    this.weather = weather;
+    this.temperature = temperature;
   }
 }
 
@@ -257,7 +261,9 @@ List<Sighting> sightingsForCity(Place p)
       0.0, /* TODO: fill in military base distance */
       dbDateFormat.parse(db.getString("occurred_at")),
       dbDateFormat.parse(db.getString("posted_at")),
-      p
+      p,
+      db.getString("weather_conditions"),
+      db.getInt("temperature")
     ));
     }
     catch(Exception ex){
