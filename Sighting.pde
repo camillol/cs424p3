@@ -185,7 +185,7 @@ class Bucket {
   Bucket(String label)
   {
     this.label = label;
-    counts = new HashMap<SightingType, Integer>();
+    counts = new LinkedHashMap<SightingType, Integer>();
   }
 }
 
