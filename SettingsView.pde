@@ -7,6 +7,7 @@ class SettingsView extends View {
   Checkbox showAirport;
   Checkbox showMilitaryBases;
   Checkbox showWeatherStation;
+  PlayButton play;
   
   int CHECKBOX_X = 450;
   int CHECKBOX_Y = 10;
@@ -58,6 +59,9 @@ class SettingsView extends View {
     showWeatherStation = new Checkbox(780,50,12,12,"Show weather stations",weatherStationImage);
     this.subviews.add(showWeatherStation);
     
+    play =  new PlayButton(w-105,h-20,100,20);
+    this.subviews.add(play);
+    
     showView = false;
   }
   
@@ -87,7 +91,9 @@ class SettingsView extends View {
     title = "MAP " + ((yearSlider.minIndex()!=yearSlider.maxIndex())?("From: "+yearLabelsToPrint[yearSlider.minIndex()] + " To: " + yearLabelsToPrint[yearSlider.maxIndex()]):("Year: "+yearLabelsToPrint[yearSlider.minIndex()]));
     title = title + ((monthCheckbox.value)?((monthSlider.minIndex()!=monthSlider.maxIndex())?(" - " + monthLabelsToPrint[monthSlider.minIndex()] + " to " + monthLabelsToPrint[monthSlider.maxIndex()]):(" - " +  monthLabelsToPrint[monthSlider.minIndex()])):(""));
     title = title +  ((timeCheckbox.value)?(" - " + timeLabels[timeSlider.minIndex()] + ":00 to " + timeLabels[timeSlider.maxIndex()] +":59"):(""));   
-    text(title,(w-textWidth(title))/2,h-20);      
+    title = title + ((play.value)?(" Showing: "+str(2000+minYearIndex)):"");
+    text(title,(w-textWidth(title))/2,h-20);   
+   
   }
   
   boolean contentPressed(float lx, float ly)
