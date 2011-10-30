@@ -677,7 +677,7 @@ end
 def degrees_to_decimal(d,m,s,dir)
   deg = d.to_f+(((m.to_f*60)+(s.to_f))/3600.0)
   deg *= -1 if %w(W U S).include?(dir.upcase)
-  return (deg * 100).round
+  return deg
 end
 
 if ARGV[0] == "scrape"
