@@ -193,6 +193,7 @@ module Scraper
         
         DROP INDEX IF EXISTS states_index_id;
         DROP INDEX IF EXISTS states_index_name_abbreviation;
+        DROP INDEX IF EXISTS states_index_lat_lon;
 
         DROP INDEX IF EXISTS counties_index_id;
         DROP INDEX IF EXISTS counties_index_state_id;
@@ -228,7 +229,10 @@ module Scraper
         CREATE TABLE states (
           id INTEGER PRIMARY KEY, 
           name_abbreviation STRING, 
-          name STRING);
+          name STRING,
+          lat INTEGER,
+          lon INTEGER
+          );
 
         DROP TABLE IF EXISTS counties;
         CREATE TABLE counties (
@@ -343,6 +347,7 @@ module Scraper
       puts "Building indexes"
       db.execute "CREATE INDEX states_index_id ON states(id);"
       db.execute "CREATE UNIQUE INDEX states_index_name_abbreviation ON states(name_abbreviation);"
+      db.execute "CREATE UNIQUE INDEX states_index_lat_lon ON states(lat,lon);"
 
       db.execute "CREATE INDEX counties_index_id ON counties(id);"
       db.execute "CREATE INDEX counties_index_state_id ON counties(state_id);"
@@ -383,7 +388,7 @@ module Scraper
         %w(airports military_bases weather_stations).each do |relation|
           smallest_distance_query = nil
           db.execute("SELECT id, lat, lon FROM #{relation} WHERE lat IS NOT NULL AND lon IS NOT NULL").each do |other|
-            d = (distance((city[1]).round, (city[2]).round, other[1] / 100.0, other[2] / 100.0) * 100).round
+            d = distance(city[1], city[2], other[1] / 100.0, other[2] / 100.0)
             puts "#{city[0]}, #{other[0]}, #{relation}, #{d}"
             query = ["INSERT INTO city_proximities (city_id, relation_id, relation, distance) VALUES (?, ?, ?, ?)", 
                     city[0], other[0], relation, d]
@@ -527,6 +532,27 @@ module Scraper
         db.execute("INSERT INTO military_bases (name, lat, lon) VALUES( ?, ?, ?)", name, lat, lon)
       end
     end
+  end
+
+  def self.import_geographical_centers
+    data = IO.read(File.join("../", "data", "geographical_center_of_state.html"))
+    db = SQLite3::Database.new('ufo.db')
+    Nokogiri::HTML(data).xpath("//table/tbody/tr").each_with_index do |row,i|
+      if i==0
+        next
+      end
+      columns = row.xpath("td")
+      state = columns[0].content.strip_html
+      result = db.execute("SELECT id FROM states WHERE name like ?", state)
+      raise "Error, state #{state} not found" if result.empty?
+      lat_lon_raw = columns[1].content.strip_html
+      lat_lon_raw = lat_lon_raw.scan(/(\d+\.*\d*)'(\d+\.*\d*)'?(\d+\.*\d*)?'?(\D)/)
+      #In 100's
+      lat,lon = degrees_to_decimal(*lat_lon_raw[1]), degrees_to_decimal(*lat_lon_raw[0])
+      puts "lat:#{lat} lon:#{lon}"
+      nil
+    end
+    nil
   end
 
   def self.insert_weather_stations
