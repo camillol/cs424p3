@@ -78,7 +78,7 @@ module Scraper
         rows = db.execute("SELECT c.id FROM cities c JOIN states s ON s.id = c.state_id WHERE c.name like ? AND s.name_abbreviation like ? ", 
                    "%#{line[3].gsub(/(CDP|city|town)/, '').strip}%", "%#{line[0]}%")
         if rows.one?
-          db.execute("UPDATE cities SET lat = ?, lon = ? WHERE id = ?", (line[8].to_f * 100).round, (line[9].to_f * 100).round, rows.first.first)
+          db.execute("UPDATE cities SET lat = ?, lon = ? WHERE id = ?", line[8].to_f, line[9].to_f, rows.first.first)
         end
       end
       i+=1
@@ -231,8 +231,8 @@ module Scraper
           id INTEGER PRIMARY KEY, 
           name_abbreviation STRING, 
           name STRING,
-          lat INTEGER,
-          lon INTEGER
+          lat REAL,
+          lon REAL
           );
 
         DROP TABLE IF EXISTS counties;
@@ -241,14 +241,14 @@ module Scraper
           state_id INTEGER,
           name STRING,
           population_density INTEGER,
-          lat INTGER,
-          lon INTEGR
+          lat REAL,
+          lon REAL
         );
 
         DROP TABLE IF EXISTS city_proximities;
         CREATE TABLE city_proximities (
           city_id INTEGER,
-          distance INTEGER,
+          distance REAL,
           relation_id INTEGER,
           relation STRING
         );
@@ -259,8 +259,8 @@ module Scraper
           county_id integer,
           state_id integer,
           name STRING,
-          lat INTEGER,
-          lon INTEGER
+          lat REAL,
+          lon REAL
         );
 
         DROP TABLE IF EXISTS sighting_types;
@@ -297,15 +297,15 @@ module Scraper
           ID INTEGER PRIMARY KEY,
           name STRING,
           city STRING,
-          lat INTEGER,
-          lon INTEGR);
+          lat REAL,
+          lon REAL);
       
         DROP TABLE IF EXISTS military_bases;
         CREATE TABLE military_bases(
           ID INTEGER PRIMARY KEY,
           name STRING,
-          lat INTEGER,
-          lon INTEGER
+          lat REAL,
+          lon REAL
         );
 
         DROP TABLE IF EXISTS weather_stations;
@@ -314,8 +314,8 @@ module Scraper
           name STRING,
           key STRING,
           state_id INTEGER,
-          lat INTEGER,
-          lon INTEGER
+          lat REAL,
+          lon REAL
         );
       }
 
@@ -387,12 +387,17 @@ module Scraper
   def self.calculate_distances
     db = SQLite3::Database.new('ufo.db')
     db.execute("DELETE FROM city_proximities")
+    relations = {}
+    %w(airports military_bases weather_stations).each do |relation|
+      relations[relation] = db.execute("SELECT id, lat, lon FROM #{relation} WHERE lat IS NOT NULL AND lon IS NOT NULL")
+    end
+
     db.transaction do
       db.execute("SELECT id, lat, lon FROM cities WHERE lat IS NOT NULL AND lon IS NOT NULL").each do |city|
-        %w(airports military_bases weather_stations).each do |relation|
+        relations.each do |relation, rows|
           smallest_distance_query = nil
-          db.execute("SELECT id, lat, lon FROM #{relation} WHERE lat IS NOT NULL AND lon IS NOT NULL").each do |other|
-            d = distance(city[1], city[2], other[1] / 100.0, other[2] / 100.0)
+          rows.each do |other|
+            d = distance(city[1].to_f, city[2].to_f, other[1].to_f, other[2].to_f)
             puts "#{city[0]}, #{other[0]}, #{relation}, #{d}"
             query = ["INSERT INTO city_proximities (city_id, relation_id, relation, distance) VALUES (?, ?, ?, ?)", 
                     city[0], other[0], relation, d]
@@ -477,8 +482,8 @@ module Scraper
       while line = data.gets do
         columns = line.split(":")
         if columns[4] == "USA"
-          lat = degrees_to_decimal(columns[5].to_i, columns[6].to_i, columns[7].to_i, columns[8])
-          lon = degrees_to_decimal(columns[9].to_i, columns[10].to_i, columns[11].to_i, columns[12])
+          lat = degrees_to_decimal(columns[5].to_f, columns[6].to_f, columns[7].to_f, columns[8])
+          lon = degrees_to_decimal(columns[9].to_f, columns[10].to_f, columns[11].to_f, columns[12])
           db.execute("INSERT INTO airports(name,city,lat,lon) VALUES(?, ?, ?, ?)", columns[0], columns[2], lat, lon)
         end
       end
@@ -531,7 +536,7 @@ module Scraper
       db.execute "DELETE FROM military_bases"
       xml_doc.xpath("//xmlns:Placemark").each do |place_mark|
         name = place_mark.xpath("xmlns:name").first.content
-        lon, lat = *place_mark.xpath("xmlns:Point/xmlns:coordinates").first.content.split(",").map{|x| (x.to_f * 100).round}
+        lon, lat = *place_mark.xpath("xmlns:Point/xmlns:coordinates").first.content.split(",").map{|x| x.to_f}
         #puts "#{name} lat #{lat} lon#{lon}"
         db.execute("INSERT INTO military_bases (name, lat, lon) VALUES( ?, ?, ?)", name, lat, lon)
       end
@@ -568,7 +573,7 @@ module Scraper
         next
       end
       puts "lat: #{row[8]} lon: #{row[9]}"
-      db.execute("UPDATE counties SET lat = ?, lon = ? WHERE id = ?", (row[8].to_f * 100).round, (row[9].to_f * 100).round, county_record.first.first)
+      db.execute("UPDATE counties SET lat = ?, lon = ? WHERE id = ?", row[8].to_f, row[9].to_f, county_record.first.first)
     end
   end
 
@@ -601,18 +606,28 @@ module Scraper
 
   #ENTIRE PROCESS CAN TAKE UPTO 24H
   def self.migrate
+=begin
     Scraper.scrape
     Scraper.createdb
     Scraper.update_coordinates_counties_from_api
-    Scraper.update_city_coordinates
     Scraper.add_population_density
     Scraper.group_shapes
-    Scraper.insert_airports
     Scraper.add_weather_conditions
     Scraper.insert_weather_stations
+=end
+    puts "update_city_coordinates"
+    Scraper.update_city_coordinates
+    puts "insert_airports"
+    Scraper.insert_airports
+    puts "insert_military_bases"
     Scraper.insert_military_bases
+    puts "import_geographical_centers_states"
     Scraper.import_geographical_centers_states
+    puts "import_geographical_centers_counties"
     Scraper.import_geographical_centers_counties
+    puts "calculate_distances"
+    #Scraper.calculate_distances
+
   end
 end
 
@@ -658,26 +673,59 @@ class Time
 
 end
 
-def distance(lat1, lng1, lat2, lng2, miles = false)
-  pi80 = Math::PI / 180;
-  lat1 *= pi80;
-  lng1 *= pi80;
-  lat2 *= pi80;
-  lng2 *= pi80;
-  r = 6372.797; # mean radius of Earth in km
-  dlat = lat2 - lat1;
-  dlng = lng2 - lng1;
-  a = Math.sin(dlat / 2) * Math.sin(dlat / 2) + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dlng / 2) * Math.sin(dlng / 2);
-  puts a
-  c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  km = r * c;
-  return (miles ? (km * 0.621371192) : km);
+
+RAD_PER_DEG = 0.017453293  #  PI/180
+Rmiles = 3956           # radius of the great circle in miles
+Rkm = 6371              # radius in kilometers...some algorithms use 6367
+Rfeet = Rmiles * 5282   # radius in feet
+Rmeters = Rkm * 1000    # radius in meters
+def distance( lat1, lon1, lat2, lon2 )
+
+  # the great circle distance d will be in whatever units R is in
+
+  
+
+  @distances = Hash.new   # this is global because if computing lots of track point distances, it didn't make
+          # sense to new a Hash each time over potentially 100's of thousands of points
+
+=begin rdoc
+given two lat/lon points, compute the distance between the two points using the haversine formula
+the result will be a Hash of distances which are key'd by 'mi','km','ft', and 'm'
+=end
+
+  dlon = lon2 - lon1
+  dlat = lat2 - lat1
+
+  dlon_rad = dlon * RAD_PER_DEG 
+  dlat_rad = dlat * RAD_PER_DEG
+
+  lat1_rad = lat1 * RAD_PER_DEG
+  lon1_rad = lon1 * RAD_PER_DEG
+
+  lat2_rad = lat2 * RAD_PER_DEG
+  lon2_rad = lon2 * RAD_PER_DEG
+
+  # puts "dlon: #{dlon}, dlon_rad: #{dlon_rad}, dlat: #{dlat}, dlat_rad: #{dlat_rad}"
+
+  a = (Math.sin(dlat_rad/2))**2 + Math.cos(lat1_rad) * Math.cos(lat2_rad) * (Math.sin(dlon_rad/2))**2
+  c = 2 * Math.atan2( Math.sqrt(a), Math.sqrt(1-a))
+
+  dMi = Rmiles * c          # delta between the two points in miles
+  dKm = Rkm * c             # delta in kilometers
+  dFeet = Rfeet * c         # delta in feet
+  dMeters = Rmeters * c     # delta in meters
+
+  @distances["mi"] = dMi
+  @distances["km"] = dKm
+  @distances["ft"] = dFeet
+  @distances["m"] = dMeters
+  return dKm
 end
 
 def degrees_to_decimal(d,m,s,dir)
   deg = d.to_f+(((m.to_f*60)+(s.to_f))/3600.0)
   deg *= -1 if %w(W U S).include?(dir.upcase)
-  return (deg * 100).round
+  return deg
 end
 
 if ARGV[0] == "scrape"
