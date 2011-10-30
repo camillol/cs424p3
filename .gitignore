@@ -1,2 +1,5 @@
 # no duplicates, please!
 data_collection/ufo.db
+*.swp
+libraries
+WWW/sightings.csv

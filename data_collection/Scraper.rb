@@ -198,6 +198,7 @@ module Scraper
         DROP INDEX IF EXISTS counties_index_id;
         DROP INDEX IF EXISTS counties_index_state_id;
         DROP INDEX IF EXISTS counties_index_name_state_id;
+        DROP INDEX IF EXISTS counties_index_lat_lon;
 
         DROP INDEX IF EXISTS cities_index_id;
         DROP INDEX IF EXISTS cities_index_state_id;
@@ -239,7 +240,9 @@ module Scraper
           id INTEGER PRIMARY KEY,
           state_id INTEGER,
           name STRING,
-          population_density INTEGER
+          population_density INTEGER,
+          lat INTGER,
+          lon INTEGR
         );
 
         DROP TABLE IF EXISTS city_proximities;
@@ -352,6 +355,7 @@ module Scraper
       db.execute "CREATE INDEX counties_index_id ON counties(id);"
       db.execute "CREATE INDEX counties_index_state_id ON counties(state_id);"
       db.execute "CREATE UNIQUE INDEX counties_index_name_state_id ON counties(name, state_id);"
+      db.execute "CREATE INDEX counties_index_lat_lon ON counties(lat, lon)"
 
       db.execute "CREATE INDEX cities_index_id ON cities(id);"
       db.execute "CREATE INDEX cities_index_state_id ON cities(state_id);"
@@ -534,7 +538,7 @@ module Scraper
     end
   end
 
-  def self.import_geographical_centers
+  def self.import_geographical_centers_states
     data = IO.read(File.join("../", "data", "geographical_center_of_state.html"))
     db = SQLite3::Database.new('ufo.db')
     Nokogiri::HTML(data).xpath("//table/tbody/tr").each_with_index do |row,i|
@@ -553,6 +557,19 @@ module Scraper
       db.execute("UPDATE states SET lat = ?, lon = ? WHERE id = ?", lat, lon, result.first.first)
     end
     nil
+  end
+
+  def self.import_geographical_centers_counties
+    db = SQLite3::Database.new('ufo.db')
+    FasterCSV.foreach(File.join(File.expand_path(File.dirname(__FILE__)), "../data", "Gaz_counties_national.csv"), :col_sep => "\t", :headers => true) do |row|
+      county_record = db.execute("SELECT id FROM counties WHERE name like ?", '%' + row[3].gsub(/\s*county/i, '') + '%')
+      if county_record.empty?
+        puts "Import error, county record #{row[3]} not found" 
+        next
+      end
+      puts "lat: #{row[8]} lon: #{row[9]}"
+      db.execute("UPDATE counties SET lat = ?, lon = ? WHERE id = ?", (row[8].to_f * 100).round, (row[9].to_f * 100).round, county_record.first.first)
+    end
   end
 
   def self.insert_weather_stations
@@ -594,6 +611,8 @@ module Scraper
     Scraper.add_weather_conditions
     Scraper.insert_weather_stations
     Scraper.insert_military_bases
+    Scraper.import_geographical_centers_states
+    Scraper.import_geographical_centers_counties
   end
 end
 
