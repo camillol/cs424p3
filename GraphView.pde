@@ -24,13 +24,36 @@ class Button extends View {
   }
 }
 
+color LABEL_COLOR = 255;
+
 class GraphView extends View {
+  final static float LABEL_HEIGHT = 20;
+  
   List<Bucket> buckets;
   int maxTotal;
+  
+  List<String> modes = Arrays.asList("Month", "Airport dist.", "Pop. density", "Time of day", "Season");
+  int activeMode;
   
   GraphView(float x_, float y_, float w_, float h_)
   {
     super(x_, y_, w_, h_);
+    fillBuckets();
+  }
+  
+  ListDataSource modesDataSource()
+  {
+    return new ListDataSource() {
+      public String getText(int index) { return modes.get(index); }
+      public Object get(int index) { return modes.get(index); }
+      public int count() { return modes.size(); }
+      public boolean selected(int index) { return index == activeMode; }
+    };
+  }
+  
+  void setActiveMode(int index)
+  {
+    activeMode = index;
     fillBuckets();
   }
   
@@ -47,17 +70,21 @@ class GraphView extends View {
   
   void drawContent()
   {
-    fill(255,0,0,128);
+    fill(0,0,0,128);
     rect(0,0,w,h);
     
     float barw = w / buckets.size();
     
     float barx = 0;
+    float barmaxh = h - LABEL_HEIGHT;
+    textAlign(CENTER, CENTER);
     for (Bucket bucket : buckets) {
-      float bary = h;
+      float bary = barmaxh;
+      fill(LABEL_COLOR);
+      text(bucket.label, barx, barmaxh, barw, LABEL_HEIGHT);
       for (Entry<SightingType,Integer> entry : bucket.counts.entrySet()) {
         SightingType st = entry.getKey();
-        float barh = map(entry.getValue(), 0, maxTotal, 0, h) * st.activeAnimator.value;
+        float barh = map(entry.getValue(), 0, maxTotal, 0, barmaxh) * st.activeAnimator.value;
         bary -= barh;
         fill(st.colr);
         rect(barx, bary, barw, barh);

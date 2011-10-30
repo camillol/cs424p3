@@ -92,6 +92,15 @@ class PlaceMBRConverter implements MBRConverter<Place> {
   double getMinY(Place p) { return p.loc.lat; }
 }
 
+void buildPlaceTree()
+{
+  /* build spatial index of places */
+  print("Building R-tree...");
+  placeTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
+  placeTree.load(placeMap.values());
+  println(stopWatch());
+}
+
 int minCountSightings;
 int maxCountSightings;
 
@@ -154,23 +163,6 @@ Iterable<Place> placesInRect(Location locTopLeft, Location locBottomRight, doubl
   maxLat += fudgeLat;
   
   return placeTree.find(minLon, minLat, maxLon, maxLat);
-}
-
-Iterable<Place> aiportsInRect(Location locTopLeft, Location locBottomRight, double expandFactor)
-{
-  double minLon = locTopLeft.lon;
-  double maxLon = locBottomRight.lon;
-  double minLat = locBottomRight.lat;
-  double maxLat = locTopLeft.lat;
-  double fudgeLat = (maxLat - minLat) * expandFactor;
-  double fudgeLon = (maxLon - minLon) * expandFactor;
-  
-  minLon -= fudgeLon;
-  maxLon += fudgeLon;
-  minLat -= fudgeLat;
-  maxLat += fudgeLat;
-  
-  return airportsTree.find(minLon, minLat, maxLon, maxLat);
 }
 
 
@@ -238,10 +230,6 @@ class SQLiteDataSource implements DataSource {
       maxCountSightings = max(db.getInt("sighting_count"), maxCountSightings);
     }
     println(stopWatch());
-    print("Building R-tree...");
-    placeTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
-    placeTree.load(placeMap.values());
-    println(stopWatch());
   }
 
   void reloadCitySightingCounts()
@@ -292,11 +280,6 @@ class SQLiteDataSource implements DataSource {
       ));
     }
     println(stopWatch());
-    print("Building airport R-tree...");
-    
-    airportsTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
-    airportsTree.load(airportsMap.values());
-    println(stopWatch());
   }
   
   void loadMilitaryBases()
@@ -315,11 +298,6 @@ class SQLiteDataSource implements DataSource {
       ));
     }
     println(stopWatch());
-    print("Building military bases R-tree...");
-    
-    militaryBaseTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
-    militaryBaseTree.load(militaryBaseMap.values());
-    println(stopWatch());
   }
   
   void loadWeatherStations()
@@ -337,11 +315,6 @@ class SQLiteDataSource implements DataSource {
         0
       ));
     }
-    println(stopWatch());
-    print("Building weather stations bases R-tree...");
-    
-    weatherStationTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
-    weatherStationTree.load(weatherStationMap.values());
     println(stopWatch());
   }
 

@@ -11,8 +11,10 @@ Animator detailsAnimator;
 
 PApplet papplet;
 MapView mapv;
+View graphContainer;
 GraphView graphView;
 Button graphButton;
+ListBox graphModeList;
 boolean graphOn;
 SettingsView settingsView;
 SightingDetailsView sightingDetailsView;
@@ -52,9 +54,6 @@ Map<Integer,Place> airportsMap;
 Map<Integer,Place> militaryBaseMap;
 Map<Integer,Place> weatherStationMap;
 PRTree<Place> placeTree;
-PRTree<Place> airportsTree;
-PRTree<Place> militaryBaseTree;
-PRTree<Place> weatherStationTree;
 Map<Integer,SightingType> sightingTypeMap;
 
 Sighting clickedSighting;
@@ -92,6 +91,8 @@ void setup()
   data.loadWeatherStations();
   data.reloadCitySightingCounts();
   
+  buildPlaceTree();
+  
   /* setup UI */
   rootView = new View(0, 0, width, height);
   font = loadFont("Courier-20.vlw");
@@ -119,7 +120,11 @@ void setup()
     }
   });
 
-  graphView = new GraphView(10, 100, width-20, height-120);
+  graphContainer = new View(10, 100, width-20, height-120);
+  graphView = new GraphView(0, 0, graphContainer.w - 100, graphContainer.h);
+  graphContainer.subviews.add(graphView);
+  graphModeList = new ListBox(graphContainer.w - 100, 0, 100, 60, graphView.modesDataSource());
+  graphContainer.subviews.add(graphModeList);
   
   graphButton = new Button(width-80, 0, 80, 20, "Graph");
   rootView.subviews.add(graphButton);
@@ -130,8 +135,8 @@ void buttonClicked(Button button)
 {
   if (button == graphButton) {
     graphOn = !graphOn;
-    if (graphOn) rootView.subviews.add(graphView);
-    else rootView.subviews.remove(graphView);
+    if (graphOn) rootView.subviews.add(graphContainer);
+    else rootView.subviews.remove(graphContainer);
   }
 }
 
@@ -148,6 +153,13 @@ void buttonClicked(Checkbox button)
   btwMonths = settingsView.monthCheckbox.value;
   
   updateFilter();
+}
+
+void listClicked(ListBox lb, int index, Object item)
+{
+  if (lb == graphModeList) {
+    graphView.setActiveMode(index);
+  }
 }
 
 void draw()
