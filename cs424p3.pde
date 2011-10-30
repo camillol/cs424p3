@@ -121,9 +121,9 @@ void setup()
   });
 
   graphContainer = new View(10, 100, width-20, height-120);
-  graphView = new GraphView(0, 0, graphContainer.w - 100, graphContainer.h);
+  graphView = new GraphView(0, 0, graphContainer.w - 120, graphContainer.h);
   graphContainer.subviews.add(graphView);
-  graphModeList = new ListBox(graphContainer.w - 100, 0, 100, 60, graphView.modesDataSource());
+  graphModeList = new ListBox(graphContainer.w - 120, 0, 120, 100, graphView.modesDataSource());
   graphContainer.subviews.add(graphModeList);
   
   graphButton = new Button(width-80, 0, 80, 20, "Graph");
@@ -158,7 +158,7 @@ void buttonClicked(Checkbox button)
 void listClicked(ListBox lb, int index, Object item)
 {
   if (lb == graphModeList) {
-    graphView.setActiveMode(index);
+    graphView.setActiveMode((String)item);
   }
 }
 

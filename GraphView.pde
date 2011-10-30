@@ -33,7 +33,7 @@ class GraphView extends View {
   int maxTotal;
   
   List<String> modes = Arrays.asList("Month", "Airport dist.", "Pop. density", "Time of day", "Season");
-  int activeMode;
+  String activeMode = "Month";
   
   GraphView(float x_, float y_, float w_, float h_)
   {
@@ -47,19 +47,20 @@ class GraphView extends View {
       public String getText(int index) { return modes.get(index); }
       public Object get(int index) { return modes.get(index); }
       public int count() { return modes.size(); }
-      public boolean selected(int index) { return index == activeMode; }
+      public boolean selected(int index) { return get(index).equals(activeMode); }
     };
   }
   
-  void setActiveMode(int index)
+  void setActiveMode(String mode)
   {
-    activeMode = index;
+    activeMode = mode;
     fillBuckets();
   }
   
   void fillBuckets()
   {
-    buckets = data.sightingCountsByMonth();
+    if (activeMode.equals("Month")) buckets = data.sightingCountsByMonth();
+    else if (activeMode.equals("Time of day")) buckets = data.sightingCountsByHour();
     maxTotal = 0;
     for (Bucket bucket : buckets) {
       int total = 0;

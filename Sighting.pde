@@ -175,6 +175,7 @@ interface DataSource {
   void loadWeatherStations();
   List<Sighting> sightingsForCity(Place p);
   List<Bucket> sightingCountsByMonth();
+  List<Bucket> sightingCountsByHour();
 }
 
 class Bucket {
@@ -364,24 +365,38 @@ class SQLiteDataSource implements DataSource {
   
   List<Bucket> sightingCountsByMonth()
   {
+    return sightingCountsByCategoryQuery(
+      "select strftime('%m',occurred_at) as month, type_id, count(*) as sighting_count"
+      + " from sightings join shapes on shape_id = shapes.id group by month, type_id;",
+      "month");
+  }
+  
+  List<Bucket> sightingCountsByHour()
+  {
+    return sightingCountsByCategoryQuery(
+      "select strftime('%H',occurred_at) as hour, type_id, count(*) as sighting_count"
+      + " from sightings join shapes on shape_id = shapes.id group by hour, type_id;",
+      "hour");
+  }
+  
+  List<Bucket> sightingCountsByCategoryQuery(String query, String categoryName)
+  {
     List<Bucket> buckets = new ArrayList();
     
-    /* let's just do months for a start */
-    db.query("select cast(strftime('%m',occurred_at) as integer) as month, type_id, count(*) as sighting_count"
-      + " from sightings join shapes on shape_id = shapes.id group by month, type_id;");
+    db.query(query);
     
-    int prev_m = -1;
+    String prev_cat = "NOPE!";
     Bucket bucket = null;
     
     while (db.next()) {
-      int m = db.getInt("month");
+      String cat = db.getString(categoryName);
       SightingType type = sightingTypeMap.get(db.getInt("type_id"));
       int count = db.getInt("sighting_count");
       
-      if (m != prev_m) {
-        bucket = new Bucket(str(m));
+      if (!cat.equals(prev_cat)) {
+        bucket = new Bucket(cat);
         buckets.add(bucket);
-        prev_m = m;
+        prev_cat = cat;
       }
       bucket.counts.put(type, count);
     }
