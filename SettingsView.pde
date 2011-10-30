@@ -96,6 +96,9 @@ class SettingsView extends View {
     title = title + " >";
     title = title + ((play.value)?(" Showing: "+str(2000+minYearIndex)):"");
     text(title,(w-textWidth(title))/2,h-20);   
+    title = "Total # of Sightings = " + nfc(totalCountSightings);
+    text(title,(w-textWidth(title))/2,h);
+    
    
   }
   

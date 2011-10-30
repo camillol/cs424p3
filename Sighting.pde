@@ -113,6 +113,7 @@ void buildPlaceTree()
 
 int minCountSightings;
 int maxCountSightings;
+int totalCountSightings;
 
 class SightingsFilter {
   final static int yearFirst = 2000, yearLast = 2011;
@@ -254,6 +255,8 @@ class SQLiteDataSource implements DataSource {
     
     minCountSightings = 1000;
     maxCountSightings = 0;
+    totalCountSightings = 0;
+    
     println(stopWatch());
     print("update objects...");
    
@@ -271,6 +274,7 @@ class SQLiteDataSource implements DataSource {
       p.sightingType = db.getInt("type_id");
       minCountSightings = min(p.sightingCount, minCountSightings);
       maxCountSightings = max(p.sightingCount, maxCountSightings);
+      totalCountSightings = totalCountSightings + p.sightingCount;
     }
     println(stopWatch());
   }

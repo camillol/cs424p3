@@ -77,7 +77,7 @@ int playYear;
 int minYearIndex;
 int maxYearIndex;
 Boolean startedPlaying = false;
-int startingSecond = 0;
+int startingTime = 0;
 
 void setup()
 {
@@ -181,7 +181,7 @@ void listClicked(ListBox lb, int index, Object item)
 
 void draw()
 {
-  int seconds = second() - startingSecond;
+  int seconds = (millis() - startingTime) / 1000;
   
   if (!settingsView.play.value){
     minYearIndex = settingsView.yearSlider.minIndex();
@@ -201,8 +201,8 @@ void draw()
           startedPlaying = true;
           maxYearIndex = minYearIndex;
       }
-      else if (seconds % 30 == 3){  //Update the new year to query after few seconds.
-          startingSecond=second();
+      else if (seconds % 30 == 2){  //Update the new year to query after few seconds.
+          startingTime=millis();
           minYearIndex ++;
           maxYearIndex = minYearIndex;  
       }   
