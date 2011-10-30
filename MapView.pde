@@ -365,13 +365,14 @@ class MapView extends View {
                 if (textToPrint.length() < numOfSightings.length())
                       textToPrint = numOfSightings;
                 fill(infoBoxBackground);
+                stroke((sightingTypeMap.get(place.sightingType)).colr);
                 float w_ = textWidth(textToPrint)+10;
                 float x_ = (p.x+w_ > w)?w-w_-5:p.x;
                 float h_ = (textAscent() + textDescent()) * 3 + 15;
                 float y_ = (p.y+h_ > sightingDetailsView.y)?sightingDetailsView.y-h_-5:p.y;
                 rect(x_,y_,w_,h_);
                 fill(textColor);
-                text(place.name, x_ + (w_ - textWidth(place.name))/2 ,y_+5);
+                text(place.name, x_ + (w_ - textWidth(place.name))/2 ,y_+5);  
                 text(numOfSightings,x_ + (w_ - textWidth(numOfSightings))/2, (y_+ h_/3)+5);
                 textSize(smallFontSize);
                 text("Click on it to see details",x_+5,y_+h_-12);
