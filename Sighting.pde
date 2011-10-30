@@ -92,8 +92,28 @@ class PlaceMBRConverter implements MBRConverter<Place> {
   double getMinY(Place p) { return p.loc.lat; }
 }
 
+void buildPlaceTree()
+{
+  /* build spatial index of places */
+  print("Building R-tree...");
+  cityTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
+  cityTree.load(cityMap.values());
+  
+  airportTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
+  airportTree.load(airportMap.values());
+  
+  militaryBaseTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
+  militaryBaseTree.load(militaryBaseMap.values());
+  
+  weatherStationTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
+  weatherStationTree.load(weatherStationMap.values());
+  println(stopWatch());
+}
+
+
 int minCountSightings;
 int maxCountSightings;
+int totalCountSightings;
 
 class SightingsFilter {
   final static int yearFirst = 2000, yearLast = 2011;
@@ -139,7 +159,7 @@ class SightingsFilter {
   }
 }
 
-Iterable<Place> placesInRect(Location locTopLeft, Location locBottomRight, double expandFactor)
+Iterable<Place> placesInRect(PRTree<Place> tree, Location locTopLeft, Location locBottomRight, double expandFactor)
 {
   double minLon = locTopLeft.lon;
   double maxLon = locBottomRight.lon;
@@ -153,24 +173,7 @@ Iterable<Place> placesInRect(Location locTopLeft, Location locBottomRight, doubl
   minLat -= fudgeLat;
   maxLat += fudgeLat;
   
-  return placeTree.find(minLon, minLat, maxLon, maxLat);
-}
-
-Iterable<Place> aiportsInRect(Location locTopLeft, Location locBottomRight, double expandFactor)
-{
-  double minLon = locTopLeft.lon;
-  double maxLon = locBottomRight.lon;
-  double minLat = locBottomRight.lat;
-  double maxLat = locTopLeft.lat;
-  double fudgeLat = (maxLat - minLat) * expandFactor;
-  double fudgeLon = (maxLon - minLon) * expandFactor;
-  
-  minLon -= fudgeLon;
-  maxLon += fudgeLon;
-  minLat -= fudgeLat;
-  maxLat += fudgeLat;
-  
-  return airportsTree.find(minLon, minLat, maxLon, maxLat);
+  return tree.find(minLon, minLat, maxLon, maxLat);
 }
 
 
@@ -183,6 +186,7 @@ interface DataSource {
   void loadWeatherStations();
   List<Sighting> sightingsForCity(Place p);
   List<Bucket> sightingCountsByMonth();
+  List<Bucket> sightingCountsByHour();
 }
 
 class Bucket {
@@ -192,7 +196,7 @@ class Bucket {
   Bucket(String label)
   {
     this.label = label;
-    counts = new HashMap<SightingType, Integer>();
+    counts = new LinkedHashMap<SightingType, Integer>();
   }
 }
 
@@ -203,6 +207,8 @@ class Bucket {
   - time of day
   - month
   - season??
+  - unemployment (by county and year)?
+  - income??
 */
 
 /* SQLite DB access */
@@ -224,11 +230,11 @@ class SQLiteDataSource implements DataSource {
     stopWatch();
     print("Loading cities...");
     db.query("select cities.*, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id group by cities.id");
-    placeMap = new HashMap<Integer,Place>();
+    cityMap = new HashMap<Integer,Place>();
     minCountSightings = 1000;
     maxCountSightings = 0;
     while (db.next()) {
-      placeMap.put(db.getInt("id"), new Place(CITY,
+      cityMap.put(db.getInt("id"), new Place(CITY,
         db.getInt("id"),
         new Location(db.getFloat("lat"), db.getFloat("lon")),
         db.getString("name"),
@@ -237,10 +243,6 @@ class SQLiteDataSource implements DataSource {
       minCountSightings = min(db.getInt("sighting_count"), minCountSightings);
       maxCountSightings = max(db.getInt("sighting_count"), maxCountSightings);
     }
-    println(stopWatch());
-    print("Building R-tree...");
-    placeTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
-    placeTree.load(placeMap.values());
     println(stopWatch());
   }
 
@@ -255,23 +257,26 @@ class SQLiteDataSource implements DataSource {
     
     minCountSightings = 1000;
     maxCountSightings = 0;
+    totalCountSightings = 0;
+    
     println(stopWatch());
     print("update objects...");
    
     //Clean the places values
-    for (Place pl : placeMap.values()) {
+    for (Place pl : cityMap.values()) {
       pl.sightingCount = 0;
       pl.typeOfSightingCount = 0;
       pl.sightingType = 0;
     }
     
     while (db.next()) {
-      Place p = placeMap.get(db.getInt("id"));
+      Place p = cityMap.get(db.getInt("id"));
       p.sightingCount = db.getInt("sighting_count");
       p.typeOfSightingCount = db.getInt("types_count");
       p.sightingType = db.getInt("type_id");
       minCountSightings = min(p.sightingCount, minCountSightings);
       maxCountSightings = max(p.sightingCount, maxCountSightings);
+      totalCountSightings = totalCountSightings + p.sightingCount;
     }
     println(stopWatch());
   }
@@ -281,21 +286,16 @@ class SQLiteDataSource implements DataSource {
     stopWatch();
     print("Loading airports...");
     db.query("select * from airports");
-    airportsMap = new HashMap<Integer,Place>();
+    airportMap = new HashMap<Integer,Place>();
   
     while (db.next()) {
-      airportsMap.put(db.getInt("id"), new Place(AIRPORT,
+      airportMap.put(db.getInt("id"), new Place(AIRPORT,
         db.getInt("id"),
         new Location((db.getFloat("lat")/100), (db.getFloat("lon")/100)),
         db.getString("name"),
         0
       ));
     }
-    println(stopWatch());
-    print("Building airport R-tree...");
-    
-    airportsTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
-    airportsTree.load(airportsMap.values());
     println(stopWatch());
   }
   
@@ -315,11 +315,6 @@ class SQLiteDataSource implements DataSource {
       ));
     }
     println(stopWatch());
-    print("Building military bases R-tree...");
-    
-    militaryBaseTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
-    militaryBaseTree.load(militaryBaseMap.values());
-    println(stopWatch());
   }
   
   void loadWeatherStations()
@@ -337,11 +332,6 @@ class SQLiteDataSource implements DataSource {
         0
       ));
     }
-    println(stopWatch());
-    print("Building weather stations bases R-tree...");
-    
-    weatherStationTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
-    weatherStationTree.load(weatherStationMap.values());
     println(stopWatch());
   }
 
@@ -391,24 +381,38 @@ class SQLiteDataSource implements DataSource {
   
   List<Bucket> sightingCountsByMonth()
   {
+    return sightingCountsByCategoryQuery(
+      "select strftime('%m',occurred_at) as month, type_id, count(*) as sighting_count"
+      + " from sightings join shapes on shape_id = shapes.id group by month, type_id;",
+      "month");
+  }
+  
+  List<Bucket> sightingCountsByHour()
+  {
+    return sightingCountsByCategoryQuery(
+      "select strftime('%H',occurred_at) as hour, type_id, count(*) as sighting_count"
+      + " from sightings join shapes on shape_id = shapes.id group by hour, type_id;",
+      "hour");
+  }
+  
+  List<Bucket> sightingCountsByCategoryQuery(String query, String categoryName)
+  {
     List<Bucket> buckets = new ArrayList();
     
-    /* let's just do months for a start */
-    db.query("select cast(strftime('%m',occurred_at) as integer) as month, type_id, count(*) as sighting_count"
-      + " from sightings join shapes on shape_id = shapes.id group by month, type_id;");
+    db.query(query);
     
-    int prev_m = -1;
+    String prev_cat = "NOPE!";
     Bucket bucket = null;
     
     while (db.next()) {
-      int m = db.getInt("month");
+      String cat = db.getString(categoryName);
       SightingType type = sightingTypeMap.get(db.getInt("type_id"));
       int count = db.getInt("sighting_count");
       
-      if (m != prev_m) {
-        bucket = new Bucket(str(m));
+      if (!cat.equals(prev_cat)) {
+        bucket = new Bucket(cat);
         buckets.add(bucket);
-        prev_m = m;
+        prev_cat = cat;
       }
       bucket.counts.put(type, count);
     }

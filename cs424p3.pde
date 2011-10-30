@@ -11,8 +11,10 @@ Animator detailsAnimator;
 
 PApplet papplet;
 MapView mapv;
+View graphContainer;
 GraphView graphView;
 Button graphButton;
+ListBox graphModeList;
 boolean graphOn;
 SettingsView settingsView;
 SightingDetailsView sightingDetailsView;
@@ -34,6 +36,7 @@ color[] UFOColors = {#000000,#ffffff,#555555,#333333,#444444,#555555,#666666};
 
 int normalFontSize = 13;
 int smallFontSize = 10 ;
+int largeFontSize = 15;
 
 String[] monthLabelsToPrint = {"January","February","March","April","May","June","July","August","September","October","November","December"};
 String[] monthLabels = {"01","02","03","04","05","06","07","08","09","10","11","12"};
@@ -47,12 +50,12 @@ PImage airplaneImage;
 PImage militaryBaseImage;
 PImage weatherStationImage;
 
-Map<Integer,Place> placeMap;
-Map<Integer,Place> airportsMap;
+Map<Integer,Place> cityMap;
+Map<Integer,Place> airportMap;
 Map<Integer,Place> militaryBaseMap;
 Map<Integer,Place> weatherStationMap;
-PRTree<Place> placeTree;
-PRTree<Place> airportsTree;
+PRTree<Place> cityTree;
+PRTree<Place> airportTree;
 PRTree<Place> militaryBaseTree;
 PRTree<Place> weatherStationTree;
 Map<Integer,SightingType> sightingTypeMap;
@@ -66,20 +69,27 @@ Boolean btwTime = false;
 String byType = "";
 Boolean isDragging = false;
 
+
 SightingsFilter activeFilter;
 
 DataSource data;
+int playYear;
+int minYearIndex;
+int maxYearIndex;
+Boolean startedPlaying = false;
+int startingTime = 0;
 
 void setup()
 {
+  
+  
   size(1000, 700);  // OPENGL seems to be slower than the default
 //  setupG2D();
   
   papplet = this;
   
   smooth();
-//  noSmooth();
-  
+
   /* load data */
   data = new SQLiteDataSource();
   
@@ -91,6 +101,8 @@ void setup()
   data.loadMilitaryBases();
   data.loadWeatherStations();
   data.reloadCitySightingCounts();
+  
+  buildPlaceTree();
   
   /* setup UI */
   rootView = new View(0, 0, width, height);
@@ -119,28 +131,30 @@ void setup()
     }
   });
 
-  graphView = new GraphView(10, 100, width-20, height-120);
+  graphContainer = new View(10, 100, width-20, height-120);
+  graphView = new GraphView(0, 0, graphContainer.w - 120, graphContainer.h);
+  graphContainer.subviews.add(graphView);
+  graphModeList = new ListBox(graphContainer.w - 120, 0, 120, 100, graphView.modesDataSource());
+  graphContainer.subviews.add(graphModeList);
   
   graphButton = new Button(width-80, 0, 80, 20, "Graph");
   rootView.subviews.add(graphButton);
   graphOn = false;
+ 
 }
 
 void buttonClicked(Button button)
 {
   if (button == graphButton) {
     graphOn = !graphOn;
-    if (graphOn) rootView.subviews.add(graphView);
-    else rootView.subviews.remove(graphView);
+    if (graphOn) rootView.subviews.add(graphContainer);
+    else rootView.subviews.remove(graphContainer);
   }
 }
 
 void buttonClicked(Checkbox button)
 {
-  showAirports = settingsView.showAirport.value;
-  showMilitaryBases = settingsView.showMilitaryBases.value;
-  showWeatherStation = settingsView.showWeatherStation.value;
-
+  
   for (Entry<SightingType, Checkbox> entry : settingsView.typeCheckboxMap.entrySet()) {
     entry.getKey().setActive(entry.getValue().value);
   }
@@ -148,10 +162,32 @@ void buttonClicked(Checkbox button)
   btwMonths = settingsView.monthCheckbox.value;
   
   updateFilter();
+  
+  if (showAirports != settingsView.showAirport.value || showMilitaryBases !=  settingsView.showMilitaryBases.value || showWeatherStation != settingsView.showWeatherStation.value){
+    showAirports = settingsView.showAirport.value;
+    showMilitaryBases = settingsView.showMilitaryBases.value;
+    showWeatherStation = settingsView.showWeatherStation.value;
+    
+    mapv.rebuildOverlay();
+  }
+}
+
+void listClicked(ListBox lb, int index, Object item)
+{
+  if (lb == graphModeList) {
+    graphView.setActiveMode((String)item);
+  }
 }
 
 void draw()
 {
+  int seconds = (millis() - startingTime) / 1000;
+  
+  if (!settingsView.play.value){
+    minYearIndex = settingsView.yearSlider.minIndex();
+    maxYearIndex = settingsView.yearSlider.maxIndex();
+  }
+  
   background(backgroundColor); 
   Animator.updateAll();
   
@@ -159,6 +195,28 @@ void draw()
   sightingDetailsView.y = detailsAnimator.value;
        
   rootView.draw();
+//  println(seconds);
+  if (settingsView.play.value){
+      if (!startedPlaying){
+          startedPlaying = true;
+          maxYearIndex = minYearIndex;
+      }
+      else if (seconds % 30 == 2){  //Update the new year to query after few seconds.
+          startingTime=millis();
+          minYearIndex ++;
+          maxYearIndex = minYearIndex;  
+      }   
+          
+      updateFilter();
+  }
+  if (maxYearIndex == settingsView.yearSlider.maxIndex()+1){
+      settingsView.play.value = false;
+      settingsView.play.transitionValue = 0;
+      startedPlaying = false;
+      minYearIndex = settingsView.yearSlider.minIndex();
+      maxYearIndex = settingsView.yearSlider.maxIndex();
+      updateFilter();
+  }  
 }
 
 void mousePressed()
@@ -180,8 +238,8 @@ void mouseClicked()
 void updateFilter()
 {
   SightingsFilter newFilter = new SightingsFilter();
-  newFilter.viewMinYear = 2000 + settingsView.yearSlider.minIndex();
-  newFilter.viewMaxYear = 2000 + settingsView.yearSlider.maxIndex();
+  newFilter.viewMinYear = 2000 + minYearIndex;
+  newFilter.viewMaxYear = 2000 + maxYearIndex;
   if (btwMonths) {
     newFilter.viewMinMonth =  1 + settingsView.monthSlider.minIndex();
     newFilter.viewMaxMonth =  1 + settingsView.monthSlider.maxIndex();

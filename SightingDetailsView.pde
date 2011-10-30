@@ -11,7 +11,7 @@ class SightingDetailsView extends View {
   {
     super(x_, y_, w_, h_);
     
-    sightingSList = new ScrollList(5,15,200,170);
+    sightingSList = new ScrollList(5,15,200,175);
     this.subviews.add(sightingSList);
     
   }
