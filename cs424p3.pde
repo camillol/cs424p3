@@ -65,20 +65,26 @@ Boolean btwTime = false;
 String byType = "";
 Boolean isDragging = false;
 
+
 SightingsFilter activeFilter;
 
 DataSource data;
+int playYear;
+int minYearIndex;
+int maxYearIndex;
+Boolean startedPlaying = false;
 
 void setup()
 {
-  size(1000, 700, OPENGL);  // OPENGL seems to be slower than the default
+  
+  
+  size(1000, 700);  // OPENGL seems to be slower than the default
 //  setupG2D();
   
   papplet = this;
   
   smooth();
-//  noSmooth();
-  
+
   /* load data */
   data = new SQLiteDataSource();
   
@@ -164,6 +170,11 @@ void listClicked(ListBox lb, int index, Object item)
 
 void draw()
 {
+  if (!settingsView.play.value){
+    minYearIndex = settingsView.yearSlider.minIndex();
+    maxYearIndex = settingsView.yearSlider.maxIndex();
+  }
+  
   background(backgroundColor); 
   Animator.updateAll();
   
@@ -171,6 +182,27 @@ void draw()
   sightingDetailsView.y = detailsAnimator.value;
        
   rootView.draw();
+  
+  if (settingsView.play.value){
+      if (!startedPlaying){
+          startedPlaying = true;
+          maxYearIndex = minYearIndex;
+      }
+      else{
+          minYearIndex ++;
+          maxYearIndex = minYearIndex;  
+      }       
+      updateFilter();
+      println(minYearIndex);
+  }
+  if (maxYearIndex == settingsView.yearSlider.maxIndex()+1){
+      settingsView.play.value = false;
+      settingsView.play.transitionValue = 0;
+      startedPlaying = false;
+      minYearIndex = settingsView.yearSlider.minIndex();
+      maxYearIndex = settingsView.yearSlider.maxIndex();
+      updateFilter();
+  }  
 }
 
 void mousePressed()
@@ -192,8 +224,8 @@ void mouseClicked()
 void updateFilter()
 {
   SightingsFilter newFilter = new SightingsFilter();
-  newFilter.viewMinYear = 2000 + settingsView.yearSlider.minIndex();
-  newFilter.viewMaxYear = 2000 + settingsView.yearSlider.maxIndex();
+  newFilter.viewMinYear = 2000 + minYearIndex;
+  newFilter.viewMaxYear = 2000 + maxYearIndex;
   if (btwMonths) {
     newFilter.viewMinMonth =  1 + settingsView.monthSlider.minIndex();
     newFilter.viewMaxMonth =  1 + settingsView.monthSlider.maxIndex();

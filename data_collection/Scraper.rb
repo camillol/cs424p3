@@ -219,6 +219,9 @@ module Scraper
 
         DROP INDEX IF EXISTS city_proximities_city_id_relation_id_relation;
         DROP INDEX IF EXISTS city_proximities_distance;
+
+        DROP INDEX IF EXISTS weather_stations_index_id;
+        DROP INDEX IF EXISTS weather_stations_index_lat_lon;
         
 
         DROP TABLE IF EXISTS states;
@@ -297,6 +300,16 @@ module Scraper
           lat INTEGER,
           lon INTEGER
         );
+
+        DROP TABLE IF EXISTS weather_stations;
+        CREATE TABLE weather_stations(
+          id INTEGER PRIMARY KEY,
+          name STRING,
+          key STRING,
+          state_id INTEGER,
+          lat INTEGER,
+          lon INTEGER
+        );
       }
 
       db.execute_batch create_query
@@ -356,17 +369,21 @@ module Scraper
 
       db.execute "CREATE INDEX city_proximities_city_id_relation_id_relation ON city_proximities(city_id, relation_id, relation)"
       db.execute "CREATE INDEX city_proximities_distance ON city_proximities(distance)"
+
+      db.execute "CREATE INDEX weather_stations_index_id ON weather_stations(id)"
+      db.execute "CREATE INDEX weather_stations_index_lat_lon ON weather_stations(lat, lon)"
     end
   end
 
   def self.calculate_distances
     db = SQLite3::Database.new('ufo.db')
+    db.execute("DELETE FROM city_proximities")
     db.transaction do
       db.execute("SELECT id, lat, lon FROM cities WHERE lat IS NOT NULL AND lon IS NOT NULL").each do |city|
-        %w(airports military_bases).each do |relation|
+        %w(airports military_bases weather_stations).each do |relation|
           smallest_distance_query = nil
           db.execute("SELECT id, lat, lon FROM #{relation} WHERE lat IS NOT NULL AND lon IS NOT NULL").each do |other|
-            d = distance(city[1], city[2], other[1], other[2]).round
+            d = (distance((city[1]).round, (city[2]).round, other[1] / 100.0, other[2] / 100.0) * 100).round
             puts "#{city[0]}, #{other[0]}, #{relation}, #{d}"
             query = ["INSERT INTO city_proximities (city_id, relation_id, relation, distance) VALUES (?, ?, ?, ?)", 
                     city[0], other[0], relation, d]
@@ -444,11 +461,6 @@ module Scraper
   end
 
   def self.insert_airports
-    degrees_to_decimal = lambda do |d,m,s,dir|
-        deg = d+(((m*60)+(s))/3600.0)
-        deg *= -1 if %w(W U S).include?(dir.upcase)
-        return (deg * 100).round
-    end
     data = File.new(File.join("../", "data", "GlobalAirportDatabase.txt"))
     db = SQLite3::Database.new('ufo.db')
     db.transaction do
@@ -456,8 +468,8 @@ module Scraper
       while line = data.gets do
         columns = line.split(":")
         if columns[4] == "USA"
-          lat = degrees_to_decimal.call(columns[5].to_i, columns[6].to_i, columns[7].to_i, columns[8])
-          lon = degrees_to_decimal.call(columns[9].to_i, columns[10].to_i, columns[11].to_i, columns[12])
+          lat = degrees_to_decimal(columns[5].to_i, columns[6].to_i, columns[7].to_i, columns[8])
+          lon = degrees_to_decimal(columns[9].to_i, columns[10].to_i, columns[11].to_i, columns[12])
           db.execute("INSERT INTO airports(name,city,lat,lon) VALUES(?, ?, ?, ?)", columns[0], columns[2], lat, lon)
         end
       end
@@ -517,6 +529,33 @@ module Scraper
     end
   end
 
+  def self.insert_weather_stations
+    db = SQLite3::Database.new('ufo.db')
+    db.execute("DELETE FROM weather_stations")
+    db.transaction do
+      rows = Nokogiri::HTML(open("http://weather.noaa.gov/cgi-bin/nsd_country_lookup.pl?country=United%20States")).xpath("//ul/ul/a").each_with_index do |s,i|
+        data_table_rows = Nokogiri::HTML(open(s["href"])).xpath("//ul/table/tr")
+        name,key,state_abbriviation,lat,lon = nil,nil,nil,nil,nil 
+        data_table_rows.each do |row|
+          td = row.xpath("td")
+          if td.first.content.include?("Station Position")
+            lat_lon_raw = td.last.content.strip_html.squeeze(" ").gsub(/\(.*?\).*/, '')
+            lat_lon_raw = lat_lon_raw.scan(/(\d+)-(\d+)-?(\d+)?(\D)/)
+            lat,lon = degrees_to_decimal(*lat_lon_raw[0]), degrees_to_decimal(*lat_lon_raw[1])
+          elsif td.first.content.include?("State")
+            state_abbriviation = td.last.content.strip_html
+          elsif td.first.content.include?("Station Name")
+            name = td.last.content.strip_html
+          elsif td.first.content.include?("ICAO Location Indicator")
+            key = td.last.content.strip_html
+          end
+        end
+        query = ["INSERT INTO weather_stations (name,key,state_id,lat,lon) VALUES (?,?,(SELECT id FROM states WHERE name_abbreviation like ?),?,?)", name,key,state_abbriviation,lat,lon]
+        db.execute *query
+      end
+    end
+  end
+
   #ENTIRE PROCESS CAN TAKE UPTO 24H
   def self.migrate
     Scraper.scrape
@@ -527,6 +566,7 @@ module Scraper
     Scraper.group_shapes
     Scraper.insert_airports
     Scraper.add_weather_conditions
+    Scraper.insert_weather_stations
     Scraper.insert_military_bases
   end
 end
@@ -583,9 +623,16 @@ def distance(lat1, lng1, lat2, lng2, miles = false)
   dlat = lat2 - lat1;
   dlng = lng2 - lng1;
   a = Math.sin(dlat / 2) * Math.sin(dlat / 2) + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dlng / 2) * Math.sin(dlng / 2);
+  puts a
   c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   km = r * c;
   return (miles ? (km * 0.621371192) : km);
+end
+
+def degrees_to_decimal(d,m,s,dir)
+  deg = d.to_f+(((m.to_f*60)+(s.to_f))/3600.0)
+  deg *= -1 if %w(W U S).include?(dir.upcase)
+  return (deg * 100).round
 end
 
 if ARGV[0] == "scrape"
