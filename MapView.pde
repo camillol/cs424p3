@@ -133,8 +133,12 @@ class MapView extends View {
     Location loc2 = mmap.provider.coordinateLocation(coord2);
     
     drawPlaces(buf, placesInRect(loc1, loc2, TILE_EXPAND_FACTOR));
-  //  if (showAirports)
-    //    drawAirports(buf,placesInRect(loc1,loc2,TILE_EXPAND_FACTOR));
+    if (showAirports)
+        drawAirports(buf,aiportsInRect(loc1,loc2,TILE_EXPAND_FACTOR));
+    if (showMilitaryBases)
+        drawMilitaryBases(buf,militaryBasesInRect(loc1,loc2,TILE_EXPAND_FACTOR));
+    if (showWeatherStation)
+        drawWeatherStations(buf,weatherStationsInRect(loc1,loc2,TILE_EXPAND_FACTOR));
     
     buf.endDraw();
     return buf;
@@ -148,19 +152,12 @@ class MapView extends View {
     if (USE_BUFFERS) drawOverlay();
     else{
       drawPlaces(papplet.g, placeMap.values());
+      drawAirports(papplet.g, airportsMap.values());
+      drawMilitaryBases(papplet.g,militaryBaseMap.values());
+      drawWeatherStations(papplet.g,weatherStationMap.values());
       
     }
     
-    if (showAirports)
-        drawAirports(papplet.g, airportsMap.values());
-  
-    if (showMilitaryBases)
-       drawMilitaryBases(papplet.g,militaryBaseMap.values());
-    
-        
-    if (showWeatherStation)
-       drawWeatherStations(papplet.g,weatherStationMap.values());
- 
     drawPlacesInformationBox();
 
   }

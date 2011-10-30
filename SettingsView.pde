@@ -67,6 +67,7 @@ class SettingsView extends View {
   
    void drawContent()
   {
+    textSize(normalFontSize);
     fill(viewBackgroundColor,220);
     stroke(viewBackgroundColor,220);
     rect(0,0, w, h-25);
@@ -86,11 +87,13 @@ class SettingsView extends View {
     line(CHECKBOX_X,h-30,CHECKBOX_X+CHECKBOX_W,h-30);
     line(CHECKBOX_X+CHECKBOX_W,CHECKBOX_Y,CHECKBOX_X+CHECKBOX_W,h-30);
     
+    textSize(largeFontSize);
     fill(boldTextColor);
     textAlign(LEFT,TOP);
-    title = "MAP " + ((yearSlider.minIndex()!=yearSlider.maxIndex())?("From: "+yearLabelsToPrint[yearSlider.minIndex()] + " To: " + yearLabelsToPrint[yearSlider.maxIndex()]):("Year: "+yearLabelsToPrint[yearSlider.minIndex()]));
+    title = "< MAP " + ((yearSlider.minIndex()!=yearSlider.maxIndex())?("From: "+yearLabelsToPrint[yearSlider.minIndex()] + " To: " + yearLabelsToPrint[yearSlider.maxIndex()]):("Year: "+yearLabelsToPrint[yearSlider.minIndex()]));
     title = title + ((monthCheckbox.value)?((monthSlider.minIndex()!=monthSlider.maxIndex())?(" - " + monthLabelsToPrint[monthSlider.minIndex()] + " to " + monthLabelsToPrint[monthSlider.maxIndex()]):(" - " +  monthLabelsToPrint[monthSlider.minIndex()])):(""));
     title = title +  ((timeCheckbox.value)?(" - " + timeLabels[timeSlider.minIndex()] + ":00 to " + timeLabels[timeSlider.maxIndex()] +":59"):(""));   
+    title = title + " >";
     title = title + ((play.value)?(" Showing: "+str(2000+minYearIndex)):"");
     text(title,(w-textWidth(title))/2,h-20);   
    

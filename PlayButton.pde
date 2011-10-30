@@ -33,6 +33,7 @@ class PlayButton extends View {
     if (!value){
         transitionValue = 2;
         value = true;
+        startingSecond = second();
     }        
     return true;
   }

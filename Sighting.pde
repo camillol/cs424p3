@@ -165,6 +165,57 @@ Iterable<Place> placesInRect(Location locTopLeft, Location locBottomRight, doubl
   return placeTree.find(minLon, minLat, maxLon, maxLat);
 }
 
+Iterable<Place> aiportsInRect(Location locTopLeft, Location locBottomRight, double expandFactor)
+{
+  double minLon = locTopLeft.lon;
+  double maxLon = locBottomRight.lon;
+  double minLat = locBottomRight.lat;
+  double maxLat = locTopLeft.lat;
+  double fudgeLat = (maxLat - minLat) * expandFactor;
+  double fudgeLon = (maxLon - minLon) * expandFactor;
+  
+  minLon -= fudgeLon;
+  maxLon += fudgeLon;
+  minLat -= fudgeLat;
+  maxLat += fudgeLat;
+  
+  return airportsTree.find(minLon, minLat, maxLon, maxLat);
+}
+
+Iterable<Place> militaryBasesInRect(Location locTopLeft, Location locBottomRight, double expandFactor)
+{
+  double minLon = locTopLeft.lon;
+  double maxLon = locBottomRight.lon;
+  double minLat = locBottomRight.lat;
+  double maxLat = locTopLeft.lat;
+  double fudgeLat = (maxLat - minLat) * expandFactor;
+  double fudgeLon = (maxLon - minLon) * expandFactor;
+  
+  minLon -= fudgeLon;
+  maxLon += fudgeLon;
+  minLat -= fudgeLat;
+  maxLat += fudgeLat;
+  
+  return militaryBaseTree.find(minLon, minLat, maxLon, maxLat);
+}
+
+Iterable<Place> weatherStationsInRect(Location locTopLeft, Location locBottomRight, double expandFactor)
+{
+  double minLon = locTopLeft.lon;
+  double maxLon = locBottomRight.lon;
+  double minLat = locBottomRight.lat;
+  double maxLat = locTopLeft.lat;
+  double fudgeLat = (maxLat - minLat) * expandFactor;
+  double fudgeLon = (maxLon - minLon) * expandFactor;
+  
+  minLon -= fudgeLon;
+  maxLon += fudgeLon;
+  minLat -= fudgeLat;
+  maxLat += fudgeLat;
+  
+  return weatherStationTree.find(minLon, minLat, maxLon, maxLat);
+}
+
 
 interface DataSource {
   void loadSightingTypes();

@@ -36,6 +36,7 @@ color[] UFOColors = {#000000,#ffffff,#555555,#333333,#444444,#555555,#666666};
 
 int normalFontSize = 13;
 int smallFontSize = 10 ;
+int largeFontSize = 15;
 
 String[] monthLabelsToPrint = {"January","February","March","April","May","June","July","August","September","October","November","December"};
 String[] monthLabels = {"01","02","03","04","05","06","07","08","09","10","11","12"};
@@ -73,6 +74,7 @@ int playYear;
 int minYearIndex;
 int maxYearIndex;
 Boolean startedPlaying = false;
+int startingSecond = 0;
 
 void setup()
 {
@@ -135,6 +137,7 @@ void setup()
   graphButton = new Button(width-80, 0, 80, 20, "Graph");
   rootView.subviews.add(graphButton);
   graphOn = false;
+ 
 }
 
 void buttonClicked(Button button)
@@ -148,10 +151,7 @@ void buttonClicked(Button button)
 
 void buttonClicked(Checkbox button)
 {
-  showAirports = settingsView.showAirport.value;
-  showMilitaryBases = settingsView.showMilitaryBases.value;
-  showWeatherStation = settingsView.showWeatherStation.value;
-
+  
   for (Entry<SightingType, Checkbox> entry : settingsView.typeCheckboxMap.entrySet()) {
     entry.getKey().setActive(entry.getValue().value);
   }
@@ -159,6 +159,14 @@ void buttonClicked(Checkbox button)
   btwMonths = settingsView.monthCheckbox.value;
   
   updateFilter();
+  
+  if (showAirports != settingsView.showAirport.value || showMilitaryBases !=  settingsView.showMilitaryBases.value || showWeatherStation != settingsView.showWeatherStation.value){
+    showAirports = settingsView.showAirport.value;
+    showMilitaryBases = settingsView.showMilitaryBases.value;
+    showWeatherStation = settingsView.showWeatherStation.value;
+    
+    mapv.rebuildOverlay();
+  }
 }
 
 void listClicked(ListBox lb, int index, Object item)
@@ -170,6 +178,8 @@ void listClicked(ListBox lb, int index, Object item)
 
 void draw()
 {
+  int seconds = second() - startingSecond;
+  
   if (!settingsView.play.value){
     minYearIndex = settingsView.yearSlider.minIndex();
     maxYearIndex = settingsView.yearSlider.maxIndex();
@@ -182,18 +192,19 @@ void draw()
   sightingDetailsView.y = detailsAnimator.value;
        
   rootView.draw();
-  
+  println(seconds);
   if (settingsView.play.value){
       if (!startedPlaying){
           startedPlaying = true;
           maxYearIndex = minYearIndex;
       }
-      else{
+      else if (seconds % 30 == 3){  //Update the new year to query after few seconds.
+          startingSecond=second();
           minYearIndex ++;
           maxYearIndex = minYearIndex;  
-      }       
+      }   
+          
       updateFilter();
-      println(minYearIndex);
   }
   if (maxYearIndex == settingsView.yearSlider.maxIndex()+1){
       settingsView.play.value = false;
