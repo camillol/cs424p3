@@ -193,6 +193,7 @@ interface DataSource {
   void loadMilitaryBases();
   void loadWeatherStations();
   List<Sighting> sightingsForCity(Place p);
+  List<Bucket> sightingCountsByYear();
   List<Bucket> sightingCountsByMonth();
   List<Bucket> sightingCountsByHour();
 }
@@ -389,6 +390,14 @@ class SQLiteDataSource implements DataSource {
     }
   
     return sightings;
+  }
+ 
+   List<Bucket> sightingCountsByYear()
+  {
+    return sightingCountsByCategoryQuery(
+      "select strftime('%Y',occurred_at) as year, type_id, count(*) as sighting_count"
+      + " from sightings join shapes on shape_id = shapes.id group by year, type_id;",
+      "year");
   }
   
   List<Bucket> sightingCountsByMonth()
