@@ -3,6 +3,7 @@ import com.modestmaps.*;
 import com.modestmaps.core.*;
 import com.modestmaps.geo.*;
 import com.modestmaps.providers.*;
+import java.util.concurrent.*;
 
 class MapView extends View {
   InteractiveMap mmap;
@@ -21,10 +22,12 @@ class MapView extends View {
   int MAX_BUFFERS_TO_KEEP = 64;
   
   
-  Map<Coordinate, PGraphics> buffers;
+  Map<Coordinate, Future<PGraphics>> buffers;
+  ExecutorService bufferExec;
   boolean USE_BUFFERS = true;
   
   double TILE_EXPAND_FACTOR = 0.05;  // as a fraction of the tile size
+  
   
   MapView(float x_, float y_, float w_, float h_)
   {
@@ -38,15 +41,23 @@ class MapView extends View {
     mmap.MAX_IMAGES_TO_KEEP = 64;
     mmap.setCenterZoom(new Location(39,-98), int(zoomValue));
     
-    buffers = new LinkedHashMap<Coordinate, PGraphics>(MAX_BUFFERS_TO_KEEP, 0.75, true) {
-      protected boolean removeEldestEntry(Map.Entry eldest) {
-        return size() > MAX_BUFFERS_TO_KEEP;
+    buffers = new LinkedHashMap<Coordinate, Future<PGraphics>>(MAX_BUFFERS_TO_KEEP, 0.75, true) {
+      protected boolean removeEldestEntry(Entry<Coordinate, Future<PGraphics>> eldest) {
+        if (size() > MAX_BUFFERS_TO_KEEP) {
+          eldest.getValue().cancel(true);
+          this.remove(eldest.getKey());
+        }
+        return false;
       }
     };
+    bufferExec = Executors.newSingleThreadExecutor();
   }
   
   void rebuildOverlay()
   {
+    for (Future<PGraphics> future : buffers.values()) {
+      future.cancel(true);
+    }
     buffers.clear();
   }
   
@@ -97,9 +108,18 @@ class MapView extends View {
 	coord.zoom = round(coord.zoom);
 
         if (!buffers.containsKey(coord))
-          buffers.put(coord, makeOverlayBuffer(coord));
+          buffers.put(coord, bufferExec.submit(new BufferMaker(coord)));
         
-        image(buffers.get(coord), coord.column*mmap.TILE_WIDTH, coord.row*mmap.TILE_HEIGHT, mmap.TILE_WIDTH, mmap.TILE_HEIGHT);
+        if (buffers.get(coord).isDone()) {
+          try {
+            PGraphics img = buffers.get(coord).get();
+            image(img, coord.column*mmap.TILE_WIDTH, coord.row*mmap.TILE_HEIGHT, mmap.TILE_WIDTH, mmap.TILE_HEIGHT);
+          } catch (InterruptedException e) {
+            println(e);
+          } catch (ExecutionException e) {
+            println(e);
+          }
+        }
         count++;
       }
     }
@@ -142,6 +162,19 @@ class MapView extends View {
     
     buf.endDraw();
     return buf;
+  }
+  
+  class BufferMaker implements Callable<PGraphics> {
+    Coordinate coord;
+    BufferMaker(Coordinate coord)
+    {
+      this.coord = coord;
+    }
+    
+    PGraphics call()
+    {
+      return makeOverlayBuffer(coord);
+    }
   }
   
   void drawContent()

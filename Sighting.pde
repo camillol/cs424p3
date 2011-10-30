@@ -207,6 +207,8 @@ class Bucket {
   - time of day
   - month
   - season??
+  - unemployment (by county and year)?
+  - income??
 */
 
 /* SQLite DB access */

@@ -195,7 +195,7 @@ void draw()
   sightingDetailsView.y = detailsAnimator.value;
        
   rootView.draw();
-  println(seconds);
+//  println(seconds);
   if (settingsView.play.value){
       if (!startedPlaying){
           startedPlaying = true;
