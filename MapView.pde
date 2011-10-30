@@ -313,35 +313,41 @@ class MapView extends View {
           }
           buffer.popMatrix();
         } else {
-          /* I now load sighting counts for all types, but this calculates the values we had before */
-          int typeOfSightingCount = 0;
-          SightingType sightingType = null;
-          int idx = 0;
-          for (SightingType st : sightingTypeMap.values()) {
-            if (place.counts[idx] > 0) {
-              typeOfSightingCount++;
-              sightingType = st;
-            }
-            idx++;
-          }
-          
+          SightingType st = mainSightingTypeForPlace(place);
           float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
           float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
           
-          if (typeOfSightingCount > 1) {
+          if (st == null) {
               buffer.stroke(0);
               buffer.fill(255);
               buffer.ellipse(p.x, p.y, dotSize, dotSize);
           }
           else {
               buffer.noStroke();
-              buffer.fill(sightingType.colr,150);
+              buffer.fill(st.colr,150);
               buffer.ellipse(p.x, p.y, dotSize, dotSize);
               //buffer.image((sightingTypeMap.get(place.sightingType)).icon, p.x, p.y, dotSize, dotSize);
           }   
         }
       }
     } 
+  }
+  
+  SightingType mainSightingTypeForPlace(Place place)
+  {
+    /* I now load sighting counts for all types, but this calculates the values we had before */
+    int typeOfSightingCount = 0;
+    SightingType sightingType = null;
+    int idx = 0;
+    for (SightingType st : sightingTypeMap.values()) {
+      if (place.counts[idx] > 0) {
+        typeOfSightingCount++;
+        sightingType = st;
+      }
+      idx++;
+    }
+    if (typeOfSightingCount == 1) return sightingType;
+    else return null;
   }
   
   void drawPlacesInformationBox() {
@@ -365,7 +371,9 @@ class MapView extends View {
                 if (textToPrint.length() < numOfSightings.length())
                       textToPrint = numOfSightings;
                 fill(infoBoxBackground);
-                stroke((sightingTypeMap.get(place.sightingType)).colr);
+                SightingType st = mainSightingTypeForPlace(place);
+                if (st == null) stroke(255);
+                else stroke(st.colr);
                 float w_ = textWidth(textToPrint)+10;
                 float x_ = (p.x+w_ > w)?w-w_-5:p.x;
                 float h_ = (textAscent() + textDescent()) * 3 + 15;
