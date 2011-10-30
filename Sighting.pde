@@ -61,6 +61,7 @@ final static int CITY = 0;
 final static int AIRPORT = 1;
 final static int MILITARY_BASE = 2;
 final static int WEATHER_STATION = 3;
+final static int STATE = 4;
 
 class Place {
   int type;  /* city, airport, military base */
@@ -82,6 +83,26 @@ class Place {
   /* only for dummy data */
   Place(int type, Location loc, String name) {
     this(type, -1, loc, name, 0);
+  }
+}
+
+class City extends Place {
+  int county_id;
+  int state_id;
+  
+  City(int id, Location loc, String name, int sightingCount, int state_id, int county_id) {
+    super(CITY, id, loc, name, sightingCount);
+    this.state_id = state_id;
+    this.county_id = county_id;
+  }
+}
+
+class State extends Place {
+  String abbr;
+  
+  State(int id, Location loc, String name, String abbr) {
+    super(STATE, id, loc, name, 0);
+    this.abbr = abbr;
   }
 }
 
@@ -183,10 +204,33 @@ Iterable<Place> placesInRect(PRTree<Place> tree, Location locTopLeft, Location l
   
   return tree.find(minLon, minLat, maxLon, maxLat);
 }
+  
+void updateStateSightingCounts()
+{
+  int idx;
+
+  stopWatch();
+  print("updating state sighting counts...");
+  for (State s : stateMap.values()) {
+    for (idx = 0; idx < sightingTypeMap.size(); idx++)
+      s.counts[idx] = 0;
+    s.sightingCount = 0;
+  }
+  for (Place p : cityMap.values()) {
+    City c = (City)p;
+    State s = stateMap.get(c.state_id);
+    for (idx = 0; idx < sightingTypeMap.size(); idx++) {
+      s.counts[idx] += c.counts[idx];
+      s.sightingCount += c.counts[idx];
+    }
+  }
+  println(stopWatch());
+}
 
 
 interface DataSource {
   void loadSightingTypes();
+  void loadStates();
   void loadCities();
   void reloadCitySightingCounts();
   void loadAirports();
@@ -243,14 +287,33 @@ class SQLiteDataSource implements DataSource {
     minCountSightings = 1000;
     maxCountSightings = 0;
     while (db.next()) {
-      cityMap.put(db.getInt("id"), new Place(CITY,
+      cityMap.put(db.getInt("id"), new City(
         db.getInt("id"),
         new Location(db.getFloat("lat"), db.getFloat("lon")),
         db.getString("name"),
-        db.getInt("sighting_count")
+        db.getInt("sighting_count"),
+        db.getInt("state_id"),
+        db.getInt("county_id")
       ));
       minCountSightings = min(db.getInt("sighting_count"), minCountSightings);
       maxCountSightings = max(db.getInt("sighting_count"), maxCountSightings);
+    }
+    println(stopWatch());
+  }
+  
+  void loadStates()
+  {
+    stopWatch();
+    print("Loading states...");
+    db.query("select * from states");
+    stateMap = new HashMap<Integer,State>();
+    while (db.next()) {
+      stateMap.put(db.getInt("id"), new State(
+        db.getInt("id"),
+        new Location(db.getFloat("lat"), db.getFloat("lon")),
+        db.getString("name"),
+        db.getString("name_abbreviation")
+      ));
     }
     println(stopWatch());
   }
@@ -392,7 +455,7 @@ class SQLiteDataSource implements DataSource {
     return sightings;
   }
  
-   List<Bucket> sightingCountsByYear()
+  List<Bucket> sightingCountsByYear()
   {
     return sightingCountsByCategoryQuery(
       "select strftime('%Y',occurred_at) as year, type_id, count(*) as sighting_count"

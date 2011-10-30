@@ -29,6 +29,7 @@ class MapView extends View {
   double TILE_EXPAND_FACTOR = 0.05;  // as a fraction of the tile size
   
   boolean DRAW_ALL_TYPES = false;
+  boolean DRAW_STATES = true;
   
   MapView(float x_, float y_, float w_, float h_)
   {
@@ -153,7 +154,10 @@ class MapView extends View {
     Coordinate coord2 = new Coordinate(coord.row + 1, coord.column + 1, coord.zoom);
     Location loc2 = mmap.provider.coordinateLocation(coord2);
     
-    drawPlaces(buf, placesInRect(cityTree, loc1, loc2, TILE_EXPAND_FACTOR));
+    if (DRAW_STATES)
+      drawStates(buf, stateMap.values());
+    else
+      drawPlaces(buf, placesInRect(cityTree, loc1, loc2, TILE_EXPAND_FACTOR));
     if (showAirports)
         drawAirports(buf,placesInRect(airportTree,loc1,loc2,TILE_EXPAND_FACTOR));
     if (showMilitaryBases)
@@ -186,10 +190,12 @@ class MapView extends View {
     if (USE_BUFFERS) drawOverlay();
     else{
       drawPlaces(papplet.g, cityMap.values());
-      drawAirports(papplet.g, airportMap.values());
-      drawMilitaryBases(papplet.g,militaryBaseMap.values());
-      drawWeatherStations(papplet.g,weatherStationMap.values());
-      
+      if (showAirports)
+        drawAirports(papplet.g, airportMap.values());
+      if (showMilitaryBases)
+        drawMilitaryBases(papplet.g,militaryBaseMap.values());
+      if (showWeatherStation)
+        drawWeatherStations(papplet.g,weatherStationMap.values());
     }
     
     drawPlacesInformationBox();
@@ -281,38 +287,53 @@ class MapView extends View {
       } 
   }
   
-  void drawPlaces(PGraphics buffer, Iterable<Place> places) {
+  void drawSightingDots(PGraphics buffer, Place place)
+  {
+    Point2f p = mmap.locationPoint(place.loc);
+    int boxsz = ceil(sqrt(place.sightingCount));
+    int boxx = 0;
+    int boxy = 0;
+    buffer.pushMatrix();
+    buffer.translate(p.x - boxsz/2, p.y - boxsz/2);
+    int idx = 0;
+
+    buffer.noStroke();
+    for (SightingType st : sightingTypeMap.values()) {
+      buffer.fill(st.colr);
+      int count = place.counts[idx];
+      while (count > 0) {
+        if (boxx == boxsz){
+          boxx = 0;
+          boxy++;
+        }
+        int len = min(boxsz - boxx, count);
+        buffer.rect(boxx, boxy, len, 1);
+        boxx += len;
+        count -= len;
+      }
+      idx++;
+    }
+    buffer.popMatrix();
+  }
+  
+  void drawStates(PGraphics buffer, Iterable<State> states)
+  {
+    for (State state : states) {
+      drawSightingDots(buffer, state);
+    }
+  }
+  
+  void drawPlaces(PGraphics buffer, Iterable<? extends Place> places) {
     buffer.imageMode(CENTER);
     buffer.strokeWeight(0.5);
     
     buffer.noStroke();
     for (Place place : places) {
       if (place.sightingCount > 0){
-        Point2f p = mmap.locationPoint(place.loc);
         if (DRAW_ALL_TYPES) {
-          int boxsz = ceil(sqrt(place.sightingCount));
-          int boxx = 0;
-          int boxy = 0;
-          buffer.pushMatrix();
-          buffer.translate(p.x - boxsz/2, p.y - boxsz/2);
-          int idx = 0;
-          for (SightingType st : sightingTypeMap.values()) {
-            buffer.fill(st.colr);
-            int count = place.counts[idx];
-            while (count > 0) {
-              if (boxx == boxsz){
-                boxx = 0;
-                boxy++;
-              }
-              int len = min(boxsz - boxx, count);
-              buffer.rect(boxx, boxy, len, 1);
-              boxx += len;
-              count -= len;
-            }
-            idx++;
-          }
-          buffer.popMatrix();
+          drawSightingDots(buffer, place);
         } else {
+          Point2f p = mmap.locationPoint(place.loc);
           SightingType st = mainSightingTypeForPlace(place);
           float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
           float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);

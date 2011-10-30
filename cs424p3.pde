@@ -54,6 +54,7 @@ Map<Integer,Place> cityMap;
 Map<Integer,Place> airportMap;
 Map<Integer,Place> militaryBaseMap;
 Map<Integer,Place> weatherStationMap;
+Map<Integer,State> stateMap;
 PRTree<Place> cityTree;
 PRTree<Place> airportTree;
 PRTree<Place> militaryBaseTree;
@@ -95,11 +96,13 @@ void setup()
   
   data.loadSightingTypes();
   activeFilter = new SightingsFilter();
+  data.loadStates();
   data.loadCities();
   data.loadAirports();
   data.loadMilitaryBases();
   data.loadWeatherStations();
   data.reloadCitySightingCounts();
+  updateStateSightingCounts();
   
   buildPlaceTree();
   
@@ -258,6 +261,7 @@ void updateFilter()
     println(activeFilter + " -> " + newFilter);
     activeFilter = newFilter;
     data.reloadCitySightingCounts();
+    updateStateSightingCounts();
     mapv.rebuildOverlay();
     detailsAnimator.target(height);
   }
