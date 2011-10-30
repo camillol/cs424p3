@@ -133,7 +133,7 @@ void setup()
   graphContainer = new View(10, 100, width-20, height-120);
   graphView = new GraphView(0, 0, graphContainer.w - 120, graphContainer.h);
   graphContainer.subviews.add(graphView);
-  graphModeList = new ListBox(graphContainer.w - 120, 0, 120, 100, graphView.modesDataSource());
+  graphModeList = new ListBox(graphContainer.w - 120, 0, 120, 120, graphView.modesDataSource());
   graphContainer.subviews.add(graphModeList);
   
   graphButton = new Button(width-80, 0, 80, 20, "Graph");

@@ -32,8 +32,8 @@ class GraphView extends View {
   List<Bucket> buckets;
   int maxTotal;
   
-  List<String> modes = Arrays.asList("Month", "Airport dist.", "Pop. density", "Time of day", "Season");
-  String activeMode = "Month";
+  List<String> modes = Arrays.asList("Year","Month", "Time of day", "Airport dist.", "Pop. density", "Season");
+  String activeMode = "Year";
   
   GraphView(float x_, float y_, float w_, float h_)
   {
@@ -59,7 +59,8 @@ class GraphView extends View {
   
   void fillBuckets()
   {
-    if (activeMode.equals("Month")) buckets = data.sightingCountsByMonth();
+    if (activeMode.equals("Year")) buckets = data.sightingCountsByYear();
+    else if (activeMode.equals("Month")) buckets = data.sightingCountsByMonth();
     else if (activeMode.equals("Time of day")) buckets = data.sightingCountsByHour();
     maxTotal = 0;
     for (Bucket bucket : buckets) {
