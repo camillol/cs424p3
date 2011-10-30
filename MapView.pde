@@ -282,7 +282,7 @@ class MapView extends View {
   
   void drawPlaces(PGraphics buffer, Iterable<Place> places) {
     buffer.imageMode(CENTER);
-    buffer.strokeWeight(0.8);
+    buffer.strokeWeight(0.5);
     
     buffer.noStroke();
     for (Place place : places) {
@@ -313,11 +313,19 @@ class MapView extends View {
           idx++;
         }
         buffer.popMatrix();
-/*        if (place.typeOfSightingCount > 1) 
+/*
+        if (place.typeOfSightingCount > 1) {
+            buffer.stroke(0);
+            buffer.fill(255);
             buffer.ellipse(p.x, p.y, dotSize, dotSize);
-        else 
-           buffer.image((sightingTypeMap.get(place.sightingType)).icon, p.x, p.y, dotSize, dotSize);
-            */
+        }
+        else {
+            buffer.noStroke();
+            buffer.fill((sightingTypeMap.get(place.sightingType)).colr,150);
+            buffer.ellipse(p.x, p.y, dotSize, dotSize);
+            //buffer.image((sightingTypeMap.get(place.sightingType)).icon, p.x, p.y, dotSize, dotSize);
+        }   
+*/
       }
     } 
   }

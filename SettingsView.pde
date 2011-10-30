@@ -43,20 +43,20 @@ class SettingsView extends View {
     for (SightingType st : sightingTypeMap.values()) {
       int x_delta = (i / 4) * 160;
       int y_delta = (i % 4) * 20;
-      Checkbox cb = new Checkbox(CHECKBOX_X + 10 + x_delta ,CHECKBOX_Y + 9 + y_delta, 12, 12, st.name, st.icon);
+      Checkbox cb = new Checkbox(CHECKBOX_X + 10 + x_delta ,CHECKBOX_Y + 9 + y_delta, 12, 12, st.name, st.icon,st.colr);
       cb.value = true;
       typeCheckboxMap.put(st, cb);
       subviews.add(cb);
       i++;
     }
     
-    showAirport = new Checkbox(780,10,12,12,"Show airports",airplaneImage);
+    showAirport = new Checkbox(780,10,12,12,"Show airports",airplaneImage,-1);
     this.subviews.add(showAirport);
     
-    showMilitaryBases = new Checkbox(780,30,12,12,"Show military bases",militaryBaseImage);
+    showMilitaryBases = new Checkbox(780,30,12,12,"Show military bases",militaryBaseImage,-1);
     this.subviews.add(showMilitaryBases);
     
-    showWeatherStation = new Checkbox(780,50,12,12,"Show weather stations",weatherStationImage);
+    showWeatherStation = new Checkbox(780,50,12,12,"Show weather stations",weatherStationImage,-1);
     this.subviews.add(showWeatherStation);
     
     play =  new PlayButton(w-105,h-20,100,20);

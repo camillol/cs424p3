@@ -5,13 +5,15 @@ class Checkbox extends View {
   color ckbColor = -1;
   PImage icon;
   String title;
+  color iconColor = -1;
   
-  Checkbox(float x_, float y_, float w_, float h_,String text_, PImage image_)
+  Checkbox(float x_, float y_, float w_, float h_,String text_, PImage image_, color iconColor_)
   {
     super(x_, y_, w_, h_);
     value = false;
     icon = image_;
     title = text_;
+    iconColor = iconColor_;
   }
   
   Checkbox(float x_, float y_, float w_, float h_, String text_,color color_)
@@ -50,9 +52,15 @@ class Checkbox extends View {
    textAlign(LEFT,TOP);
    if (icon != null){
      text(title, w + w + 10, 0);
-     imageMode(CORNERS);
-     image(icon, w + 5, 0,w+5+w,h);
-     
+     if (iconColor == -1){
+       imageMode(CORNERS);
+       image(icon, w + 5, 0,w+5+w,h);
+     }
+     else{
+       noStroke();
+       fill(iconColor);
+       ellipse(w + h/2 + 5, h/2,h,h);
+     }
    }
    else{
      text(title, w + 5, 0);
