@@ -68,8 +68,7 @@ class Place {
   Location loc;
   String name;
   int sightingCount;
-  int typeOfSightingCount = 7;
-  int sightingType;
+  int counts[];
   
   Place(int type, int id, Location loc, String name, int sightingCount) {
     this.type = type;
@@ -77,6 +76,7 @@ class Place {
     this.loc = loc;
     this.name = name;
     this.sightingCount = sightingCount;
+    counts = new int[sightingTypeMap.size()];
   }
 
   /* only for dummy data */
@@ -120,7 +120,7 @@ class SightingsFilter {
   int viewMinYear = yearFirst, viewMaxYear = yearLast;
   int viewMinMonth = 1, viewMaxMonth = 12;
   int viewMinHour = 0, viewMaxHour = 23;
-  Collection<SightingType> activeTypes = null;
+  Set<SightingType> activeTypes = new HashSet(sightingTypeMap.values());
   
   String whereClause()
   {
@@ -156,6 +156,14 @@ class SightingsFilter {
       viewMinHour == other.viewMinHour &&
       viewMaxHour == other.viewMaxHour &&
       activeTypes.equals(other.activeTypes);
+  }
+  
+  String toString()
+  {
+    return viewMinYear + "-" + viewMaxYear + " "
+      + viewMinMonth + "-" + viewMaxMonth + " "
+      + viewMinHour + "-" + viewMaxHour + " "
+      + activeTypes;
   }
 }
 
@@ -250,33 +258,37 @@ class SQLiteDataSource implements DataSource {
   {
     stopWatch();
     print("query db for sighting counts...");
-    db.query("select cities.id, count(*) as sighting_count, count(distinct type_id) as types_count,type_id"
-      + " from cities join sightings on sightings.city_id = cities.id join shapes on shape_id = shapes.id"
-      + " where " + activeFilter.whereClause()
-      + " group by cities.id");
+    StringBuffer query = new StringBuffer();
+    query.append("select cities.id");
+    for (SightingType st : sightingTypeMap.values()) {
+      query.append(", sum(case when type_id=" + st.id + " then 1 else 0 end) as count_" + st.id);
+    }
+    query.append(" from cities join sightings on sightings.city_id = cities.id join shapes on shape_id = shapes.id");
+    query.append(" where " + activeFilter.whereClause());
+    query.append(" group by cities.id");
     
-    minCountSightings = 1000;
+    db.query(query.toString());
+    
+    minCountSightings = 10000;
     maxCountSightings = 0;
     totalCountSightings = 0;
     
     println(stopWatch());
     print("update objects...");
    
-    //Clean the places values
-    for (Place pl : cityMap.values()) {
-      pl.sightingCount = 0;
-      pl.typeOfSightingCount = 0;
-      pl.sightingType = 0;
-    }
-    
     while (db.next()) {
       Place p = cityMap.get(db.getInt("id"));
-      p.sightingCount = db.getInt("sighting_count");
-      p.typeOfSightingCount = db.getInt("types_count");
-      p.sightingType = db.getInt("type_id");
+      p.sightingCount = 0;
+      int idx = 0;
+      for (SightingType st : sightingTypeMap.values()) {
+        int typeCount = db.getInt("count_" + st.id);
+        p.counts[idx] = typeCount;
+        p.sightingCount += typeCount;
+        idx++;
+      }
       minCountSightings = min(p.sightingCount, minCountSightings);
       maxCountSightings = max(p.sightingCount, maxCountSightings);
-      totalCountSightings = totalCountSightings + p.sightingCount;
+      totalCountSightings += p.sightingCount;
     }
     println(stopWatch());
   }
@@ -338,7 +350,7 @@ class SQLiteDataSource implements DataSource {
   void loadSightingTypes()
   {
     db.query("select * from sighting_types;");
-    sightingTypeMap = new HashMap<Integer, SightingType>();
+    sightingTypeMap = new LinkedHashMap<Integer, SightingType>();
     while (db.next()) {
       sightingTypeMap.put(db.getInt("id"), new SightingType(
         db.getInt("id"),

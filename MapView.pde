@@ -10,7 +10,7 @@ class MapView extends View {
   float zoomValue = 4;
   float minZoom = 4;
   float maxZoom = 15;
-  int minPointSize= 5;
+  int minPointSize= 1;
   int maxPointSize = 45;
   int minIconSize= 10;
   int maxIconSize = 25;
@@ -283,16 +283,41 @@ class MapView extends View {
   void drawPlaces(PGraphics buffer, Iterable<Place> places) {
     buffer.imageMode(CENTER);
     buffer.strokeWeight(0.8);
+    
+    buffer.noStroke();
     for (Place place : places) {
       if (place.sightingCount > 0){
         float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
         float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
         Point2f p = mmap.locationPoint(place.loc);
-        if (place.typeOfSightingCount > 1) 
+        
+        int boxsz = ceil(sqrt(place.sightingCount));
+        int boxx = 0;
+        int boxy = 0;
+        buffer.pushMatrix();
+        buffer.translate(p.x - boxsz/2, p.y - boxsz/2);
+        int idx = 0;
+        for (SightingType st : sightingTypeMap.values()) {
+          buffer.fill(st.colr);
+          int count = place.counts[idx];
+          while (count > 0) {
+            if (boxx == boxsz){
+              boxx = 0;
+              boxy++;
+            }
+            int len = min(boxsz - boxx, count);
+            buffer.rect(boxx, boxy, len, 1);
+            boxx += len;
+            count -= len;
+          }
+          idx++;
+        }
+        buffer.popMatrix();
+/*        if (place.typeOfSightingCount > 1) 
             buffer.ellipse(p.x, p.y, dotSize, dotSize);
         else 
            buffer.image((sightingTypeMap.get(place.sightingType)).icon, p.x, p.y, dotSize, dotSize);
-            
+            */
       }
     } 
   }
