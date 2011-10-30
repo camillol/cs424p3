@@ -6,6 +6,7 @@ class SightingDetailsView extends View {
   List<Sighting> sightings;
   Place place;
   ScrollList sightingSList;
+  MultiLineText multiLineText;
 
   SightingDetailsView(float x_, float y_, float w_, float h_)
   {
@@ -14,6 +15,8 @@ class SightingDetailsView extends View {
     sightingSList = new ScrollList(5,15,200,175);
     this.subviews.add(sightingSList);
     
+    multiLineText = new MultiLineText(230,79, w - 250,120);
+    this.subviews.add(multiLineText);
   }
   
   void setSightings(List<Sighting> _sightings){
@@ -44,9 +47,14 @@ class SightingDetailsView extends View {
       text("Shape: " +newSighting.shapeName,600,42);
       text("Weather Condition: "+ newSighting.weather,230,59);
       text("Temperature: " + newSighting.temperature + " °F  /  " + str(int((MULTIPLICATOR_VALUE * (newSighting.temperature - 32))))+" °C",600,59);
-      text("Full description: " + newSighting.description,230,79, w - 250,120);
+     // text("Full description: " + newSighting.description,230,79, w - 250,120);
       //imageMode(CORNER);
      // image((newSighting.type).icon,235 + textWidth(typeOfUFO),42,12,12);
+      
+      if (!(multiLineText.value).equals("Full description: " + newSighting.description) && newSighting.description.length() > 0){
+        multiLineText.setValue("Full description: " + newSighting.description);   
+      }
+      
       noStroke();
       fill((newSighting.type).colr);
       ellipse(235 + textWidth(typeOfUFO) + 6 ,42 + 6,12,12);
@@ -65,9 +73,66 @@ class SightingDetailsView extends View {
   {
     if(lx > w-46 && lx < w - 5  && ly> 4 && ly < 16){
         detailsAnimator.target(height);
-    }
-        
+    }   
     return true;
   }
+
+}
+
+
+class MultiLineText extends View {
+  
+  String value = "";
+  VScroll tScroll;  
+  int firstIndex = 0;
+  float tWidth = 0;
+  
+  MultiLineText(float x_, float y_, float w_, float h_)
+  {
+    super(x_, y_, w_ , h_);
+
+    tScroll = new VScroll(w-12,0,12,h);
+    this.subviews.add(tScroll);
+    
+  }
+    
+  void setValue(String value){
+    this.value = value;
+    int nol = int(textWidth(value)/w);
+    int noltw = int(h / (textAscent() + textDescent())) ;
+   
+    if (nol > noltw)
+        tWidth = w-20;
+    else
+        tWidth = w;
+    tScroll.linesXSpace = noltw;
+    tScroll.linesCount =  int(textWidth(value) / tWidth);   
+    tScroll.setCurrentLine(0);
+  }
+  
+  void drawContent()
+  {
+      textAlign(LEFT,TOP);
+      textFont(font,normalFontSize);
+      stroke(textColor);
+      fill(scrollListColor);
+      //rect(0,0,w,h);
+      textFont(font,normalFontSize);
+      float vSpaceBtwLines =  textAscent() + textDescent();
+      int charactersByLine = int(tWidth/textWidth("w"));
+   //   println("current line " +tScroll.currentLine);
+      firstIndex = tScroll.currentLine * int(tWidth/textWidth("w"));
+    //  println(value.length() + " " + charactersByLine);
+
+      fill(textColor);
+      for (int i = 0; i < tScroll.linesXSpace; i++) {
+         float y = vSpaceBtwLines*i;  
+         if (value.length() > 0 && firstIndex + (i*charactersByLine) <= constrain(firstIndex + (i*charactersByLine) + charactersByLine,1,value.length()-1)){       
+            String _str = trim(value.substring(firstIndex + (i*charactersByLine) , constrain(firstIndex + (i*charactersByLine) + charactersByLine,1,value.length()-1)));
+            text(_str, 0 , y);
+         }
+      }
+  }
+  
 }
 

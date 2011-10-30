@@ -22,6 +22,7 @@ class VScroll extends View {
   
   void drawContent()
   {
+
     if (linesCount > linesXSpace){
       noFill();
       stroke(vScrollColor);
@@ -35,11 +36,12 @@ class VScroll extends View {
 
   boolean contentPressed(float lx, float ly)
   {
+    println("press " + linesCount + " " + linesXSpace + " " +constrain(_y-6,0,h-12));
     _y = ly;
     if (linesCount > linesXSpace){
 
       currentLine = constrain(int(map(ly,0,h,0,linesCount-1)),0,linesCount-1);
-   
+      println(currentLine);
     }
     return true;
   }
