@@ -547,10 +547,10 @@ module Scraper
       raise "Error, state #{state} not found" if result.empty?
       lat_lon_raw = columns[1].content.strip_html
       lat_lon_raw = lat_lon_raw.scan(/(\d+\.*\d*)'(\d+\.*\d*)'?(\d+\.*\d*)?'?(\D)/)
-      #In 100's
+      #In 100ths
       lat,lon = degrees_to_decimal(*lat_lon_raw[1]), degrees_to_decimal(*lat_lon_raw[0])
       puts "lat:#{lat} lon:#{lon}"
-      nil
+      db.execute("UPDATE states SET lat = ?, lon = ? WHERE id = ?", lat, lon, result.first.first)
     end
     nil
   end
