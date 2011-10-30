@@ -28,6 +28,7 @@ class MapView extends View {
   
   double TILE_EXPAND_FACTOR = 0.05;  // as a fraction of the tile size
   
+  boolean DRAW_ALL_TYPES = false;
   
   MapView(float x_, float y_, float w_, float h_)
   {
@@ -283,22 +284,62 @@ class MapView extends View {
   void drawPlaces(PGraphics buffer, Iterable<Place> places) {
     buffer.imageMode(CENTER);
     buffer.strokeWeight(0.5);
+    
+    buffer.noStroke();
     for (Place place : places) {
       if (place.sightingCount > 0){
-        float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
-        float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
         Point2f p = mmap.locationPoint(place.loc);
-        if (place.typeOfSightingCount > 1) {
-            buffer.stroke(0);
-            buffer.fill(255);
-            buffer.ellipse(p.x, p.y, dotSize, dotSize);
+        if (DRAW_ALL_TYPES) {
+          int boxsz = ceil(sqrt(place.sightingCount));
+          int boxx = 0;
+          int boxy = 0;
+          buffer.pushMatrix();
+          buffer.translate(p.x - boxsz/2, p.y - boxsz/2);
+          int idx = 0;
+          for (SightingType st : sightingTypeMap.values()) {
+            buffer.fill(st.colr);
+            int count = place.counts[idx];
+            while (count > 0) {
+              if (boxx == boxsz){
+                boxx = 0;
+                boxy++;
+              }
+              int len = min(boxsz - boxx, count);
+              buffer.rect(boxx, boxy, len, 1);
+              boxx += len;
+              count -= len;
+            }
+            idx++;
+          }
+          buffer.popMatrix();
+        } else {
+          /* I now load sighting counts for all types, but this calculates the values we had before */
+          int typeOfSightingCount = 0;
+          SightingType sightingType = null;
+          int idx = 0;
+          for (SightingType st : sightingTypeMap.values()) {
+            if (place.counts[idx] > 0) {
+              typeOfSightingCount++;
+              sightingType = st;
+            }
+            idx++;
+          }
+          
+          float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
+          float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
+          
+          if (typeOfSightingCount > 1) {
+              buffer.stroke(0);
+              buffer.fill(255);
+              buffer.ellipse(p.x, p.y, dotSize, dotSize);
+          }
+          else {
+              buffer.noStroke();
+              buffer.fill(sightingType.colr,150);
+              buffer.ellipse(p.x, p.y, dotSize, dotSize);
+              //buffer.image((sightingTypeMap.get(place.sightingType)).icon, p.x, p.y, dotSize, dotSize);
+          }   
         }
-        else {
-            buffer.noStroke();
-            buffer.fill((sightingTypeMap.get(place.sightingType)).colr,150);
-            buffer.ellipse(p.x, p.y, dotSize, dotSize);
-            //buffer.image((sightingTypeMap.get(place.sightingType)).icon, p.x, p.y, dotSize, dotSize);
-        }   
       }
     } 
   }
@@ -324,13 +365,14 @@ class MapView extends View {
                 if (textToPrint.length() < numOfSightings.length())
                       textToPrint = numOfSightings;
                 fill(infoBoxBackground);
+                stroke((sightingTypeMap.get(place.sightingType)).colr);
                 float w_ = textWidth(textToPrint)+10;
                 float x_ = (p.x+w_ > w)?w-w_-5:p.x;
                 float h_ = (textAscent() + textDescent()) * 3 + 15;
                 float y_ = (p.y+h_ > sightingDetailsView.y)?sightingDetailsView.y-h_-5:p.y;
                 rect(x_,y_,w_,h_);
                 fill(textColor);
-                text(place.name, x_ + (w_ - textWidth(place.name))/2 ,y_+5);
+                text(place.name, x_ + (w_ - textWidth(place.name))/2 ,y_+5);  
                 text(numOfSightings,x_ + (w_ - textWidth(numOfSightings))/2, (y_+ h_/3)+5);
                 textSize(smallFontSize);
                 text("Click on it to see details",x_+5,y_+h_-12);

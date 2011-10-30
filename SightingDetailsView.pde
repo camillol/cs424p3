@@ -41,17 +41,22 @@ class SightingDetailsView extends View {
       text("Reported time: " + dateFormat.format(newSighting.reportedTime),600,25);
       String typeOfUFO = "Type of UFO: "+(newSighting.type).name;
       text(typeOfUFO, 230,42);
-      imageMode(CORNER);
-      image((newSighting.type).icon,235 + textWidth(typeOfUFO),42,12,12);
       text("Shape: " +newSighting.shapeName,600,42);
       text("Weather Condition: "+ newSighting.weather,230,59);
       text("Temperature: " + newSighting.temperature + " °F  /  " + str(int((MULTIPLICATOR_VALUE * (newSighting.temperature - 32))))+" °C",600,59);
       text("Full description: " + newSighting.description,230,79, w - 250,120);
+      //imageMode(CORNER);
+     // image((newSighting.type).icon,235 + textWidth(typeOfUFO),42,12,12);
+      noStroke();
+      fill((newSighting.type).colr);
+      ellipse(235 + textWidth(typeOfUFO) + 6 ,42 + 6,12,12);
+ 
     }
     textSize(smallFontSize);
     noFill();
     stroke(textColor);
     rect(w-46,4, 8, 9);
+    fill(textColor);
     text("x",w-45,4);
     text("Close",w-35,5);
   }

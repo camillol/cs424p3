@@ -93,9 +93,8 @@ void setup()
   /* load data */
   data = new SQLiteDataSource();
   
-  activeFilter = new SightingsFilter();
-
   data.loadSightingTypes();
+  activeFilter = new SightingsFilter();
   data.loadCities();
   data.loadAirports();
   data.loadMilitaryBases();
@@ -206,7 +205,7 @@ void draw()
           minYearIndex ++;
           maxYearIndex = minYearIndex;  
       }   
-          
+         
       updateFilter();
   }
   if (maxYearIndex == settingsView.yearSlider.maxIndex()+1){
@@ -249,13 +248,14 @@ void updateFilter()
     newFilter.viewMaxHour =  settingsView.timeSlider.maxIndex();
   }
   
-  List<SightingType> activeTypes = new ArrayList<SightingType>();
+  Set<SightingType> activeTypes = new HashSet<SightingType>();
   for (SightingType type : sightingTypeMap.values()) {
     if (type.active) activeTypes.add(type);
   }
   newFilter.activeTypes = activeTypes;
   
   if (!newFilter.equals(activeFilter)) {
+    println(activeFilter + " -> " + newFilter);
     activeFilter = newFilter;
     data.reloadCitySightingCounts();
     mapv.rebuildOverlay();
