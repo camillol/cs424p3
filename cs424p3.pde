@@ -50,11 +50,14 @@ PImage airplaneImage;
 PImage militaryBaseImage;
 PImage weatherStationImage;
 
-Map<Integer,Place> placeMap;
-Map<Integer,Place> airportsMap;
+Map<Integer,Place> cityMap;
+Map<Integer,Place> airportMap;
 Map<Integer,Place> militaryBaseMap;
 Map<Integer,Place> weatherStationMap;
-PRTree<Place> placeTree;
+PRTree<Place> cityTree;
+PRTree<Place> airportTree;
+PRTree<Place> militaryBaseTree;
+PRTree<Place> weatherStationTree;
 Map<Integer,SightingType> sightingTypeMap;
 
 Sighting clickedSighting;

@@ -96,10 +96,20 @@ void buildPlaceTree()
 {
   /* build spatial index of places */
   print("Building R-tree...");
-  placeTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
-  placeTree.load(placeMap.values());
+  cityTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
+  cityTree.load(cityMap.values());
+  
+  airportTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
+  airportTree.load(airportMap.values());
+  
+  militaryBaseTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
+  militaryBaseTree.load(militaryBaseMap.values());
+  
+  weatherStationTree = new PRTree<Place> (new PlaceMBRConverter(), 10);
+  weatherStationTree.load(weatherStationMap.values());
   println(stopWatch());
 }
+
 
 int minCountSightings;
 int maxCountSightings;
@@ -148,7 +158,7 @@ class SightingsFilter {
   }
 }
 
-Iterable<Place> placesInRect(Location locTopLeft, Location locBottomRight, double expandFactor)
+Iterable<Place> placesInRect(PRTree<Place> tree, Location locTopLeft, Location locBottomRight, double expandFactor)
 {
   double minLon = locTopLeft.lon;
   double maxLon = locBottomRight.lon;
@@ -162,58 +172,7 @@ Iterable<Place> placesInRect(Location locTopLeft, Location locBottomRight, doubl
   minLat -= fudgeLat;
   maxLat += fudgeLat;
   
-  return placeTree.find(minLon, minLat, maxLon, maxLat);
-}
-
-Iterable<Place> aiportsInRect(Location locTopLeft, Location locBottomRight, double expandFactor)
-{
-  double minLon = locTopLeft.lon;
-  double maxLon = locBottomRight.lon;
-  double minLat = locBottomRight.lat;
-  double maxLat = locTopLeft.lat;
-  double fudgeLat = (maxLat - minLat) * expandFactor;
-  double fudgeLon = (maxLon - minLon) * expandFactor;
-  
-  minLon -= fudgeLon;
-  maxLon += fudgeLon;
-  minLat -= fudgeLat;
-  maxLat += fudgeLat;
-  
-  return airportsTree.find(minLon, minLat, maxLon, maxLat);
-}
-
-Iterable<Place> militaryBasesInRect(Location locTopLeft, Location locBottomRight, double expandFactor)
-{
-  double minLon = locTopLeft.lon;
-  double maxLon = locBottomRight.lon;
-  double minLat = locBottomRight.lat;
-  double maxLat = locTopLeft.lat;
-  double fudgeLat = (maxLat - minLat) * expandFactor;
-  double fudgeLon = (maxLon - minLon) * expandFactor;
-  
-  minLon -= fudgeLon;
-  maxLon += fudgeLon;
-  minLat -= fudgeLat;
-  maxLat += fudgeLat;
-  
-  return militaryBaseTree.find(minLon, minLat, maxLon, maxLat);
-}
-
-Iterable<Place> weatherStationsInRect(Location locTopLeft, Location locBottomRight, double expandFactor)
-{
-  double minLon = locTopLeft.lon;
-  double maxLon = locBottomRight.lon;
-  double minLat = locBottomRight.lat;
-  double maxLat = locTopLeft.lat;
-  double fudgeLat = (maxLat - minLat) * expandFactor;
-  double fudgeLon = (maxLon - minLon) * expandFactor;
-  
-  minLon -= fudgeLon;
-  maxLon += fudgeLon;
-  minLat -= fudgeLat;
-  maxLat += fudgeLat;
-  
-  return weatherStationTree.find(minLon, minLat, maxLon, maxLat);
+  return tree.find(minLon, minLat, maxLon, maxLat);
 }
 
 
@@ -268,11 +227,11 @@ class SQLiteDataSource implements DataSource {
     stopWatch();
     print("Loading cities...");
     db.query("select cities.*, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id group by cities.id");
-    placeMap = new HashMap<Integer,Place>();
+    cityMap = new HashMap<Integer,Place>();
     minCountSightings = 1000;
     maxCountSightings = 0;
     while (db.next()) {
-      placeMap.put(db.getInt("id"), new Place(CITY,
+      cityMap.put(db.getInt("id"), new Place(CITY,
         db.getInt("id"),
         new Location(db.getFloat("lat"), db.getFloat("lon")),
         db.getString("name"),
@@ -299,14 +258,14 @@ class SQLiteDataSource implements DataSource {
     print("update objects...");
    
     //Clean the places values
-    for (Place pl : placeMap.values()) {
+    for (Place pl : cityMap.values()) {
       pl.sightingCount = 0;
       pl.typeOfSightingCount = 0;
       pl.sightingType = 0;
     }
     
     while (db.next()) {
-      Place p = placeMap.get(db.getInt("id"));
+      Place p = cityMap.get(db.getInt("id"));
       p.sightingCount = db.getInt("sighting_count");
       p.typeOfSightingCount = db.getInt("types_count");
       p.sightingType = db.getInt("type_id");
@@ -321,10 +280,10 @@ class SQLiteDataSource implements DataSource {
     stopWatch();
     print("Loading airports...");
     db.query("select * from airports");
-    airportsMap = new HashMap<Integer,Place>();
+    airportMap = new HashMap<Integer,Place>();
   
     while (db.next()) {
-      airportsMap.put(db.getInt("id"), new Place(AIRPORT,
+      airportMap.put(db.getInt("id"), new Place(AIRPORT,
         db.getInt("id"),
         new Location((db.getFloat("lat")/100), (db.getFloat("lon")/100)),
         db.getString("name"),

@@ -132,13 +132,13 @@ class MapView extends View {
     Coordinate coord2 = new Coordinate(coord.row + 1, coord.column + 1, coord.zoom);
     Location loc2 = mmap.provider.coordinateLocation(coord2);
     
-    drawPlaces(buf, placesInRect(loc1, loc2, TILE_EXPAND_FACTOR));
+    drawPlaces(buf, placesInRect(cityTree, loc1, loc2, TILE_EXPAND_FACTOR));
     if (showAirports)
-        drawAirports(buf,aiportsInRect(loc1,loc2,TILE_EXPAND_FACTOR));
+        drawAirports(buf,placesInRect(airportTree,loc1,loc2,TILE_EXPAND_FACTOR));
     if (showMilitaryBases)
-        drawMilitaryBases(buf,militaryBasesInRect(loc1,loc2,TILE_EXPAND_FACTOR));
+        drawMilitaryBases(buf,placesInRect(militaryBaseTree,loc1,loc2,TILE_EXPAND_FACTOR));
     if (showWeatherStation)
-        drawWeatherStations(buf,weatherStationsInRect(loc1,loc2,TILE_EXPAND_FACTOR));
+        drawWeatherStations(buf,placesInRect(weatherStationTree,loc1,loc2,TILE_EXPAND_FACTOR));
     
     buf.endDraw();
     return buf;
@@ -151,8 +151,8 @@ class MapView extends View {
 
     if (USE_BUFFERS) drawOverlay();
     else{
-      drawPlaces(papplet.g, placeMap.values());
-      drawAirports(papplet.g, airportsMap.values());
+      drawPlaces(papplet.g, cityMap.values());
+      drawAirports(papplet.g, airportMap.values());
       drawMilitaryBases(papplet.g,militaryBaseMap.values());
       drawWeatherStations(papplet.g,weatherStationMap.values());
       
@@ -271,7 +271,7 @@ class MapView extends View {
     Location loc1 = mmap.pointLocation(mouseX - maxPointValue, mouseY - maxPointValue);  // TODO: use local coordinates (although they're identical in this app)
     Location loc2 = mmap.pointLocation(mouseX + maxPointValue, mouseY + maxPointValue);
     
-    for (Place place : placesInRect(loc1, loc2, 0.0)) {
+    for (Place place : placesInRect(cityTree,loc1, loc2, 0.0)) {
       if (place.sightingCount > 0){
           float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
           Point2f p = mmap.locationPoint(place.loc); 
