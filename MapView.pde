@@ -10,7 +10,7 @@ class MapView extends View {
   float zoomValue = 4;
   float minZoom = 4;
   float maxZoom = 15;
-  int minPointSize= 1;
+  int minPointSize= 5;
   int maxPointSize = 45;
   int minIconSize= 10;
   int maxIconSize = 25;
@@ -28,6 +28,7 @@ class MapView extends View {
   
   double TILE_EXPAND_FACTOR = 0.05;  // as a fraction of the tile size
   
+  boolean DRAW_ALL_TYPES = false;
   
   MapView(float x_, float y_, float w_, float h_)
   {
@@ -287,45 +288,58 @@ class MapView extends View {
     buffer.noStroke();
     for (Place place : places) {
       if (place.sightingCount > 0){
-        float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
-        float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
         Point2f p = mmap.locationPoint(place.loc);
-        
-        int boxsz = ceil(sqrt(place.sightingCount));
-        int boxx = 0;
-        int boxy = 0;
-        buffer.pushMatrix();
-        buffer.translate(p.x - boxsz/2, p.y - boxsz/2);
-        int idx = 0;
-        for (SightingType st : sightingTypeMap.values()) {
-          buffer.fill(st.colr);
-          int count = place.counts[idx];
-          while (count > 0) {
-            if (boxx == boxsz){
-              boxx = 0;
-              boxy++;
+        if (DRAW_ALL_TYPES) {
+          int boxsz = ceil(sqrt(place.sightingCount));
+          int boxx = 0;
+          int boxy = 0;
+          buffer.pushMatrix();
+          buffer.translate(p.x - boxsz/2, p.y - boxsz/2);
+          int idx = 0;
+          for (SightingType st : sightingTypeMap.values()) {
+            buffer.fill(st.colr);
+            int count = place.counts[idx];
+            while (count > 0) {
+              if (boxx == boxsz){
+                boxx = 0;
+                boxy++;
+              }
+              int len = min(boxsz - boxx, count);
+              buffer.rect(boxx, boxy, len, 1);
+              boxx += len;
+              count -= len;
             }
-            int len = min(boxsz - boxx, count);
-            buffer.rect(boxx, boxy, len, 1);
-            boxx += len;
-            count -= len;
+            idx++;
           }
-          idx++;
+          buffer.popMatrix();
+        } else {
+          /* I now load sighting counts for all types, but this calculates the values we had before */
+          int typeOfSightingCount = 0;
+          SightingType sightingType = null;
+          int idx = 0;
+          for (SightingType st : sightingTypeMap.values()) {
+            if (place.counts[idx] > 0) {
+              typeOfSightingCount++;
+              sightingType = st;
+            }
+            idx++;
+          }
+          
+          float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
+          float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
+          
+          if (typeOfSightingCount > 1) {
+              buffer.stroke(0);
+              buffer.fill(255);
+              buffer.ellipse(p.x, p.y, dotSize, dotSize);
+          }
+          else {
+              buffer.noStroke();
+              buffer.fill(sightingType.colr,150);
+              buffer.ellipse(p.x, p.y, dotSize, dotSize);
+              //buffer.image((sightingTypeMap.get(place.sightingType)).icon, p.x, p.y, dotSize, dotSize);
+          }   
         }
-        buffer.popMatrix();
-/*
-        if (place.typeOfSightingCount > 1) {
-            buffer.stroke(0);
-            buffer.fill(255);
-            buffer.ellipse(p.x, p.y, dotSize, dotSize);
-        }
-        else {
-            buffer.noStroke();
-            buffer.fill((sightingTypeMap.get(place.sightingType)).colr,150);
-            buffer.ellipse(p.x, p.y, dotSize, dotSize);
-            //buffer.image((sightingTypeMap.get(place.sightingType)).icon, p.x, p.y, dotSize, dotSize);
-        }   
-*/
       }
     } 
   }
