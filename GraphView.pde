@@ -11,10 +11,13 @@ class Button extends View {
   
   void drawContent()
   {
+    fill(viewBackgroundColor);
+    noStroke();
     rect(0,0,w,h);
-    fill(255);
-    textAlign(LEFT, TOP);
-    text(label,0,0);
+    
+    textAlign(CENTER, CENTER);
+    fill(textColor);
+    text(label,w/2,h/2);
   }
   
   boolean contentClicked(float lx, float ly)
@@ -32,7 +35,7 @@ class GraphView extends View {
   List<Bucket> buckets;
   int maxTotal;
   
-  List<String> modes = Arrays.asList("Year","Month", "Time of day", "Airport dist.", "Pop. density", "Season");
+  List<String> modes = Arrays.asList("Year", "Season","Month", "Time of day", "Airport distance", "Military Base dist", "Weather St. dist.","Population density");
   String activeMode = "Year";
   
   GraphView(float x_, float y_, float w_, float h_)
@@ -60,8 +63,12 @@ class GraphView extends View {
   void fillBuckets()
   {
     if (activeMode.equals("Year")) buckets = data.sightingCountsByYear();
+    else if (activeMode.equals("Season")) buckets = data.sightingCountsBySeason();
     else if (activeMode.equals("Month")) buckets = data.sightingCountsByMonth();
     else if (activeMode.equals("Time of day")) buckets = data.sightingCountsByHour();
+    else if (activeMode.equals("Airport distance")) buckets = data.sightingCountsByAirportDistance();
+    else if (activeMode.equals("Military Base dist")) buckets = data.sightingCountsByMilitaryBaseDistance();
+    else if (activeMode.equals("Weather St. dist.")) buckets = data.sightingCountsByWeatherStDistance();
     maxTotal = 0;
     for (Bucket bucket : buckets) {
       int total = 0;
@@ -72,7 +79,7 @@ class GraphView extends View {
   
   void drawContent()
   {
-    fill(0,0,0,128);
+    fill(backgroundColor);
     rect(0,0,w,h);
     
     float barw = w / buckets.size();

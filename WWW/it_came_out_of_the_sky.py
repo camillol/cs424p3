@@ -40,6 +40,7 @@ class Sightings(webapp.RequestHandler):
         response = -1
         if sighting_id != '':
           response = db.GqlQuery("SELECT * FROM Sighting WHERE sighting_id = :1", int(sighting_id)).get().to_xml()
+        self.response.out.write('<?xml version="1.0"?>');
         self.response.out.write(response)
 
 application = webapp.WSGIApplication([('/', Main), ('/sightings', Sightings), ('/_ah/remote_api', LoadSightings)],

@@ -267,8 +267,12 @@ interface DataSource {
   void loadWeatherStations();
   List<Sighting> sightingsForCity(Place p);
   List<Bucket> sightingCountsByYear();
+  List<Bucket> sightingCountsBySeason();
   List<Bucket> sightingCountsByMonth();
   List<Bucket> sightingCountsByHour();
+  List<Bucket> sightingCountsByAirportDistance();
+  List<Bucket> sightingCountsByWeatherStDistance();
+  List<Bucket> sightingCountsByMilitaryBaseDistance();  
 }
 
 class Bucket {
@@ -426,7 +430,7 @@ class SQLiteDataSource implements DataSource {
   {
     stopWatch();
     print("Loading weather stations...");
-    db.query("select * from military_bases");
+    db.query("select * from weather_stations");
     weatherStationMap = new HashMap<Integer,Place>();
   
     while (db.next()) {
@@ -492,6 +496,19 @@ class SQLiteDataSource implements DataSource {
       "year");
   }
   
+  List<Bucket> sightingCountsBySeason()
+  {
+    String caseQuery = "when strftime('%m',occurred_at) = '12' or strftime('%m',occurred_at) = '01' or strftime('%m',occurred_at) = '02' then '1 - Winter' ";
+    caseQuery = caseQuery + "when strftime('%m',occurred_at) = '03' or strftime('%m',occurred_at) = '04' or strftime('%m',occurred_at) = '05' then '2 - Spring' ";
+    caseQuery = caseQuery + "when strftime('%m',occurred_at) = '06' or strftime('%m',occurred_at) = '07' or strftime('%m',occurred_at) = '08' then '3 - Summer' ";
+    caseQuery = caseQuery + "else '4 - Fall' ";
+    
+    return sightingCountsByCategoryQuery(
+      "select case " + caseQuery + "end as season, type_id, count(*) as sighting_count"
+      + " from sightings join shapes on shape_id = shapes.id group by season, type_id;",
+      "season");
+  }
+  
   List<Bucket> sightingCountsByMonth()
   {
     return sightingCountsByCategoryQuery(
@@ -508,10 +525,56 @@ class SQLiteDataSource implements DataSource {
       "hour");
   }
   
+  float[] airportsDistanceBreaks = {7.794978,12.22485,16.34988,21.02355,26.27319,32.03328,38.54012,45.20428,54.43778,64.34605,76.22255,91.7209,113.2127,152.5769};
+  float[] weatherStDistanceBreaks = {3.417465,5.244248,6.937217,8.564252,10.51355,12.41377,14.63627,16.98696,19.75864,23.02078,26.70035,31.42313,38.6634,50.20286};
+  float[] militaryBaseDistanceBreaks = {12.07392,20.41422,27.86664,36.02675,44.57247,54.70817,67.01115,80.2194,95.13276,111.2619,133.6569,158.7418,192.5056,247.0147};
+                
+  List<Bucket> sightingCountsByAirportDistance()
+  {
+    String caseQuery = "when distance < "+airportsDistanceBreaks[0]+" then 1 ";
+    for (int i = 1; i< (airportsDistanceBreaks.length);i++){
+      caseQuery = caseQuery + "when distance >= "+ airportsDistanceBreaks[i-1]+ " and distance < "+ airportsDistanceBreaks[i]+" then " + (i+1) + " ";
+    }
+    caseQuery = caseQuery + "else " + (airportsDistanceBreaks.length + 1) ;
+
+    return sightingCountsByCategoryQuery(
+      "select case " +caseQuery+" end as dist, type_id, count(*) as sighting_count"
+      + " from sightings join shapes on shape_id = shapes.id join city_airport_dist on sightings.city_id = city_airport_dist.city_id group by dist, type_id;",
+      "dist");
+  }
+  
+  List<Bucket> sightingCountsByWeatherStDistance()
+  {
+    String caseQuery = "when distance < "+weatherStDistanceBreaks[0]+" then 1 ";
+    for (int i = 1; i< (weatherStDistanceBreaks.length);i++){
+      caseQuery = caseQuery + "when distance >= "+ weatherStDistanceBreaks[i-1]+ " and distance < "+ weatherStDistanceBreaks[i]+" then " + (i+1) + " ";
+    }
+    caseQuery = caseQuery + "else " + (weatherStDistanceBreaks.length + 1) ;
+
+    return sightingCountsByCategoryQuery(
+      "select case " +caseQuery+" end as dist, type_id, count(*) as sighting_count"
+      + " from sightings join shapes on shape_id = shapes.id join city_weather_station_dist on sightings.city_id = city_weather_station_dist.city_id group by dist, type_id;",
+      "dist");
+  }
+  
+    List<Bucket> sightingCountsByMilitaryBaseDistance()
+  {
+    String caseQuery = "when distance < "+militaryBaseDistanceBreaks[0]+" then 1 ";
+    for (int i = 1; i< (militaryBaseDistanceBreaks.length);i++){
+      caseQuery = caseQuery + "when distance >= "+ militaryBaseDistanceBreaks[i-1]+ " and distance < "+ militaryBaseDistanceBreaks[i]+" then " + (i+1) + " ";
+    }
+    caseQuery = caseQuery + "else " + (militaryBaseDistanceBreaks.length + 1) ;
+
+    return sightingCountsByCategoryQuery(
+      "select case " +caseQuery+" end as dist, type_id, count(*) as sighting_count"
+      + " from sightings join shapes on shape_id = shapes.id join city_military_base_dist on sightings.city_id = city_military_base_dist.city_id group by dist, type_id;",
+      "dist");
+  }
+        
   List<Bucket> sightingCountsByCategoryQuery(String query, String categoryName)
   {
     List<Bucket> buckets = new ArrayList();
-    
+    println(query);
     db.query(query);
     
     String prev_cat = "NOPE!";

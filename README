@@ -6,3 +6,5 @@ Get the SQLibrary from https://github.com/downloads/camillol/sqlibrary/SQLibrary
 IMPORTANT! Do not get the one at http://bezier.de/processing/libs/sql/ - it is horribly slow with SQLite.
 
 Get prtree.jar from http://khelekore.org/prtree/git.shtml and install it as Libraries/prtree/library/prtree.jar
+
+GET proxml http://creativecomputing.cc/p5libs/proxml/proxml.zip
