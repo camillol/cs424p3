@@ -1,3 +1,15 @@
+class SightingLite {
+  SightingType type;
+  Date localTime;
+  Place location;
+  
+  SightingLite(SightingType type, Date localTime, Place location) {
+    this.type = type;
+    this.localTime = localTime;
+    this.location = location;
+  }
+}
+
 /* a sighting is owned by a place */
 class Sighting {
   String description;
@@ -70,6 +82,9 @@ class Place {
   String name;
   int sightingCount;
   int counts[];
+  float airportDist;
+  float militaryDist;
+  float weatherDist;
   
   Place(int type, int id, Location loc, String name, int sightingCount) {
     this.type = type;
@@ -77,6 +92,9 @@ class Place {
     this.loc = loc;
     this.name = name;
     this.sightingCount = sightingCount;
+    this.airportDist = 0;
+    this.militaryDist = 0;
+    this.weatherDist = 0;
     counts = new int[sightingTypeMap.size()];
   }
 
@@ -265,6 +283,7 @@ interface DataSource {
   void loadAirports();
   void loadMilitaryBases();
   void loadWeatherStations();
+  void loadCityDistances();
   List<Sighting> sightingsForCity(Place p);
   List<Bucket> sightingCountsByYear();
   List<Bucket> sightingCountsBySeason();
@@ -272,10 +291,11 @@ interface DataSource {
   List<Bucket> sightingCountsByHour();
   List<Bucket> sightingCountsByAirportDistance();
   List<Bucket> sightingCountsByWeatherStDistance();
-  List<Bucket> sightingCountsByMilitaryBaseDistance();
+  List<Bucket> sightingCountsByMilitaryBaseDistance();  
   List<Bucket> sightingCountsByPopulationDensity();   
+  List<SightingLite> sightingsByTime(int chunkSize, int chunkNum);
   float[] getLegendLabels(String activeMode);
-
+  Date getLastSightingDate();
 }
 
 class Bucket {
@@ -354,6 +374,33 @@ class SQLiteDataSource implements DataSource {
     println(stopWatch());
   }
 
+  void loadCityDistances(){
+        stopWatch();
+    print("query db for laoding distances...");
+    StringBuffer query = new StringBuffer();
+    query.append("select cities.id, city_airport_dist.distance as airportDist, city_military_base_dist.distance as militaryDist, city_weather_station_dist.distance as weatherDist");
+    query.append(" from cities left outer join city_airport_dist on cities.id = city_airport_dist.city_id left outer join city_military_base_dist on cities.id = city_military_base_dist.city_id "
+                 +"left outer join city_weather_station_dist on cities.id = city_weather_station_dist.city_id");
+    
+    db.query(query.toString());
+
+    println(stopWatch());
+    print("update objects...");
+   
+    while (db.next()) {
+      Place p = cityMap.get(db.getInt("id"));
+      if (p!=null){
+        int idx = 0;
+        p.airportDist = db.getFloat("airportDist");
+        p.militaryDist = db.getFloat("militaryDist");
+        p.weatherDist = db.getFloat("weatherDist");
+        idx++;
+      }
+    }
+   
+    println(stopWatch());
+  }
+  
   void reloadCitySightingCounts()
   {
     stopWatch();
@@ -621,5 +668,36 @@ class SQLiteDataSource implements DataSource {
     }
     return buckets;
   }
+  
+  List<SightingLite> sightingsByTime(int limit, int offset)
+  {
+    List<SightingLite> s = new ArrayList(limit);
+    db.query("select occurred_at, city_id, type_id from sightings left outer join shapes on shape_id = shapes.id"
+      + " order by occurred_at limit " + limit + " offset " + offset + ";");
+    while (db.next()) {
+      try {
+      s.add(new SightingLite(
+        sightingTypeMap.get(db.getInt("type_id")),
+        dbDateFormat.parse(db.getString("occurred_at")),
+        cityMap.get(db.getInt("city_id"))
+      ));
+      } catch (ParseException e) {
+        println(e);
+      }
+    }
+    return s;
+  }
+  
+  Date getLastSightingDate()
+  {
+    db.query("select max(occurred_at) from sightings;");
+    try {
+      return dbDateFormat.parse(db.getString(1));
+    } catch (ParseException e) {
+      println(e);
+      return null;
+    }
+  }
+
 }
 

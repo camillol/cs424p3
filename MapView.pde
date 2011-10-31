@@ -64,7 +64,8 @@ class MapView extends View {
   ExecutorService bufferExec;
   boolean USE_BUFFERS = true;
   
-  double TILE_EXPAND_FACTOR = 0.05;  // as a fraction of the tile size
+  double TILE_EXPAND_FACTOR = 0.5;  // as a fraction of the tile size
+  double AIRPORT_TILE_EXPAND_FACTOR = 0.15;
   
   boolean DRAW_ALL_TYPES = false;
   
@@ -81,6 +82,7 @@ class MapView extends View {
     String template = "http://{S}.mqcdn.com/tiles/1.0.0/osm/{Z}/{X}/{Y}.png";
     String[] subdomains = new String[] { "otile1", "otile2", "otile3", "otile4"}; // optional
     mmap = new InteractiveMap(papplet, new TemplatedMapProvider(template, subdomains), w, h);
+//    mmap = new InteractiveMap(papplet, new Yahoo.RoadProvider(), w, h);
   
     mmap.MAX_IMAGES_TO_KEEP = 64;
     mmap.setCenterZoom(new Location(39,-98), int(zoomValue));
@@ -225,7 +227,7 @@ class MapView extends View {
     } else
       drawPlaces(buf, placesInRect(cityTree, loc1, loc2, TILE_EXPAND_FACTOR));
     if (showAirports)
-        drawAirports(buf,placesInRect(airportTree,loc1,loc2,TILE_EXPAND_FACTOR));
+        drawAirports(buf,placesInRect(airportTree,loc1,loc2,AIRPORT_TILE_EXPAND_FACTOR));
     if (showMilitaryBases)
         drawMilitaryBases(buf,placesInRect(militaryBaseTree,loc1,loc2,TILE_EXPAND_FACTOR));
     if (showWeatherStation)
@@ -334,6 +336,31 @@ class MapView extends View {
     mmap.draw();
 
     currentTileToMapMatrix = makeTileToMapMatrix(new Coordinate(0,0,0));
+    
+    if (playing) {
+      player.update();
+      noStroke();
+      for (SightingLite s : player.loaded) {
+        long age = player.ageInMillis(s);
+        if (age < 0) break;
+        
+        Point2f p = mmap.locationPoint(s.location.loc);
+        float c = map(age, 0, player.LINGER_MILLIS / 5, 0.0, 1.0);
+        if (c <= 1.0) {
+          noFill();
+          stroke(s.type.colr, 255 * (1.0-c*c));
+          strokeWeight(2);
+          ellipse(p.x, p.y, 40 * c, 40 * c);
+          noStroke();
+        }
+        
+        float a = map(age, 0, player.LINGER_MILLIS, 255, 0);
+        fill(s.type.colr, a);
+        ellipse(p.x, p.y, 10, 10);
+      }
+      
+      return;
+    }
 
     if (USE_BUFFERS) drawOverlay();
     else{
@@ -514,7 +541,6 @@ class MapView extends View {
   
   void drawPlaces(PGraphics buffer, Iterable<? extends Place> places) {
     buffer.imageMode(CENTER);
-    buffer.strokeWeight(0.5);
     
     buffer.noStroke();
     for (Place place : places) {
@@ -526,18 +552,29 @@ class MapView extends View {
           SightingType st = mainSightingTypeForPlace(place);
           float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
           float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
-          
-          if (st == null) {
-              buffer.stroke(0);
-              buffer.fill(255);
-              buffer.ellipse(p.x, p.y, dotSize, dotSize);
+        
+        
+          if ((showAirports && place.airportDist < 10) || (showMilitaryBases && place.militaryDist < 10) || (showWeatherStation && place.weatherDist < 10)){
+                    buffer.stroke(0);
+                    buffer.strokeWeight(2);
+                    if (st == null) 
+                        buffer.fill(255);
+                    else
+                        buffer.fill(st.colr,255);
           }
-          else {
-              buffer.noStroke();
-              buffer.fill(st.colr,150);
-              buffer.ellipse(p.x, p.y, dotSize, dotSize);
-              //buffer.image((sightingTypeMap.get(place.sightingType)).icon, p.x, p.y, dotSize, dotSize);
-          }   
+          else{
+                  if (st == null) {
+                    buffer.strokeWeight(0.5);
+                    buffer.stroke(0);
+                    buffer.fill(255);
+                  }
+                  else{
+                    buffer.noStroke();
+                    buffer.fill(st.colr,180);
+                  }
+          }
+         buffer.ellipse(p.x, p.y, dotSize, dotSize);
+              //buffer.image((sightingTypeMap.get(place.sightingType)).icon, p.x, p.y, dotSize, dotSize)   
         }
       }
     } 
@@ -566,12 +603,22 @@ class MapView extends View {
     for (Entry<State,StateGlyph> entry : stateGlyphs.entrySet()) {
       State state = entry.getKey();
       StateGlyph sg = entry.getValue();
+      
       Point2f p = sg.posOnScreen();
       float x = p.x - sg.buf.width/2;
       float y = p.y - sg.buf.height/2;
       Rectangle2D r = new Rectangle2D.Float(x, y, sg.buf.width, sg.buf.height);
       if (r.contains(mouseX, mouseY)) {
-        text(state.name, x, y + sg.buf.height);
+        fill(infoBoxBackground);
+        stroke(textColor);       
+        float w_ = textWidth("Total # of sightings = "+nfc(state.sightingCount))+20;
+        float x_ = (x+w_ > w)?w-w_-5:x;
+        float h_ = (textAscent() + textDescent()) * 2 + 15;
+        float y_ = (y + sg.buf.height+h_ > sightingDetailsView.y)?sightingDetailsView.y-h_-5:y + sg.buf.height;
+        rect(x_,y_,w_,h_);
+        fill(textColor);
+        text(state.name, x_ + (w_ - textWidth(state.name))/2 ,y_+5);  
+        text("Total # of sightings = "+nfc(state.sightingCount),x_ + (w_ - textWidth("Total # of sightings = "+state.sightingCount))/2, (y_+ h_/2)+5);               
       }
     }
   }
@@ -592,7 +639,7 @@ class MapView extends View {
                 textSize(normalFontSize);
                 strokeWeight(1);
                 String textToPrint = "Click on it to see details";
-                String numOfSightings = "Total # of sightings = " + str(place.sightingCount);
+                String numOfSightings = "Total # of sightings = " + nfc(place.sightingCount);
                 if (textToPrint.length() < place.name.length())
                       textToPrint = place.name;
                 if (textToPrint.length() < numOfSightings.length())

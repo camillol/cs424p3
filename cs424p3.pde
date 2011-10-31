@@ -3,6 +3,7 @@ import org.khelekore.prtree.*;
 View rootView;
 
 PFont font;
+PFont font2;
   
 HBar hbar;
 HBar hbar2;
@@ -78,11 +79,8 @@ Boolean isDragging = false;
 SightingsFilter activeFilter;
 
 DataSource data;
-int playYear;
-int minYearIndex;
-int maxYearIndex;
-Boolean startedPlaying = false;
-int startingTime = 0;
+boolean playing = false;
+Player player;
 
 void setup()
 {
@@ -106,6 +104,7 @@ void setup()
   data.loadMilitaryBases();
   data.loadWeatherStations();
   data.reloadCitySightingCounts();
+  data.loadCityDistances();
   updateStateSightingCounts();
   
   buildPlaceTree();
@@ -113,6 +112,7 @@ void setup()
   /* setup UI */
   rootView = new View(0, 0, width, height);
   font = loadFont("Helvetica-20.vlw");
+  font2 = loadFont("Courier-20.vlw");
   
   airplaneImage = loadImage("plane.png");
   militaryBaseImage = loadImage("irkickflash2.png");
@@ -182,6 +182,9 @@ void buttonClicked(Checkbox button)
     showByStates = settingsView.showByStatesCB.value;
     mapv.rebuildOverlay();
   }
+  
+  if (showByStates)
+      detailsAnimator.target(height);
 }
 
 void listClicked(ListBox lb, int index, Object item)
@@ -199,44 +202,30 @@ void listClicked(ListBox lb, int index, Object item)
   }
 }
 
+void startPlaying()
+{
+  playing = true;
+  player = new Player();
+  settingsView.playBarAnimator.target(100);
+}
+
+void stopPlaying()
+{
+  playing = false;
+  player = null;
+  settingsView.playBarAnimator.target(0);
+}
+
 void draw()
 {
-  int seconds = (millis() - startingTime) / 1000;
-  
-  if (!settingsView.play.value){
-    minYearIndex = settingsView.yearSlider.minIndex();
-    maxYearIndex = settingsView.yearSlider.maxIndex();
-  }
-  
   background(backgroundColor); 
   Animator.updateAll();
   
   settingsView.y = settingsAnimator.value;
   sightingDetailsView.y = detailsAnimator.value;
-       
-  rootView.draw();
-
-  if (settingsView.play.value){
-      if (!startedPlaying){
-          startedPlaying = true;
-          maxYearIndex = minYearIndex;
-      }
-      else if (seconds % 30 == 2){  //Update the new year to query after few seconds.
-          startingTime=millis();
-          minYearIndex ++;
-          maxYearIndex = minYearIndex;  
-      }   
-         
-      updateFilter();
-  }
-  if (maxYearIndex == settingsView.yearSlider.maxIndex()+1){
-      settingsView.play.value = false;
-      settingsView.play.transitionValue = 0;
-      startedPlaying = false;
-      minYearIndex = settingsView.yearSlider.minIndex();
-      maxYearIndex = settingsView.yearSlider.maxIndex();
-      updateFilter();
-  }  
+  settingsView.playBar.w = settingsView.playBarAnimator.value;
+  
+  rootView.draw(); 
 }
 
 void mousePressed()
@@ -259,8 +248,8 @@ void mouseClicked()
 boolean updateFilter()
 {
   SightingsFilter newFilter = new SightingsFilter();
-  newFilter.viewMinYear = 2000 + minYearIndex;
-  newFilter.viewMaxYear = 2000 + maxYearIndex;
+  newFilter.viewMinYear = 2000 + settingsView.yearSlider.minIndex();
+  newFilter.viewMaxYear = 2000 + settingsView.yearSlider.maxIndex();
   if (btwMonths) {
     newFilter.viewMinMonth =  1 + settingsView.monthSlider.minIndex();
     newFilter.viewMaxMonth =  1 + settingsView.monthSlider.maxIndex();

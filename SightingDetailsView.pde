@@ -17,6 +17,7 @@ class SightingDetailsView extends View {
     
     multiLineText = new MultiLineText(230,79, w - 250,120);
     this.subviews.add(multiLineText);
+    
   }
   
   void setSightings(List<Sighting> _sightings){
@@ -29,11 +30,11 @@ class SightingDetailsView extends View {
   
   void drawContent()
   {  
-
+    textFont(font2,normalFontSize); 
     fill(viewBackgroundColor,230);
     stroke(viewBackgroundColor,230);
     rect(0,0, w, h);
-
+    textAlign(LEFT,TOP);
     if (place!=null && sightings.size()>0){
       fill(boldTextColor);
       textSize(normalFontSize);
@@ -67,6 +68,7 @@ class SightingDetailsView extends View {
     fill(textColor);
     text("x",w-45,4);
     text("Close",w-35,5);
+    textFont(font,normalFontSize); 
   }
   
    boolean contentClicked(float lx, float ly)
@@ -112,12 +114,10 @@ class MultiLineText extends View {
   
   void drawContent()
   {
+      textFont(font2,normalFontSize);
       textAlign(LEFT,TOP);
-      textFont(font,normalFontSize);
       stroke(textColor);
       fill(scrollListColor);
-      //rect(0,0,w,h);
-      textFont(font,normalFontSize);
       float vSpaceBtwLines =  textAscent() + textDescent();
       int charactersByLine = int(tWidth/textWidth("w"));
    //   println("current line " +tScroll.currentLine);
@@ -132,6 +132,7 @@ class MultiLineText extends View {
             text(_str, 0 , y);
          }
       }
+      textFont(font,normalFontSize);
   }
   
 }
