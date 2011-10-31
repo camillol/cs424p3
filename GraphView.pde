@@ -35,7 +35,7 @@ class GraphView extends View {
   List<Bucket> buckets;
   int maxTotal;
   
-  List<String> modes = Arrays.asList("Year", "Season","Month", "Time of day", "Airport distance", "Military Base dist", "Weather St. dist.","Population density");
+  List<String> modes = Arrays.asList("Year", "Season","Month", "Time of day", "Airport distance", "Military Base distance", "Weather St. distance","County Population dens.");
   String activeMode = "Year";
   
   GraphView(float x_, float y_, float w_, float h_)
@@ -67,8 +67,10 @@ class GraphView extends View {
     else if (activeMode.equals("Month")) buckets = data.sightingCountsByMonth();
     else if (activeMode.equals("Time of day")) buckets = data.sightingCountsByHour();
     else if (activeMode.equals("Airport distance")) buckets = data.sightingCountsByAirportDistance();
-    else if (activeMode.equals("Military Base dist")) buckets = data.sightingCountsByMilitaryBaseDistance();
-    else if (activeMode.equals("Weather St. dist.")) buckets = data.sightingCountsByWeatherStDistance();
+    else if (activeMode.equals("Military Base distance")) buckets = data.sightingCountsByMilitaryBaseDistance();
+    else if (activeMode.equals("Weather St. distance")) buckets = data.sightingCountsByWeatherStDistance();
+    else if (activeMode.equals("County Population dens.")) buckets = data.sightingCountsByPopulationDensity();
+    
     maxTotal = 0;
     for (Bucket bucket : buckets) {
       int total = 0;
@@ -102,19 +104,24 @@ class GraphView extends View {
     }
     fill(backgroundColor);
     stroke(textColor);
-    rect (0,h+5,w,90);
+    rect (0,h+5,w,110);
     fill(textColor);
-    textAlign(LEFT,TOP);
+    
     float[] activeModeLegend =  data.getLegendLabels(activeMode);
     if (activeModeLegend != null){
-      text("[1] < " + nfc(activeModeLegend[0],2),10,h+15);
+      if (!activeMode.equals("County Population dens."))
+         text("Measurement unit = Km", w/2,h+20);
+      else 
+         text("Population density by County", w/2,h+20);
+      textAlign(LEFT,TOP);
+      text("[1] < " + nfc(activeModeLegend[0],2),10,h+35);
 
       for (int i = 1; i <  activeModeLegend.length;i++) {
         int y_delta = (i % 5) * 15;
         int x_delta = (i / 5) * 300;
-        text("["+(i+1) + "] >= " + nfc(activeModeLegend[i-1],2) + " and < " + nfc(activeModeLegend[i-1],2), 10 + x_delta ,h + 15 + y_delta);
+        text("["+(i+1) + "] >= " + nfc(activeModeLegend[i-1],2) + " and < " + nfc(activeModeLegend[i],2), 10 + x_delta ,h + 35 + y_delta);
       }
-      text("["+(activeModeLegend.length+1)+"] > " + nfc(activeModeLegend[activeModeLegend.length-1],2), 10 + ((activeModeLegend.length / 5) * 300),h + 15 + ((activeModeLegend.length % 5) * 15));
+      text("["+(activeModeLegend.length+1)+"] >= " + nfc(activeModeLegend[activeModeLegend.length-1],2), 10 + ((activeModeLegend.length / 5) * 300),h + 35 + ((activeModeLegend.length % 5) * 15));
     }
   }
 }

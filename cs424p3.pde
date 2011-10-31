@@ -27,6 +27,7 @@ DateFormat dbDateFormat= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 color backgroundColor = 0;
 color textColor = 255;
 color boldTextColor = #FFFF00;
+color titleTextColor = 0;
 color viewBackgroundColor = #2D2A36;
 color airportAreaColor = #FFA500;
 color militaryBaseColor = #CC0000;
@@ -111,7 +112,7 @@ void setup()
   
   /* setup UI */
   rootView = new View(0, 0, width, height);
-  font = loadFont("Courier-20.vlw");
+  font = loadFont("Helvetica-20.vlw");
   
   airplaneImage = loadImage("plane.png");
   militaryBaseImage = loadImage("irkickflash2.png");
@@ -189,7 +190,7 @@ void listClicked(ListBox lb, int index, Object item)
     graphView.setActiveMode((String)item);
     String _item = (String)item;
     if (!_item.equals("Year") && !_item.equals("Season")  && !_item.equals("Month") && !_item.equals("Time of day")){
-        graphContainer.graphAnimator.target(graphContainer.h-100);
+        graphContainer.graphAnimator.target(graphContainer.h-120);
     }
     else{
        graphContainer.graphAnimator.target(graphContainer.h-5);
