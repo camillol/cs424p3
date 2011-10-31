@@ -65,6 +65,9 @@ class GraphView extends View {
     if (activeMode.equals("Year")) buckets = data.sightingCountsByYear();
     else if (activeMode.equals("Month")) buckets = data.sightingCountsByMonth();
     else if (activeMode.equals("Time of day")) buckets = data.sightingCountsByHour();
+    else if (activeMode.equals("Airport distance")) buckets = data.sightingCountsByAirportDistance();
+    else if (activeMode.equals("Military Base dist")) buckets = data.sightingCountsByMilitaryBaseDistance();
+    else if (activeMode.equals("Weather St. dist.")) buckets = data.sightingCountsByWeatherStDistance();
     maxTotal = 0;
     for (Bucket bucket : buckets) {
       int total = 0;
