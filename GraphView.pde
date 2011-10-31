@@ -119,9 +119,9 @@ class GraphView extends View {
       for (int i = 1; i <  activeModeLegend.length;i++) {
         int y_delta = (i % 5) * 15;
         int x_delta = (i / 5) * 300;
-        text("["+(i+1) + "] >= " + nfc(activeModeLegend[i-1],2) + " and < " + nfc(activeModeLegend[i-1],2), 10 + x_delta ,h + 35 + y_delta);
+        text("["+(i+1) + "] >= " + nfc(activeModeLegend[i-1],2) + " and < " + nfc(activeModeLegend[i],2), 10 + x_delta ,h + 35 + y_delta);
       }
-      text("["+(activeModeLegend.length+1)+"] > " + nfc(activeModeLegend[activeModeLegend.length-1],2), 10 + ((activeModeLegend.length / 5) * 300),h + 35 + ((activeModeLegend.length % 5) * 15));
+      text("["+(activeModeLegend.length+1)+"] >= " + nfc(activeModeLegend[activeModeLegend.length-1],2), 10 + ((activeModeLegend.length / 5) * 300),h + 35 + ((activeModeLegend.length % 5) * 15));
     }
   }
 }
