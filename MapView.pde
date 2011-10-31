@@ -71,6 +71,7 @@ class MapView extends View {
   Map<State, StateGlyph> stateGlyphs;
   boolean movingGlyphs;
   PMatrix2D glyphSavedMatrix;
+  PMatrix2D currentTileToMapMatrix;
   
   MapView(float x_, float y_, float w_, float h_)
   {
@@ -279,6 +280,15 @@ class MapView extends View {
       return new Rectangle2D.Float(x - buf.width/2 - MARGIN, y - buf.height/2 - MARGIN, buf.width + MARGIN*2, buf.height + MARGIN*2);
     }
     
+    Point2f posOnScreen()
+    {
+      float tilept[] = new float[2];
+      glyphSavedMatrix.mult(new float[] {x, y}, tilept);
+      float screenpt[] = new float[2];
+      currentTileToMapMatrix.mult(tilept, screenpt);
+      return new Point2f(screenpt[0], screenpt[1]);
+    }
+    
     void collide(StateGlyph other)
     {
       Rectangle2D rect_this = this.rect();
@@ -322,6 +332,8 @@ class MapView extends View {
   {
     imageMode(CORNER);  // modestmaps needs this - I sent a patch, but who knows when it'll be committed
     mmap.draw();
+
+    currentTileToMapMatrix = makeTileToMapMatrix(new Coordinate(0,0,0));
 
     if (USE_BUFFERS) drawOverlay();
     else{
@@ -369,7 +381,6 @@ class MapView extends View {
         }
       }
       
-      PMatrix2D m = makeTileToMapMatrix(new Coordinate(0,0,0));
       for (State state : stateMap.values()) {
         if (state.sightingCount <= 0) continue;
         StateGlyph sg = stateGlyphs.get(state);
@@ -377,15 +388,13 @@ class MapView extends View {
         if (sg == null) continue;
         
 //        line(sg.x, sg.y, sg.x0, sg.y0);
-        float out[] = new float[2];
-        glyphSavedMatrix.mult(new float[] {sg.x, sg.y}, out);
-        float out2[] = new float[2];
-        m.mult(out, out2);
-        image(sg.buf, out2[0], out2[1]);
+        Point2f p = sg.posOnScreen();
+        image(sg.buf, p.x, p.y);
       }
     }
     
-    if (!showByStates) drawPlacesInformationBox();
+    if (showByStates) drawStatesInformationBox();
+    else drawPlacesInformationBox();
   }
 
   boolean contentMouseWheel(float lx, float ly, int delta)
@@ -549,6 +558,22 @@ class MapView extends View {
     }
     if (typeOfSightingCount == 1) return sightingType;
     else return null;
+  }
+  
+  void drawStatesInformationBox() {
+    textAlign(LEFT, TOP);
+    fill(0);
+    for (Entry<State,StateGlyph> entry : stateGlyphs.entrySet()) {
+      State state = entry.getKey();
+      StateGlyph sg = entry.getValue();
+      Point2f p = sg.posOnScreen();
+      float x = p.x - sg.buf.width/2;
+      float y = p.y - sg.buf.height/2;
+      Rectangle2D r = new Rectangle2D.Float(x, y, sg.buf.width, sg.buf.height);
+      if (r.contains(mouseX, mouseY)) {
+        text(state.name, x, y + sg.buf.height);
+      }
+    }
   }
   
   void drawPlacesInformationBox() {
