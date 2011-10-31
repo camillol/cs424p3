@@ -242,9 +242,11 @@ void updateStateSightingCounts()
   for (Place p : cityMap.values()) {
     City c = (City)p;
     State s = stateMap.get(c.state_id);
-    for (idx = 0; idx < sightingTypeMap.size(); idx++) {
+    idx = 0;
+    for (SightingType st : sightingTypeMap.values()) {
       s.counts[idx] += c.counts[idx];
-      s.sightingCount += c.counts[idx];
+      if (st.active) s.sightingCount += c.counts[idx];
+      idx++;
     }
   }
   println(stopWatch());
@@ -259,7 +261,6 @@ void updateCitySightingTotals()
     for (SightingType st : sightingTypeMap.values()) {
       if (st.active) p.sightingCount += p.counts[idx];
       idx++;
-      
     }
     totalCountSightings =  totalCountSightings + p.sightingCount;
   }
@@ -435,7 +436,7 @@ class SQLiteDataSource implements DataSource {
       for (SightingType st : sightingTypeMap.values()) {
         int typeCount = db.getInt("count_" + st.id);
         p.counts[idx] = typeCount;
-        p.sightingCount += typeCount;
+        if (st.active) p.sightingCount += typeCount;
         idx++;
       }
       minCountSightings = min(p.sightingCount, minCountSightings);
