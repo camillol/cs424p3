@@ -34,7 +34,8 @@ color airportAreaColor = #FFA500;
 color militaryBaseColor = #CC0000;
 color weatherStationColor = #FFFF00;
 color infoBoxBackground = #000000;
-color[] UFOColors = {#000000,#ffffff,#555555,#333333,#444444,#555555,#666666};
+//color[] UFOColors = {#FFFF00,#00FF00,#00FFFF,#FF8000,#800FFF,#FF0000,};
+color[] UFOColors = {#0000FF,#FF6600,#00FFFF,#FF0000,#FFFF00,#00FF00,#800FFF};
 
 int normalFontSize = 13;
 int smallFontSize = 10 ;
@@ -47,6 +48,7 @@ String[] yearLabelsToPrint = {"2000","2001","2002","2003","2004","2005","2006","
 String[] timeLabels = {"00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23"};
 String[] UFOTypeLabels = {"UFOType 1","UFOType 2","UFOType 3","UFOType 4","UFOType 5","UFOType 6","UFOType 7"};
 String[] UFOImages = {"blue.png","green.png","star.png","orange.png","purple.png","red.png","yellow.png"};
+
 
 PImage airplaneImage;
 PImage militaryBaseImage;

@@ -49,7 +49,7 @@ class MapView extends View {
   float minZoom = 4;
   float maxZoom = 15;
   int minPointSize= 5;
-  int maxPointSize = 45;
+  int maxPointSize = 35;
   int minIconSize= 10;
   int maxIconSize = 25;
   int minDistSize = 1;
@@ -552,7 +552,6 @@ class MapView extends View {
           SightingType st = mainSightingTypeForPlace(place);
           float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
           float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
-        
         
           if ((showAirports && place.airportDist < 10) || (showMilitaryBases && place.militaryDist < 10) || (showWeatherStation && place.weatherDist < 10)){
                     buffer.stroke(0);

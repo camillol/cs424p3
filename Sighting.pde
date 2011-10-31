@@ -524,7 +524,7 @@ class SQLiteDataSource implements DataSource {
       sightingTypeMap.put(db.getInt("id"), new SightingType(
         db.getInt("id"),
         loadImage(db.getString("img_name")),
-        color(unhex("FF"+db.getString("color"))),
+        color(UFOColors[db.getInt("id")-1]),
         db.getString("name")
       ));
     }
