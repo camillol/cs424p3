@@ -7,7 +7,6 @@ class SettingsView extends View {
   HSlider monthSlider;
   HSlider timeSlider;
   Checkbox yearCheckbox, monthCheckbox, timeCheckbox;
-  Map<SightingType, Checkbox> typeCheckboxMap;
   Checkbox showAirport;
   Checkbox showMilitaryBases;
   Checkbox showWeatherStation;

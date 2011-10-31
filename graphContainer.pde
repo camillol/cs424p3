@@ -6,6 +6,7 @@ class GraphContainer extends View {
   float CHECKBOX_H ;
   
   String title;
+  Map<SightingType, Checkbox> typeCheckboxGraph;
   
   GraphContainer(float x_, float y_, float w_, float h_)
   {
@@ -15,33 +16,45 @@ class GraphContainer extends View {
     graphView = new GraphView(0, 0, w - 160, h-5);
     this.subviews.add(graphView);
     
-    graphModeList = new ListBox(w - 160, 25, 160, 160, graphView.modesDataSource());
+    graphModeList = new ListBox(w - 160, 0, 155, 160, graphView.modesDataSource());
     this.subviews.add(graphModeList);
     
     CHECKBOX_X = w - 160;
     CHECKBOX_Y = 220;
-    CHECKBOX_W = 160;
+    CHECKBOX_W = 157;
     CHECKBOX_H = 150;  
+    int i = 0;
+    typeCheckboxGraph = new HashMap<SightingType, Checkbox>();
+    
+    for (SightingType st : sightingTypeMap.values()) {
+      int y_delta = (i % 7) * 20;
+      Checkbox cb = new Checkbox(CHECKBOX_X + 10,CHECKBOX_Y + 10 + y_delta,12,12, st.name, st.icon,st.colr);
+      subviews.add(cb);
+      typeCheckboxGraph.put(st,cb);
+      i++;
+    } 
   }
   
-  void addCheckboxes(){
-      int i = 0;
-      for (Entry<SightingType, Checkbox> entry : settingsView.typeCheckboxMap.entrySet()) {
-        int y_delta = (i % 7) * 20;
-        entry.getValue().x = CHECKBOX_X + 10;
-        entry.getValue().y = CHECKBOX_Y + y_delta + 9;
-        subviews.add(entry.getValue());
-        i++;
+  void updateValuesGraph(){
+      for (Entry<SightingType, Checkbox> entryG : typeCheckboxGraph.entrySet()) {
+         for (Entry<SightingType, Checkbox> entryM : typeCheckboxMap.entrySet()) {
+              if (entryM.getValue().title.equals(entryG.getValue().title)){
+                  entryG.getValue().value = entryM.getValue().value;
+              }
+         }
       }
-      
-  }
+  }  
   
-  void removeCheckboxes(){
-     for (Entry<SightingType, Checkbox> entry : settingsView.typeCheckboxMap.entrySet()) {
-      subviews.remove(entry.getValue());
-    }
-  }
-  
+  void updateValuesMap(){
+      for (Entry<SightingType, Checkbox> entryG : typeCheckboxGraph.entrySet()) {
+         for (Entry<SightingType, Checkbox> entryM : typeCheckboxMap.entrySet()) {
+              if (entryM.getValue().title.equals(entryG.getValue().title)){
+                   entryM.getValue().value = entryG.getValue().value;
+              }
+         }
+      }
+  } 
+
    void drawContent()
   {
     textSize(normalFontSize);

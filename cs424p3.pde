@@ -59,7 +59,9 @@ PRTree<Place> cityTree;
 PRTree<Place> airportTree;
 PRTree<Place> militaryBaseTree;
 PRTree<Place> weatherStationTree;
+
 Map<Integer,SightingType> sightingTypeMap;
+Map<SightingType, Checkbox> typeCheckboxMap;
 
 Sighting clickedSighting;
 Boolean showAirports=false;
@@ -147,28 +149,22 @@ void buttonClicked(Button button)
     if (graphOn){ 
       rootView.subviews.add(graphContainer);
       button.label = "Click here to show the Map";
-      graphContainer.addCheckboxes();  
+      graphContainer.updateValuesGraph();  
       
     }
     else{
       rootView.subviews.remove(graphContainer);
       button.label = "Click here to show the Graphs";
-      graphContainer.removeCheckboxes();
-      int i = 0;
-      for (Entry<SightingType, Checkbox> entry : settingsView.typeCheckboxMap.entrySet()) {
-         int x_delta = (i / 4) * 160;
-        int y_delta = (i % 4) * 20;
-        entry.getValue().x = CHECKBOX_X + x_delta + 10;
-        entry.getValue().y = CHECKBOX_Y + y_delta + 9;
-        i++;
-      }
     }
   }
 }
 
 void buttonClicked(Checkbox button)
 {
-  for (Entry<SightingType, Checkbox> entry : settingsView.typeCheckboxMap.entrySet()) {
+  if (graphOn)
+     graphContainer.updateValuesMap(); 
+     
+  for (Entry<SightingType, Checkbox> entry : typeCheckboxMap.entrySet()) {
     entry.getKey().setActive(entry.getValue().value);
   }
   btwTime = settingsView.timeCheckbox.value;

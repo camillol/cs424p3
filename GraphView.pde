@@ -35,7 +35,7 @@ class GraphView extends View {
   List<Bucket> buckets;
   int maxTotal;
   
-  List<String> modes = Arrays.asList("Year","Month", "Time of day", "Airport distance", "Military Base dist.", "Weather St. dist.","Population density", "Season");
+  List<String> modes = Arrays.asList("Year","Month", "Time of day", "Airport distance", "Military Base dist", "Weather St. dist.","Population density", "Season");
   String activeMode = "Year";
   
   GraphView(float x_, float y_, float w_, float h_)
