@@ -67,7 +67,7 @@ class MapView extends View {
   double TILE_EXPAND_FACTOR = 0.05;  // as a fraction of the tile size
   
   boolean DRAW_ALL_TYPES = false;
-  boolean DRAW_STATES = false;
+  boolean DRAW_STATES = true;
   
   Map<State, StateGlyph> stateGlyphs;
   boolean movingGlyphs;

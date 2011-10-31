@@ -60,6 +60,7 @@ class SettingsView extends View {
     this.subviews.add(showWeatherStation);
     
     showByStates = new Checkbox(780,70,12,12,"Sightings by State");
+    showByStates.value = mapv.DRAW_STATES;
     this.subviews.add(showByStates);
     
     play =  new PlayButton(w-100,h-20,90,20);
