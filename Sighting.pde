@@ -1,3 +1,15 @@
+class SightingLite {
+  SightingType type;
+  Date localTime;
+  Place location;
+  
+  SightingLite(SightingType type, Date localTime, Place location) {
+    this.type = type;
+    this.localTime = localTime;
+    this.location = location;
+  }
+}
+
 /* a sighting is owned by a place */
 class Sighting {
   String description;
@@ -273,6 +285,7 @@ interface DataSource {
   List<Bucket> sightingCountsByAirportDistance();
   List<Bucket> sightingCountsByWeatherStDistance();
   List<Bucket> sightingCountsByMilitaryBaseDistance();  
+  List<SightingLite> sightingsByTime(int chunkSize, int chunkNum);
   float[] getLegendLabels(String activeMode);
 }
 
@@ -602,5 +615,25 @@ class SQLiteDataSource implements DataSource {
     }
     return buckets;
   }
+  
+  List<SightingLite> sightingsByTime(int limit, int offset)
+  {
+    List<SightingLite> s = new ArrayList(limit);
+    db.query("select occurred_at, city_id, type_id from sightings left outer join shapes on shape_id = shapes.id"
+      + " order by occurred_at limit " + limit + " offset " + offset + ";");
+    while (db.next()) {
+      try {
+      s.add(new SightingLite(
+        sightingTypeMap.get(db.getInt("type_id")),
+        dbDateFormat.parse(db.getString("occurred_at")),
+        cityMap.get(db.getInt("city_id"))
+      ));
+      } catch (ParseException e) {
+        println(e);
+      }
+    }
+    return s;
+  }
+
 }
 

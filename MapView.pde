@@ -43,6 +43,55 @@ Line2D clipLineToRect(Line2D l, Rectangle2D r)
   }
 }
 
+class Player {
+  final static int LOAD_LIMIT = 500;
+  final static float DAYS_PER_SECOND = 5.0;
+  final static float LINGER_MILLIS = 5.0 * 24 * 3600 * 1000;  // 5 days - in the data timescale!
+  long start;
+  LinkedList<SightingLite> loaded;
+  int loadOffset;
+  Date firstDate;
+  Calendar now;
+  boolean more;
+
+  Player() {
+    start = millis();
+    loaded = new LinkedList<SightingLite>(data.sightingsByTime(LOAD_LIMIT, 0));
+    loadOffset = LOAD_LIMIT;
+    firstDate = loaded.get(0).localTime;
+    now = Calendar.getInstance();
+    more = true;
+  }
+  
+  long ageInMillis(SightingLite s) {
+    return now.getTimeInMillis() - s.localTime.getTime();
+  }
+  
+  void update() {
+    float seconds = (millis() - start) / 1000.0;
+    float dataSeconds = seconds * 24 * 3600;
+    now.setTime(firstDate);
+    now.add(Calendar.SECOND, ceil(dataSeconds));
+    
+    while (more && (loaded.isEmpty() || now.after(loaded.getLast().localTime))) {
+      List<SightingLite> s = data.sightingsByTime(LOAD_LIMIT, loadOffset);
+      println("loaded " + s.size());
+      if (s.size() == 0) more = false;
+      else {
+        loaded.addAll(s);
+        loadOffset += s.size();
+        println(loaded.getLast().localTime);
+      }
+    }
+    
+    Iterator<SightingLite> it = loaded.iterator();
+    while (it.hasNext()) {
+      SightingLite s = it.next();
+      if (ageInMillis(s) > LINGER_MILLIS) it.remove();
+    }
+  }
+}
+
 class MapView extends View {
   InteractiveMap mmap;
   float zoomValue = 4;
@@ -334,6 +383,21 @@ class MapView extends View {
     mmap.draw();
 
     currentTileToMapMatrix = makeTileToMapMatrix(new Coordinate(0,0,0));
+    
+    if (playing) {
+      player.update();
+      noStroke();
+      for (SightingLite s : player.loaded) {
+        long age = player.ageInMillis(s);
+        if (age < 0) break;
+        float a = map(age, 0, player.LINGER_MILLIS, 255, 0);
+        Point2f p = mmap.locationPoint(s.location.loc);
+        fill(s.type.colr, a);
+        ellipse(p.x, p.y, 10, 10);
+      }
+      
+      return;
+    }
 
     if (USE_BUFFERS) drawOverlay();
     else{
