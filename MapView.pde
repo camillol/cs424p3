@@ -4,6 +4,44 @@ import com.modestmaps.core.*;
 import com.modestmaps.geo.*;
 import com.modestmaps.providers.*;
 import java.util.concurrent.*;
+import java.awt.geom.*;
+
+/* Cohen-Sutherland algorithm */
+Line2D clipLineToRect(Line2D l, Rectangle2D r)
+{
+  double x1 = l.getP1().getX();
+  double y1 = l.getP1().getY();
+  double x2 = l.getP2().getX();
+  double y2 = l.getP2().getY();
+  int out1 = r.outcode(x1, y1);
+  int out2 = r.outcode(x2, y2);
+  
+  while (true) {
+    if ((out1 | out2) == 0) return new Line2D.Double(x1, y1, x2, y2);  /* entirely inside */
+    if ((out1 & out2) != 0) return null;                               /* entirely outside */
+    
+    int out = out1 != 0 ? out1 : out2;
+    double x, y;
+    if ((out & (Rectangle2D.OUT_LEFT | Rectangle2D.OUT_RIGHT)) != 0) {
+      x = r.getX();
+      if ((out & Rectangle2D.OUT_RIGHT) != 0) x += r.getWidth();
+      y = y1 + (x - x1) * (y2 - y1) / (x2 - x1);
+    } else {
+      y = r.getY();
+      if ((out & Rectangle2D.OUT_BOTTOM) != 0) y += r.getHeight();
+      x = x1 + (y - y1) * (x2 - x1) / (y2 - y1);
+    }
+    if (out == out1) {
+      x1 = x;
+      y1 = y;
+      out1 = r.outcode(x1, y1);
+    } else {
+      x2 = x;
+      y2 = y;
+      out2 = r.outcode(x2, y2);
+    }
+  }
+}
 
 class MapView extends View {
   InteractiveMap mmap;
@@ -32,6 +70,8 @@ class MapView extends View {
   boolean DRAW_STATES = true;
   
   Map<State, StateGlyph> stateGlyphs;
+  boolean movingGlyphs;
+  PMatrix2D glyphSavedMatrix;
   
   MapView(float x_, float y_, float w_, float h_)
   {
@@ -134,6 +174,26 @@ class MapView extends View {
 //    println("images: " + count + " col " + minCol + " " + maxCol + " rows " + minRow + " " + maxRow);
   }
   
+  PMatrix2D makeMapToTileMatrix(Coordinate tileCoord) {
+    PMatrix2D m = new PMatrix2D();
+    m.translate(-tileCoord.column * mmap.TILE_WIDTH, -tileCoord.row * mmap.TILE_HEIGHT);
+    m.scale(pow(2, tileCoord.zoom));
+    m.translate(-(float)mmap.tx, -(float)mmap.ty);
+    m.scale(1.0/(float)mmap.sc);
+    m.translate(-mmap.width/2, -mmap.height/2);
+    return m;
+  }
+  
+  PMatrix2D makeTileToMapMatrix(Coordinate tileCoord) {
+    PMatrix2D m = new PMatrix2D();
+    m.translate(mmap.width/2, mmap.height/2);
+    m.scale((float)mmap.sc);
+    m.translate((float)mmap.tx, (float)mmap.ty);
+    m.scale(pow(2, -tileCoord.zoom));
+    m.translate(tileCoord.column * mmap.TILE_WIDTH, tileCoord.row * mmap.TILE_HEIGHT);
+    return m;
+  }
+  
   void applyMapToTileMatrix(PGraphics buffer, Coordinate tileCoord) {
     buffer.translate(-tileCoord.column * mmap.TILE_WIDTH, -tileCoord.row * mmap.TILE_HEIGHT);
     buffer.scale(pow(2, tileCoord.zoom));
@@ -141,6 +201,7 @@ class MapView extends View {
     buffer.scale(1.0/(float)mmap.sc);
     buffer.translate(-mmap.width/2, -mmap.height/2);
   }
+  
   
   PGraphics makeOverlayBuffer(Coordinate coord) {
 //    println("makebuf: " + coord);
@@ -188,9 +249,18 @@ class MapView extends View {
   }
   
   class StateGlyph {
+    final static float REPULSION = 0.85;
+    final static float RETURN = 0;
+    final static float FRICTION = 0.6;
+    final static int MARGIN = 2;
+    final static float STOP_THRESHOLD = 0.01;
+    
     PGraphics buf;
+    float x0, y0;
     float x;
     float y;
+    float vx;
+    float vy;
     
     StateGlyph(State state) {
       int boxsz = ceil(sqrt(state.sightingCount));
@@ -198,6 +268,54 @@ class MapView extends View {
       buf.beginDraw();
       drawSightingDots(buf, state, new Point2f(boxsz/2, boxsz/2));
       buf.endDraw();
+      
+      Point2f p = mmap.locationPoint(state.loc);
+      x = x0 = p.x;
+      y = y0 = p.y;
+      vx = vy = 0;
+    }
+    
+    Rectangle2D rect()
+    {
+      return new Rectangle2D.Float(x - buf.width/2 - MARGIN, y - buf.height/2 - MARGIN, buf.width + MARGIN*2, buf.height + MARGIN*2);
+    }
+    
+    void collide(StateGlyph other)
+    {
+      Rectangle2D rect_this = this.rect();
+      Rectangle2D rect_other = other.rect();
+      Rectangle2D rect_intersect = rect_this.createIntersection(rect_other);
+        
+      if (!rect_intersect.isEmpty()) {
+        double m_this = rect_this.getHeight() * rect_this.getWidth();
+        double m_other = rect_other.getHeight() * rect_other.getWidth();
+        
+        Line2D l = new Line2D.Double(rect_this.getCenterX(), rect_this.getCenterY(), rect_other.getCenterX(), rect_other.getCenterY());
+        l = clipLineToRect(l, rect_intersect);
+        
+        double dx = l.getX1() - l.getX2();
+        double dy = l.getY1() - l.getY2();
+        
+        vx += dx * m_other / (m_this + m_other) * REPULSION;
+        vy += dy * m_other / (m_this + m_other) * REPULSION;
+        
+        other.vx += - dx * m_this / (m_this + m_other) * REPULSION;
+        other.vy += - dy * m_this / (m_this + m_other) * REPULSION;
+      }
+    }
+    
+    float move()
+    {
+      vx += (x0 - x) * RETURN;
+      vy += (y0 - y) * RETURN;
+      
+      vx *= (1 - FRICTION);
+      vy *= (1 - FRICTION);
+      
+      x += vx;
+      y += vy;
+      
+      return sqrt(vx*vx + vy*vy);
     }
   }
   
@@ -218,14 +336,51 @@ class MapView extends View {
     }
     if (DRAW_STATES) {
       imageMode(CENTER);
+      
+      /* create all glyphs if missing */
+      if (stateGlyphs.size() == 0) {
+        for (State state : stateMap.values()) {
+          if (state.sightingCount <= 0) continue;
+  //        if (state.abbr.equals("CA") || state.abbr.equals("NV"))
+          stateGlyphs.put(state, new StateGlyph(state));
+        }
+        movingGlyphs = true;
+        glyphSavedMatrix = makeMapToTileMatrix(new Coordinate(0,0,0));
+        /* this matrix maps from screen to megatile coordinates. hopefully. */
+      }
+      
+      if (movingGlyphs) {
+        float max_move = 0;
+        /* let's try to avoid overlaps */
+        int i = 0;
+        for (StateGlyph sg : stateGlyphs.values()) {
+          int j = 0;
+          for (StateGlyph sg2 : stateGlyphs.values()) {
+            if (j > i) sg.collide(sg2);
+            j++;
+          }
+          max_move = max(max_move, sg.move());
+          i++;
+        }
+        if (max_move < StateGlyph.STOP_THRESHOLD) {
+          movingGlyphs = false;
+          println("done moving");
+        }
+      }
+      
+      PMatrix2D m = makeTileToMapMatrix(new Coordinate(0,0,0));
       for (State state : stateMap.values()) {
         if (state.sightingCount <= 0) continue;
-        if (!stateGlyphs.containsKey(state))
-          stateGlyphs.put(state, new StateGlyph(state));
+        StateGlyph sg = stateGlyphs.get(state);
         
-        PGraphics img = stateGlyphs.get(state).buf;
-        Point2f p = mmap.locationPoint(state.loc);
-        image(img, p.x, p.y);
+        if (sg == null) continue;
+        
+//        line(sg.x, sg.y, sg.x0, sg.y0);
+        float out[] = new float[2];
+        glyphSavedMatrix.mult(new float[] {sg.x, sg.y}, out);
+        float out2[] = new float[2];
+        m.mult(out, out2);
+        image(sg.buf, out2[0], out2[1]);
       }
     }
     
