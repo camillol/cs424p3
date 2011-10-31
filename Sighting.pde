@@ -295,7 +295,7 @@ interface DataSource {
   List<Bucket> sightingCountsByPopulationDensity();   
   List<SightingLite> sightingsByTime(int chunkSize, int chunkNum);
   float[] getLegendLabels(String activeMode);
-
+  Date getLastSightingDate();
 }
 
 class Bucket {
@@ -686,6 +686,17 @@ class SQLiteDataSource implements DataSource {
       }
     }
     return s;
+  }
+  
+  Date getLastSightingDate()
+  {
+    db.query("select max(occurred_at) from sightings;");
+    try {
+      return dbDateFormat.parse(db.getString(1));
+    } catch (ParseException e) {
+      println(e);
+      return null;
+    }
   }
 
 }

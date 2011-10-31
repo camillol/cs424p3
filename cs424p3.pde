@@ -206,6 +206,14 @@ void startPlaying()
 {
   playing = true;
   player = new Player();
+  settingsView.playBarAnimator.target(100);
+}
+
+void stopPlaying()
+{
+  playing = false;
+  player = null;
+  settingsView.playBarAnimator.target(0);
 }
 
 void draw()
@@ -215,6 +223,7 @@ void draw()
   
   settingsView.y = settingsAnimator.value;
   sightingDetailsView.y = detailsAnimator.value;
+  settingsView.playBar.w = settingsView.playBarAnimator.value;
   
   rootView.draw(); 
 }

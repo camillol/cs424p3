@@ -12,7 +12,9 @@ class SettingsView extends View {
   Checkbox showWeatherStationCB;
   Checkbox showByStatesCB;
   PlayButton play;
-    
+  PlayBar playBar;
+  Animator playBarAnimator;
+
   boolean showView;
   float heightView ;
   String title;
@@ -66,9 +68,13 @@ class SettingsView extends View {
     showByStatesCB.value = showByStates;
     this.subviews.add(showByStatesCB);
     
-    play =  new PlayButton(w-100,h-20,90,20);
+    play =  new PlayButton(100,h-25,25,25);
     this.subviews.add(play);
     
+    playBar =  new PlayBar(125,h-25,0,25);
+    playBarAnimator = new Animator(0);
+    this.subviews.add(playBar);
+
     showView = false;
   }
   
@@ -76,7 +82,7 @@ class SettingsView extends View {
   {
     textSize(normalFontSize);
     fill(viewBackgroundColor,220);
-    stroke(viewBackgroundColor,220);
+//    stroke(viewBackgroundColor,220);
     rect(0,0, w, h-25);
     textFont(font,normalFontSize);
     rect(0,h-25,textWidth("Show Settings")+10,25);
