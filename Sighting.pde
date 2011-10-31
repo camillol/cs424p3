@@ -1,8 +1,8 @@
-import processing.net.*;
-
+import proxml.*;
 /* a sighting is owned by a place */
 class Sighting {
   String description;
+  String shortDescription;
   SightingType type;
   float airportDist;
   float militaryDist;
@@ -13,6 +13,7 @@ class Sighting {
   String weather;
   int temperature;
   int id;
+  int shape_id;
   
   Sighting(int id, String desc, SightingType type, String shapeName, float airportDist, float milDist, Date localTime,Date reportedTime, Place location,String weather, int temperature) {
     this.id = id;
@@ -28,13 +29,44 @@ class Sighting {
     this.temperature = temperature;
   }
 
-  public void loadAttributeRemote(){
-    Client c = new Client(this, "it-came-out-of-the-sky.appspot.com", 80); // Connect to server on port 80
-    c.write("GET /sightings?sighting_id=" + this.id + " HTTP/1.1\r\n\r\n"); // Use the HTTP "GET" command to ask for a Web page
-    if(c.available() > 0) {
-      String data = c.readString();
-      println(data);
+  Sighting(int id){
+    this.id = id;
+  }
+
+  public void loadAttributesRemote(){
+    XMLInOut xml = new XMLInOut(papplet);
+    proxml.XMLElement xml_elem=null; 
+    try{
+      xml_elem = xml.loadElementFrom("http://it-came-out-of-the-sky.appspot.com/sightings?sighting_id=" + this.id); 
+    }catch(Exception e){
+      e.printStackTrace(); 
     }
+    for(int i=0; i < xml_elem.countChildren(); ++i){
+      try{
+        proxml.XMLElement child = xml_elem.getChild(i);   
+        if(!child.hasChildren() || child.toString().equals("<key>")) continue;
+        String content = child.getChild(0).toString();
+        String name = child.getAttribute("name");
+        if(name.equals("full_description"))
+          this.description = content;      
+        if(name.equals("occurred_at"))
+          this.localTime = dbDateFormat.parse(content);
+        if(name.equals("posted_at"))
+          this.reportedTime = dbDateFormat.parse(content);
+        //if(name.equals("reported_at"))
+        if(name.equals("shape_id"))
+          this.shape_id = Integer.parseInt(content);
+        if(name.equals("summary_description"))
+          this.shortDescription = content;
+        if(name.equals("temperature"))
+          this.temperature = Integer.parseInt(content);
+        if(name.equals("weather_conditions"))
+          this.weather = content;
+      }
+      catch(Exception e){
+        e.printStackTrace();
+      }
+    }    
   }
 }
 
@@ -447,7 +479,7 @@ class SQLiteDataSource implements DataSource {
     while (db.next()) {
       try{
       sightings.add(new Sighting(
-        db.getInt("id");
+        db.getInt("id"),
         db.getString("full_description"),
         sightingTypeMap.get(db.getInt("type_id")),
         db.getString("name"),
