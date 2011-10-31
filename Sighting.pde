@@ -273,6 +273,7 @@ interface DataSource {
   List<Bucket> sightingCountsByAirportDistance();
   List<Bucket> sightingCountsByWeatherStDistance();
   List<Bucket> sightingCountsByMilitaryBaseDistance();  
+  float[] getLegendLabels(String activeMode);
 }
 
 class Bucket {
@@ -528,7 +529,14 @@ class SQLiteDataSource implements DataSource {
   float[] airportsDistanceBreaks = {7.794978,12.22485,16.34988,21.02355,26.27319,32.03328,38.54012,45.20428,54.43778,64.34605,76.22255,91.7209,113.2127,152.5769};
   float[] weatherStDistanceBreaks = {3.417465,5.244248,6.937217,8.564252,10.51355,12.41377,14.63627,16.98696,19.75864,23.02078,26.70035,31.42313,38.6634,50.20286};
   float[] militaryBaseDistanceBreaks = {12.07392,20.41422,27.86664,36.02675,44.57247,54.70817,67.01115,80.2194,95.13276,111.2619,133.6569,158.7418,192.5056,247.0147};
-                
+           
+  float[] getLegendLabels(String activeMode){
+   if (activeMode.equals("Airport distance")) return airportsDistanceBreaks;
+   else if (activeMode.equals("Military Base dist")) return militaryBaseDistanceBreaks;
+   else if (activeMode.equals("Weather St. dist.")) return weatherStDistanceBreaks;
+   
+   return null;
+  }    
   List<Bucket> sightingCountsByAirportDistance()
   {
     String caseQuery = "when distance < "+airportsDistanceBreaks[0]+" then 1 ";
@@ -574,7 +582,7 @@ class SQLiteDataSource implements DataSource {
   List<Bucket> sightingCountsByCategoryQuery(String query, String categoryName)
   {
     List<Bucket> buckets = new ArrayList();
-    println(query);
+
     db.query(query);
     
     String prev_cat = "NOPE!";
