@@ -3,6 +3,7 @@ import org.khelekore.prtree.*;
 View rootView;
 
 PFont font;
+PFont font2;
   
 HBar hbar;
 HBar hbar2;
@@ -113,6 +114,7 @@ void setup()
   /* setup UI */
   rootView = new View(0, 0, width, height);
   font = loadFont("Helvetica-20.vlw");
+  font2 = loadFont("Courier-20.vlw");
   
   airplaneImage = loadImage("plane.png");
   militaryBaseImage = loadImage("irkickflash2.png");

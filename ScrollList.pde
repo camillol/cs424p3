@@ -35,11 +35,10 @@ class ScrollList extends View {
   void drawContent()
   {
       textAlign(LEFT,TOP);
-      textFont(font,normalFontSize);
+      textFont(font2,normalFontSize);
       stroke(textColor);
       fill(scrollListColor);
       rect(0,0,w,h);
-      textFont(font,normalFontSize);
       float spaceBtwLabels =  textAscent() + textDescent()+ vSpaceBtwLabels;
       firstIndex = scroll.currentLine;
       selectedItem =  constrain(selectedItem,1,labels.size()-firstIndex);
@@ -60,6 +59,7 @@ class ScrollList extends View {
             text(str(i+firstIndex+1)+" - "+_str, x , y+ vSpaceBtwLabels);
          }
      }
+     textFont(font,normalFontSize);
   }
   
   boolean contentPressed(float lx, float ly)
