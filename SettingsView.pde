@@ -59,7 +59,7 @@ class SettingsView extends View {
     showWeatherStation = new Checkbox(780,50,12,12,"Show weather stations",weatherStationImage,-1);
     this.subviews.add(showWeatherStation);
     
-    showByStates = new Checkbox(780,70,12,12,"Sightings by States");
+    showByStates = new Checkbox(780,70,12,12,"Sightings by State");
     this.subviews.add(showByStates);
     
     play =  new PlayButton(w-100,h-20,90,20);
