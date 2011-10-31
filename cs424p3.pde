@@ -104,6 +104,7 @@ void setup()
   data.loadMilitaryBases();
   data.loadWeatherStations();
   data.reloadCitySightingCounts();
+  data.loadCityDistances();
   updateStateSightingCounts();
   
   buildPlaceTree();
@@ -181,6 +182,9 @@ void buttonClicked(Checkbox button)
     showByStates = settingsView.showByStatesCB.value;
     mapv.rebuildOverlay();
   }
+  
+  if (showByStates)
+      detailsAnimator.target(height);
 }
 
 void listClicked(ListBox lb, int index, Object item)

@@ -590,7 +590,6 @@ class MapView extends View {
   
   void drawPlaces(PGraphics buffer, Iterable<? extends Place> places) {
     buffer.imageMode(CENTER);
-    buffer.strokeWeight(0.5);
     
     buffer.noStroke();
     for (Place place : places) {
@@ -602,18 +601,29 @@ class MapView extends View {
           SightingType st = mainSightingTypeForPlace(place);
           float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
           float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
-          
-          if (st == null) {
-              buffer.stroke(0);
-              buffer.fill(255);
-              buffer.ellipse(p.x, p.y, dotSize, dotSize);
+        
+        
+          if ((showAirports && place.airportDist < 10) || (showMilitaryBases && place.militaryDist < 10) || (showWeatherStation && place.weatherDist < 10)){
+                    buffer.stroke(0);
+                    buffer.strokeWeight(2);
+                    if (st == null) 
+                        buffer.fill(255);
+                    else
+                        buffer.fill(st.colr,255);
           }
-          else {
-              buffer.noStroke();
-              buffer.fill(st.colr,150);
-              buffer.ellipse(p.x, p.y, dotSize, dotSize);
-              //buffer.image((sightingTypeMap.get(place.sightingType)).icon, p.x, p.y, dotSize, dotSize);
-          }   
+          else{
+                  if (st == null) {
+                    buffer.strokeWeight(0.5);
+                    buffer.stroke(0);
+                    buffer.fill(255);
+                  }
+                  else{
+                    buffer.noStroke();
+                    buffer.fill(st.colr,180);
+                  }
+          }
+         buffer.ellipse(p.x, p.y, dotSize, dotSize);
+              //buffer.image((sightingTypeMap.get(place.sightingType)).icon, p.x, p.y, dotSize, dotSize)   
         }
       }
     } 
