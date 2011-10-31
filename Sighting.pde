@@ -252,18 +252,22 @@ void updateStateSightingCounts()
 
 void updateCitySightingTotals()
 {
+  totalCountSightings = 0;
   for (Place p : cityMap.values()) {
     p.sightingCount = 0;
     int idx = 0;
     for (SightingType st : sightingTypeMap.values()) {
       if (st.active) p.sightingCount += p.counts[idx];
       idx++;
+      
     }
+    totalCountSightings =  totalCountSightings + p.sightingCount;
   }
 }
 
 void updateStateSightingTotals()
 {
+  totalCountSightings = 0;
   for (State s : stateMap.values()) {
     s.sightingCount = 0;
     int idx = 0;
@@ -271,6 +275,7 @@ void updateStateSightingTotals()
       if (st.active) s.sightingCount += s.counts[idx];
       idx++;
     }
+    totalCountSightings =  totalCountSightings + s.sightingCount;
   }
 }
 
