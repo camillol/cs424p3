@@ -268,7 +268,7 @@ module Scraper
           id INTEGER PRIMARY KEY,
           name STRING,
           img_name STRING,
-          color INTEGER
+          color STRING
         );
 
         DROP TABLE IF EXISTS shapes;
@@ -398,7 +398,7 @@ module Scraper
           smallest_distance_query = nil
           rows.each do |other|
             d = distance(city[1].to_f, city[2].to_f, other[1].to_f, other[2].to_f)
-            puts "#{city[0]}, #{other[0]}, #{relation}, #{d}"
+            puts "#{city[0]}" #, #{other[0]}, #{relation}, #{d}"
             query = ["INSERT INTO city_proximities (city_id, relation_id, relation, distance) VALUES (?, ?, ?, ?)", 
                     city[0], other[0], relation, d]
             if smallest_distance_query.nil? or smallest_distance_query.last < d
@@ -437,26 +437,27 @@ module Scraper
     db = SQLite3::Database.new('ufo.db')
     db.transaction do
       query = %{
-        INSERT INTO sighting_types(name, img_name) VALUES('polygon', 'blue.png');
-        INSERT INTO sighting_types(name, img_name) VALUES('changing', 'red.png');
-        INSERT INTO sighting_types(name, img_name) VALUES('unknown', 'green.png');
-        INSERT INTO sighting_types(name, img_name) VALUES('other', 'yelow.png');
-        INSERT INTO sighting_types(name, img_name) VALUES('round', 'orange.png');
-        INSERT INTO sighting_types(name, img_name) VALUES('triangle', 'purple.png');
-        INSERT INTO sighting_types(name, img_name) VALUES('light', 'star.png');
-        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'polygon') 
+        DELETE FROM sighting_types;
+        INSERT INTO sighting_types(name, img_name, color) VALUES('polygon', 'blue.png', '0000FF');
+        INSERT INTO sighting_types(name, img_name, color) VALUES('changing', 'red.png', 'FF0000');
+        INSERT INTO sighting_types(name, img_name, color) VALUES('unknown', 'green.png', '00FF00');
+        INSERT INTO sighting_types(name, img_name, color) VALUES('other', 'yelow.png', 'FFFF00');
+        INSERT INTO sighting_types(name, img_name, color) VALUES('round', 'orange.png', 'FF8000');
+        INSERT INTO sighting_types(name, img_name, color) VALUES('triangle', 'purple.png', '8000FF');
+        INSERT INTO sighting_types(name, img_name, color) VALUES('light', 'star.png', '00FFFF');
+        UPDATE shapes SET type_id = (SELECT id FROM sighting_types WHERE name like 'polygon') 
           WHERE name IN ('Rectangle', 'Diamond', 'Chevron');
-        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'changing')
+        UPDATE shapes SET type_id = (SELECT id FROM sighting_types WHERE name like 'changing')
           WHERE name IN ('Changing');
-        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'unknown')
+        UPDATE shapes SET type_id = (SELECT id FROM sighting_types WHERE name like 'unknown')
           WHERE name IN ('Unknown', 'Other');
-        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'other')
+        UPDATE shapes SET type_id = (SELECT id FROM sighting_types WHERE name like 'other')
           WHERE name IN ('Teardrop', 'Cigar', 'Cylinder', 'Crescent');
-        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'round')
+        UPDATE shapes SET type_id = (SELECT id FROM sighting_types WHERE name like 'round')
           WHERE name IN ('Circle', 'Sphere', 'Oval', 'Egg', 'Disk');
-        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'triangle')
+        UPDATE shapes SET type_id = (SELECT id FROM sighting_types WHERE name like 'triangle')
           WHERE name IN ('Triangle', 'Cone');
-        UPDATE shapes SET sighting_type_id = (SELECT id FROM sighting_types WHERE name like 'light')
+        UPDATE shapes SET type_id = (SELECT id FROM sighting_types WHERE name like 'light')
           WHERE name IN ('Light', 'Fireball', 'Flash');
       }
       
@@ -615,8 +616,8 @@ module Scraper
     Scraper.add_weather_conditions
     Scraper.insert_weather_stations
 =end
-    puts "update_city_coordinates"
-    Scraper.update_city_coordinates
+    #puts "update_city_coordinates"
+    #Scraper.update_city_coordinates
     puts "insert_airports"
     Scraper.insert_airports
     puts "insert_military_bases"
