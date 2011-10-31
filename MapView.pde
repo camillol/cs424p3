@@ -67,7 +67,6 @@ class MapView extends View {
   double TILE_EXPAND_FACTOR = 0.05;  // as a fraction of the tile size
   
   boolean DRAW_ALL_TYPES = false;
-  boolean DRAW_STATES = true;
   
   Map<State, StateGlyph> stateGlyphs;
   boolean movingGlyphs;
@@ -220,7 +219,7 @@ class MapView extends View {
     Coordinate coord2 = new Coordinate(coord.row + 1, coord.column + 1, coord.zoom);
     Location loc2 = mmap.provider.coordinateLocation(coord2);
     
-    if (DRAW_STATES) {
+    if (showByStates) {
 //      drawStates(buf, stateMap.values());
     } else
       drawPlaces(buf, placesInRect(cityTree, loc1, loc2, TILE_EXPAND_FACTOR));
@@ -326,7 +325,7 @@ class MapView extends View {
 
     if (USE_BUFFERS) drawOverlay();
     else{
-      if (!DRAW_STATES) drawPlaces(papplet.g, cityMap.values());
+      if (!showByStates) drawPlaces(papplet.g, cityMap.values());
       if (showAirports)
         drawAirports(papplet.g, airportMap.values());
       if (showMilitaryBases)
@@ -334,7 +333,7 @@ class MapView extends View {
       if (showWeatherStation)
         drawWeatherStations(papplet.g,weatherStationMap.values());
     }
-    if (DRAW_STATES) {
+    if (showByStates) {
       imageMode(CENTER);
       
       /* create all glyphs if missing */
@@ -386,7 +385,7 @@ class MapView extends View {
       }
     }
     
-    if (!DRAW_STATES) drawPlacesInformationBox();
+    if (!showByStates) drawPlacesInformationBox();
   }
 
   boolean contentMouseWheel(float lx, float ly, int delta)

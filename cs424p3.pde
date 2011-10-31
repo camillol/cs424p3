@@ -67,7 +67,7 @@ Sighting clickedSighting;
 Boolean showAirports=false;
 Boolean showMilitaryBases = false;
 Boolean showWeatherStation = false;
-Boolean showByStates = false;
+Boolean showByStates = true;
 Boolean btwMonths = false;
 Boolean btwTime = false;
 String byType = "";
@@ -173,12 +173,12 @@ void buttonClicked(Checkbox button)
   
   updateFilter();
   
-  if (showAirports != settingsView.showAirport.value || showMilitaryBases !=  settingsView.showMilitaryBases.value 
-      || showWeatherStation != settingsView.showWeatherStation.value || showByStates != settingsView.showByStates.value){
-    showAirports = settingsView.showAirport.value;
-    showMilitaryBases = settingsView.showMilitaryBases.value;
-    showWeatherStation = settingsView.showWeatherStation.value;
-    showByStates = mapv.DRAW_STATES = settingsView.showByStates.value;
+  if (showAirports != settingsView.showAirportCB.value || showMilitaryBases !=  settingsView.showMilitaryBasesCB.value 
+      || showWeatherStation != settingsView.showWeatherStationCB.value || showByStates != settingsView.showByStatesCB.value){
+    showAirports = settingsView.showAirportCB.value;
+    showMilitaryBases = settingsView.showMilitaryBasesCB.value;
+    showWeatherStation = settingsView.showWeatherStationCB.value;
+    showByStates = settingsView.showByStatesCB.value;
     mapv.rebuildOverlay();
   }
 }

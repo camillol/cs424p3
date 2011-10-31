@@ -7,10 +7,10 @@ class SettingsView extends View {
   HSlider monthSlider;
   HSlider timeSlider;
   Checkbox yearCheckbox, monthCheckbox, timeCheckbox;
-  Checkbox showAirport;
-  Checkbox showMilitaryBases;
-  Checkbox showWeatherStation;
-  Checkbox showByStates;
+  Checkbox showAirportCB;
+  Checkbox showMilitaryBasesCB;
+  Checkbox showWeatherStationCB;
+  Checkbox showByStatesCB;
   PlayButton play;
     
   boolean showView;
@@ -50,18 +50,21 @@ class SettingsView extends View {
       i++;
     }
     
-    showAirport = new Checkbox(780,10,12,12,"Show airports",airplaneImage,-1);
-    this.subviews.add(showAirport);
+    showAirportCB = new Checkbox(780,10,12,12,"Show airports",airplaneImage,-1);
+    showAirportCB.value = showAirports;
+    this.subviews.add(showAirportCB);
     
-    showMilitaryBases = new Checkbox(780,30,12,12,"Show military bases",militaryBaseImage,-1);
-    this.subviews.add(showMilitaryBases);
+    showMilitaryBasesCB = new Checkbox(780,30,12,12,"Show military bases",militaryBaseImage,-1);
+    showMilitaryBasesCB.value = showMilitaryBases;
+    this.subviews.add(showMilitaryBasesCB);
     
-    showWeatherStation = new Checkbox(780,50,12,12,"Show weather stations",weatherStationImage,-1);
-    this.subviews.add(showWeatherStation);
+    showWeatherStationCB = new Checkbox(780,50,12,12,"Show weather stations",weatherStationImage,-1);
+    showWeatherStationCB.value = showWeatherStation;
+    this.subviews.add(showWeatherStationCB);
     
-    showByStates = new Checkbox(780,70,12,12,"Sightings by State");
-    showByStates.value = mapv.DRAW_STATES;
-    this.subviews.add(showByStates);
+    showByStatesCB = new Checkbox(780,70,12,12,"Sightings by State");
+    showByStatesCB.value = showByStates;
+    this.subviews.add(showByStatesCB);
     
     play =  new PlayButton(w-100,h-20,90,20);
     this.subviews.add(play);
