@@ -398,10 +398,10 @@ module Scraper
           smallest_distance_query = nil
           rows.each do |other|
             d = distance(city[1].to_f, city[2].to_f, other[1].to_f, other[2].to_f)
-            puts "#{city[0]}" #, #{other[0]}, #{relation}, #{d}"
+            #puts "#{city[0]}" #, #{other[0]}, #{relation}, #{d}"
             query = ["INSERT INTO city_proximities (city_id, relation_id, relation, distance) VALUES (?, ?, ?, ?)", 
                     city[0], other[0], relation, d]
-            if smallest_distance_query.nil? or smallest_distance_query.last < d
+            if smallest_distance_query.nil? or smallest_distance_query.last > d
               smallest_distance_query = query
             end
           end
@@ -441,7 +441,7 @@ module Scraper
         INSERT INTO sighting_types(name, img_name, color) VALUES('polygon', 'blue.png', '0000FF');
         INSERT INTO sighting_types(name, img_name, color) VALUES('changing', 'red.png', 'FF0000');
         INSERT INTO sighting_types(name, img_name, color) VALUES('unknown', 'green.png', '00FF00');
-        INSERT INTO sighting_types(name, img_name, color) VALUES('other', 'yelow.png', 'FFFF00');
+        INSERT INTO sighting_types(name, img_name, color) VALUES('other', 'yellow.png', 'FFFF00');
         INSERT INTO sighting_types(name, img_name, color) VALUES('round', 'orange.png', 'FF8000');
         INSERT INTO sighting_types(name, img_name, color) VALUES('triangle', 'purple.png', '8000FF');
         INSERT INTO sighting_types(name, img_name, color) VALUES('light', 'star.png', '00FFFF');
