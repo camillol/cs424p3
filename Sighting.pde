@@ -390,7 +390,6 @@ class SQLiteDataSource implements DataSource {
     while (db.next()) {
       Place p = cityMap.get(db.getInt("id"));
       if (p!=null){
-        println(db.getInt("id"));
         int idx = 0;
         p.airportDist = db.getFloat("airportDist");
         p.militaryDist = db.getFloat("militaryDist");

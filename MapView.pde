@@ -69,7 +69,7 @@ class Player {
   
   void update() {
     float seconds = (millis() - start) / 1000.0;
-    float dataSeconds = seconds * 24 * 3600;
+    float dataSeconds = seconds * 24 * 3600 * DAYS_PER_SECOND;
     now.setTime(firstDate);
     now.add(Calendar.SECOND, ceil(dataSeconds));
     
