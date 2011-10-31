@@ -630,12 +630,22 @@ class MapView extends View {
     for (Entry<State,StateGlyph> entry : stateGlyphs.entrySet()) {
       State state = entry.getKey();
       StateGlyph sg = entry.getValue();
+      
       Point2f p = sg.posOnScreen();
       float x = p.x - sg.buf.width/2;
       float y = p.y - sg.buf.height/2;
       Rectangle2D r = new Rectangle2D.Float(x, y, sg.buf.width, sg.buf.height);
       if (r.contains(mouseX, mouseY)) {
-        text(state.name, x, y + sg.buf.height);
+        fill(infoBoxBackground);
+        stroke(textColor);       
+        float w_ = textWidth("Total # of sightings = "+nfc(state.sightingCount))+20;
+        float x_ = (x+w_ > w)?w-w_-5:x;
+        float h_ = (textAscent() + textDescent()) * 2 + 15;
+        float y_ = (y + sg.buf.height+h_ > sightingDetailsView.y)?sightingDetailsView.y-h_-5:y + sg.buf.height;
+        rect(x_,y_,w_,h_);
+        fill(textColor);
+        text(state.name, x_ + (w_ - textWidth(state.name))/2 ,y_+5);  
+        text("Total # of sightings = "+nfc(state.sightingCount),x_ + (w_ - textWidth("Total # of sightings = "+state.sightingCount))/2, (y_+ h_/2)+5);               
       }
     }
   }
@@ -656,7 +666,7 @@ class MapView extends View {
                 textSize(normalFontSize);
                 strokeWeight(1);
                 String textToPrint = "Click on it to see details";
-                String numOfSightings = "Total # of sightings = " + str(place.sightingCount);
+                String numOfSightings = "Total # of sightings = " + nfc(place.sightingCount);
                 if (textToPrint.length() < place.name.length())
                       textToPrint = place.name;
                 if (textToPrint.length() < numOfSightings.length())

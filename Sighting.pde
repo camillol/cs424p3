@@ -285,8 +285,10 @@ interface DataSource {
   List<Bucket> sightingCountsByAirportDistance();
   List<Bucket> sightingCountsByWeatherStDistance();
   List<Bucket> sightingCountsByMilitaryBaseDistance();  
+  List<Bucket> sightingCountsByPopulationDensity();   
   List<SightingLite> sightingsByTime(int chunkSize, int chunkNum);
   float[] getLegendLabels(String activeMode);
+
 }
 
 class Bucket {
@@ -542,11 +544,14 @@ class SQLiteDataSource implements DataSource {
   float[] airportsDistanceBreaks = {7.794978,12.22485,16.34988,21.02355,26.27319,32.03328,38.54012,45.20428,54.43778,64.34605,76.22255,91.7209,113.2127,152.5769};
   float[] weatherStDistanceBreaks = {3.417465,5.244248,6.937217,8.564252,10.51355,12.41377,14.63627,16.98696,19.75864,23.02078,26.70035,31.42313,38.6634,50.20286};
   float[] militaryBaseDistanceBreaks = {12.07392,20.41422,27.86664,36.02675,44.57247,54.70817,67.01115,80.2194,95.13276,111.2619,133.6569,158.7418,192.5056,247.0147};
-           
+  float[] populationDensityBreaks = {470,1290,2150,3073.333,4136.667,5350,7173.333,10183.33,14460,25483,54829};    
+
+               
   float[] getLegendLabels(String activeMode){
    if (activeMode.equals("Airport distance")) return airportsDistanceBreaks;
-   else if (activeMode.equals("Military Base dist")) return militaryBaseDistanceBreaks;
-   else if (activeMode.equals("Weather St. dist.")) return weatherStDistanceBreaks;
+   else if (activeMode.equals("Military Base distance")) return militaryBaseDistanceBreaks;
+   else if (activeMode.equals("Weather St. distance")) return weatherStDistanceBreaks;
+   else if (activeMode.equals("County Population dens.")) return populationDensityBreaks;
    
    return null;
   }    
@@ -591,7 +596,21 @@ class SQLiteDataSource implements DataSource {
       + " from sightings join shapes on shape_id = shapes.id join city_military_base_dist on sightings.city_id = city_military_base_dist.city_id group by dist, type_id;",
       "dist");
   }
-        
+       
+  List<Bucket> sightingCountsByPopulationDensity()
+  {
+    String caseQuery = "when population_density < "+populationDensityBreaks[0]+" then 1 ";
+    for (int i = 1; i< (populationDensityBreaks.length);i++){
+      caseQuery = caseQuery + "when population_density >= "+ populationDensityBreaks[i-1]+ " and population_density < "+ populationDensityBreaks[i]+" then " + (i+1) + " ";
+    }
+    caseQuery = caseQuery + "else " + (populationDensityBreaks.length + 1) ;
+
+    return sightingCountsByCategoryQuery(
+      "select case " +caseQuery+" end as popd, type_id, count(*) as sighting_count"
+      + " from sightings join shapes on shape_id = shapes.id join cities on sightings.city_id = cities.id join counties on cities.county_id = counties.id group by popd, type_id;",
+      "popd");
+  } 
+  
   List<Bucket> sightingCountsByCategoryQuery(String query, String categoryName)
   {
     List<Bucket> buckets = new ArrayList();
