@@ -1,8 +1,6 @@
-import proxml.*;
 /* a sighting is owned by a place */
 class Sighting {
   String description;
-  String shortDescription;
   SightingType type;
   float airportDist;
   float militaryDist;
@@ -12,11 +10,8 @@ class Sighting {
   String shapeName;
   String weather;
   int temperature;
-  int id;
-  int shape_id;
   
-  Sighting(int id, String desc, SightingType type, String shapeName, float airportDist, float milDist, Date localTime,Date reportedTime, Place location,String weather, int temperature) {
-    this.id = id;
+  Sighting(String desc, SightingType type, String shapeName, float airportDist, float milDist, Date localTime,Date reportedTime, Place location,String weather, int temperature) {
     this.description = desc;
     this.type = type;
     this.shapeName = shapeName;
@@ -28,47 +23,8 @@ class Sighting {
     this.weather = weather;
     this.temperature = temperature;
   }
-
-  Sighting(int id){
-    this.id = id;
-  }
-
-  public void loadAttributesRemote(){
-    XMLInOut xml = new XMLInOut(papplet);
-    proxml.XMLElement xml_elem=null; 
-    try{
-      xml_elem = xml.loadElementFrom("http://it-came-out-of-the-sky.appspot.com/sightings?sighting_id=" + this.id); 
-    }catch(Exception e){
-      e.printStackTrace(); 
-    }
-    for(int i=0; i < xml_elem.countChildren(); ++i){
-      try{
-        proxml.XMLElement child = xml_elem.getChild(i);   
-        if(!child.hasChildren() || child.toString().equals("<key>")) continue;
-        String content = child.getChild(0).toString();
-        String name = child.getAttribute("name");
-        if(name.equals("full_description"))
-          this.description = content;      
-        if(name.equals("occurred_at"))
-          this.localTime = dbDateFormat.parse(content);
-        if(name.equals("posted_at"))
-          this.reportedTime = dbDateFormat.parse(content);
-        //if(name.equals("reported_at"))
-        if(name.equals("shape_id"))
-          this.shape_id = Integer.parseInt(content);
-        if(name.equals("summary_description"))
-          this.shortDescription = content;
-        if(name.equals("temperature"))
-          this.temperature = Integer.parseInt(content);
-        if(name.equals("weather_conditions"))
-          this.weather = content;
-      }
-      catch(Exception e){
-        e.printStackTrace();
-      }
-    }    
-  }
 }
+
 
 class SightingType {
   int id;
@@ -311,11 +267,12 @@ interface DataSource {
   void loadWeatherStations();
   List<Sighting> sightingsForCity(Place p);
   List<Bucket> sightingCountsByYear();
+  List<Bucket> sightingCountsBySeason();
   List<Bucket> sightingCountsByMonth();
   List<Bucket> sightingCountsByHour();
   List<Bucket> sightingCountsByAirportDistance();
   List<Bucket> sightingCountsByWeatherStDistance();
-  List<Bucket> sightingCountsByMilitaryBaseDistance();
+  List<Bucket> sightingCountsByMilitaryBaseDistance();  
 }
 
 class Bucket {
@@ -511,7 +468,6 @@ class SQLiteDataSource implements DataSource {
     while (db.next()) {
       try{
       sightings.add(new Sighting(
-        db.getInt("id"),
         db.getString("full_description"),
         sightingTypeMap.get(db.getInt("type_id")),
         db.getString("name"),
@@ -538,6 +494,19 @@ class SQLiteDataSource implements DataSource {
       "select strftime('%Y',occurred_at) as year, type_id, count(*) as sighting_count"
       + " from sightings join shapes on shape_id = shapes.id group by year, type_id;",
       "year");
+  }
+  
+  List<Bucket> sightingCountsBySeason()
+  {
+    String caseQuery = "when strftime('%m',occurred_at) = '12' or strftime('%m',occurred_at) = '01' or strftime('%m',occurred_at) = '02' then '1 - Winter' ";
+    caseQuery = caseQuery + "when strftime('%m',occurred_at) = '03' or strftime('%m',occurred_at) = '04' or strftime('%m',occurred_at) = '05' then '2 - Spring' ";
+    caseQuery = caseQuery + "when strftime('%m',occurred_at) = '06' or strftime('%m',occurred_at) = '07' or strftime('%m',occurred_at) = '08' then '3 - Summer' ";
+    caseQuery = caseQuery + "else '4 - Fall' ";
+    
+    return sightingCountsByCategoryQuery(
+      "select case " + caseQuery + "end as season, type_id, count(*) as sighting_count"
+      + " from sightings join shapes on shape_id = shapes.id group by season, type_id;",
+      "season");
   }
   
   List<Bucket> sightingCountsByMonth()
