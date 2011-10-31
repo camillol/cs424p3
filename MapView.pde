@@ -484,17 +484,19 @@ class MapView extends View {
 
     buffer.noStroke();
     for (SightingType st : sightingTypeMap.values()) {
-      buffer.fill(st.colr);
-      int count = place.counts[idx];
-      while (count > 0) {
-        if (boxx == boxsz){
-          boxx = 0;
-          boxy++;
+      if (st.active) {
+        buffer.fill(st.colr);
+        int count = place.counts[idx];
+        while (count > 0) {
+          if (boxx == boxsz){
+            boxx = 0;
+            boxy++;
+          }
+          int len = min(boxsz - boxx, count);
+          buffer.rect(boxx, boxy, len, 1);
+          boxx += len;
+          count -= len;
         }
-        int len = min(boxsz - boxx, count);
-        buffer.rect(boxx, boxy, len, 1);
-        boxx += len;
-        count -= len;
       }
       idx++;
     }
@@ -551,6 +553,7 @@ class MapView extends View {
   
   void drawPlacesInformationBox() {
     imageMode(CENTER);
+    textAlign(LEFT, TOP);
     
     float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
     Location loc1 = mmap.pointLocation(mouseX - maxPointValue, mouseY - maxPointValue);  // TODO: use local coordinates (although they're identical in this app)
