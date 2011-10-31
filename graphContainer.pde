@@ -8,6 +8,8 @@ class GraphContainer extends View {
   String title;
   Map<SightingType, Checkbox> typeCheckboxGraph;
   
+  Animator graphAnimator;
+  
   GraphContainer(float x_, float y_, float w_, float h_)
   {
     super(x_, y_, w_, h_);
@@ -32,7 +34,9 @@ class GraphContainer extends View {
       subviews.add(cb);
       typeCheckboxGraph.put(st,cb);
       i++;
-    } 
+    }
+   
+    graphAnimator = new Animator(graphView.h);  
   }
   
   void updateValuesGraph(){
@@ -71,7 +75,8 @@ class GraphContainer extends View {
     line(CHECKBOX_X,CHECKBOX_Y,CHECKBOX_X,CHECKBOX_H + CHECKBOX_Y);
     line(CHECKBOX_X,CHECKBOX_H + CHECKBOX_Y,CHECKBOX_X+CHECKBOX_W,CHECKBOX_H + CHECKBOX_Y);
     line(CHECKBOX_X+CHECKBOX_W,CHECKBOX_Y,CHECKBOX_X+CHECKBOX_W,CHECKBOX_H + CHECKBOX_Y);
-        
+     
+     graphView.h = graphAnimator.value;      
   }
   
 }

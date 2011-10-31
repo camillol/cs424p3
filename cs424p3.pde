@@ -187,6 +187,14 @@ void listClicked(ListBox lb, int index, Object item)
 {
   if (lb == graphModeList) {
     graphView.setActiveMode((String)item);
+    String _item = (String)item;
+    if (!_item.equals("Year") && !_item.equals("Season")  && !_item.equals("Month") && !_item.equals("Time of day")){
+        graphContainer.graphAnimator.target(graphContainer.h-100);
+    }
+    else{
+       graphContainer.graphAnimator.target(graphContainer.h-5);
+    }
+    
   }
 }
 
