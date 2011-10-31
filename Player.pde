@@ -68,9 +68,11 @@ class PlayBar extends View {
       noFill();
       rect(MARGIN, MARGIN, w - MARGIN*2, h - MARGIN*2);
       
-      float x = (float)(player.now.getTimeInMillis() - player.firstDate.getTime()) / (player.lastDate.getTime() - player.firstDate.getTime());
-      fill(255);
-      rect(MARGIN, MARGIN, (w - MARGIN*2) * x, h - MARGIN*2);
+      if (player != null) {
+        float x = (float)(player.now.getTimeInMillis() - player.firstDate.getTime()) / (player.lastDate.getTime() - player.firstDate.getTime());
+        fill(255);
+        rect(MARGIN, MARGIN, (w - MARGIN*2) * x, h - MARGIN*2);
+      }
     }
   }
 }
