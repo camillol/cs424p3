@@ -11,10 +11,13 @@ class Button extends View {
   
   void drawContent()
   {
+    fill(viewBackgroundColor);
+    noStroke();
     rect(0,0,w,h);
-    fill(255);
-    textAlign(LEFT, TOP);
-    text(label,0,0);
+    
+    textAlign(CENTER, CENTER);
+    fill(textColor);
+    text(label,w/2,h/2);
   }
   
   boolean contentClicked(float lx, float ly)
@@ -32,7 +35,7 @@ class GraphView extends View {
   List<Bucket> buckets;
   int maxTotal;
   
-  List<String> modes = Arrays.asList("Year","Month", "Time of day", "Airport dist.", "Pop. density", "Season");
+  List<String> modes = Arrays.asList("Year","Month", "Time of day", "Airport distance", "Military Base dist.", "Weather St. dist.","Population density", "Season");
   String activeMode = "Year";
   
   GraphView(float x_, float y_, float w_, float h_)
@@ -72,7 +75,7 @@ class GraphView extends View {
   
   void drawContent()
   {
-    fill(0,0,0,128);
+    fill(backgroundColor);
     rect(0,0,w,h);
     
     float barw = w / buckets.size();

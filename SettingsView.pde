@@ -1,3 +1,7 @@
+  int CHECKBOX_X = 450;
+  int CHECKBOX_Y = 10;
+  int CHECKBOX_W = 300;
+  
 class SettingsView extends View {
   HSlider yearSlider;
   HSlider monthSlider;
@@ -8,11 +12,7 @@ class SettingsView extends View {
   Checkbox showMilitaryBases;
   Checkbox showWeatherStation;
   PlayButton play;
-  
-  int CHECKBOX_X = 450;
-  int CHECKBOX_Y = 10;
-  int CHECKBOX_W = 300;
-  
+    
   boolean showView;
   float heightView ;
   String title;
@@ -59,7 +59,7 @@ class SettingsView extends View {
     showWeatherStation = new Checkbox(780,50,12,12,"Show weather stations",weatherStationImage,-1);
     this.subviews.add(showWeatherStation);
     
-    play =  new PlayButton(w-105,h-20,100,20);
+    play =  new PlayButton(w-100,h-20,90,20);
     this.subviews.add(play);
     
     showView = false;
@@ -105,7 +105,7 @@ class SettingsView extends View {
   boolean contentPressed(float lx, float ly)
   {
     if(lx > 0 && lx < textWidth("Show Settings")+10 && ly>h-25 && ly < h){
-        settingsAnimator.target((showView)?(-heightView+25):0);
+        settingsAnimator.target((showView)?(-heightView+45):20);
         showView = !showView;    
     }
     return true;
