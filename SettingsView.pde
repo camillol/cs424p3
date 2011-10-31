@@ -83,6 +83,7 @@ class SettingsView extends View {
     textSize(normalFontSize);
     fill(viewBackgroundColor,220);
 //    stroke(viewBackgroundColor,220);
+    noStroke();
     rect(0,0, w, h-25);
     textFont(font,normalFontSize);
     rect(0,h-25,textWidth("Show Settings")+10,25);

@@ -115,8 +115,8 @@ void setup()
   font2 = loadFont("Courier-20.vlw");
   
   airplaneImage = loadImage("plane.png");
-  militaryBaseImage = loadImage("irkickflash2.png");
-  weatherStationImage = loadImage("irkickflash1.png");
+  militaryBaseImage = loadImage("militars.png");
+  weatherStationImage = loadImage("irkickflash2.png");
   
   mapv = new MapView(0,0,width,height);
   rootView.subviews.add(mapv);
