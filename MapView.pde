@@ -392,8 +392,18 @@ class MapView extends View {
       for (SightingLite s : player.loaded) {
         long age = player.ageInMillis(s);
         if (age < 0) break;
-        float a = map(age, 0, player.LINGER_MILLIS, 255, 0);
+        
         Point2f p = mmap.locationPoint(s.location.loc);
+        float c = map(age, 0, player.LINGER_MILLIS / 5, 0.0, 1.0);
+        if (c <= 1.0) {
+          noFill();
+          stroke(s.type.colr, 255 * (1.0-c*c));
+          strokeWeight(2);
+          ellipse(p.x, p.y, 40 * c, 40 * c);
+          noStroke();
+        }
+        
+        float a = map(age, 0, player.LINGER_MILLIS, 255, 0);
         fill(s.type.colr, a);
         ellipse(p.x, p.y, 10, 10);
       }

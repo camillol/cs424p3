@@ -101,7 +101,7 @@ class SettingsView extends View {
     title = title + ((monthCheckbox.value)?((monthSlider.minIndex()!=monthSlider.maxIndex())?(" - " + monthLabelsToPrint[monthSlider.minIndex()] + " to " + monthLabelsToPrint[monthSlider.maxIndex()]):(" - " +  monthLabelsToPrint[monthSlider.minIndex()])):(""));
     title = title +  ((timeCheckbox.value)?(" - " + timeLabels[timeSlider.minIndex()] + ":00 to " + timeLabels[timeSlider.maxIndex()] +":59"):(""));   
     title = title + " >";
-    title = title + ((playing)?(" Showing: "+str(player.now.get(Calendar.YEAR))):"");
+    title = title + ((playing)?(" Showing: " + dbDateFormat.format(player.now.getTime())):"");
     text(title,(w-textWidth(title))/2,h-20);   
     title = "Total # of Sightings = " + nfc(totalCountSightings);
     text(title,(w-textWidth(title))/2,h);
