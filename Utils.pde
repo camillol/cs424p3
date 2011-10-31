@@ -2,6 +2,17 @@ import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.util.jar.*;
 
+/* timing utilities */
+float lastTime;
+
+float stopWatch()
+{
+  float x = lastTime;
+  lastTime = millis();
+  return lastTime - x;
+}
+
+/* graphics utilities */
 Graphics2D g2;
 Shape[] clipStack;
 int clipIdx;
@@ -40,6 +51,18 @@ void popClip()
   clipStack[clipIdx] = null;
 }
 
+
+/* about paths:
+  inside IDE:  sketchPath:    /Users/camillo/UIC/CS424 visualization/p3/cs424p3
+               dataPath(""):  /Users/camillo/UIC/CS424 visualization/p3/cs424p3/data/  
+
+  application: sketchPath:    /Users/camillo/UIC/CS424 visualization/p3/cs424p3/application.macosx
+               dataPath(""):  /Users/camillo/UIC/CS424 visualization/p3/cs424p3/application.macosx/data/
+
+  applet:      sketchPath:    null
+*/
+
+/* data utilities */
 String[] listDataSubdir(String subdir)
 {
   String[] items = null;

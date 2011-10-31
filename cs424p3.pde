@@ -84,8 +84,6 @@ Player player;
 
 void setup()
 {
-  
-  
   size(1000, 700);  // OPENGL seems to be slower than the default
 //  setupG2D();
   
@@ -93,6 +91,9 @@ void setup()
   
   smooth();
 
+  println(sketchPath);
+  println(dataPath(""));
+  
   /* load data */
   data = new SQLiteDataSource();
   
@@ -289,14 +290,5 @@ void mouseReleased(){
     updateFilter();
   }
   isDragging = false;
-}
-
-float lastTime;
-
-float stopWatch()
-{
-  float x = lastTime;
-  lastTime = millis();
-  return lastTime - x;
 }
 

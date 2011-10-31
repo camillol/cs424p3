@@ -335,7 +335,23 @@ class SQLiteDataSource implements DataSource {
 
   SQLiteDataSource()
   {
-    db = new SQLite(papplet, "ufo.db");
+    String dbname = "ufo.db";
+    String dbpath = null;
+    
+    dbpath = dataPath(dbname);
+    File dbf = new File(dbpath);
+    if (!dbf.exists()) {
+      dbpath = savePath(dbname);
+      dbf = new File(dbpath);
+      if (!dbf.exists()) {
+        stopWatch();
+        print("extracting database...");
+        saveStream(dbpath, createInput(dbname));
+        println(stopWatch());
+      }
+    }
+
+    db = new SQLite(papplet, dbpath);
     if (!db.connect()) println("DB connection failed!");
     db.execute("PRAGMA cache_size=100000;");
   }
