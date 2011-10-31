@@ -143,7 +143,7 @@ class SightingsFilter {
   int viewMinHour = 0, viewMaxHour = 23;
   Set<SightingType> activeTypes = new HashSet(sightingTypeMap.values());
   
-  String whereClause()
+  String whereClause(boolean filterTypes)
   {
     StringBuffer where = new StringBuffer();
     
@@ -153,7 +153,7 @@ class SightingsFilter {
     if (viewMaxMonth < 12) where.append("cast(strftime('%m',occurred_at) as integer) <= " + viewMaxMonth + " and ");
     if (viewMinHour > 0) where.append("cast(strftime('%H',occurred_at) as integer) >= " + viewMinHour + " and ");
     if (viewMaxHour < 23) where.append("cast(strftime('%H',occurred_at) as integer) <= " + viewMaxHour + " and ");
-    if (activeTypes != null && activeTypes.size() < sightingTypeMap.size()) {
+    if (filterTypes && activeTypes != null && activeTypes.size() < sightingTypeMap.size()) {
       where.append("type_id IN (");
       boolean first = true;
       for (SightingType st : activeTypes) {
@@ -168,14 +168,19 @@ class SightingsFilter {
     return where.toString();
   }
   
-  boolean equals(SightingsFilter other)
+  boolean equalsIgnoringTypes(SightingsFilter other)
   {
     return viewMinYear == other.viewMinYear &&
       viewMaxYear == other.viewMaxYear &&
       viewMinMonth == other.viewMinMonth &&
       viewMaxMonth == other.viewMaxMonth &&
       viewMinHour == other.viewMinHour &&
-      viewMaxHour == other.viewMaxHour &&
+      viewMaxHour == other.viewMaxHour;
+  }
+  
+  boolean equals(SightingsFilter other)
+  {
+    return equalsIgnoringTypes(other) &&
       activeTypes.equals(other.activeTypes);
   }
   
@@ -225,6 +230,30 @@ void updateStateSightingCounts()
     }
   }
   println(stopWatch());
+}
+
+void updateCitySightingTotals()
+{
+  for (Place p : cityMap.values()) {
+    p.sightingCount = 0;
+    int idx = 0;
+    for (SightingType st : sightingTypeMap.values()) {
+      if (st.active) p.sightingCount += p.counts[idx];
+      idx++;
+    }
+  }
+}
+
+void updateStateSightingTotals()
+{
+  for (State s : stateMap.values()) {
+    s.sightingCount = 0;
+    int idx = 0;
+    for (SightingType st : sightingTypeMap.values()) {
+      if (st.active) s.sightingCount += s.counts[idx];
+      idx++;
+    }
+  }
 }
 
 
@@ -328,7 +357,7 @@ class SQLiteDataSource implements DataSource {
       query.append(", sum(case when type_id=" + st.id + " then 1 else 0 end) as count_" + st.id);
     }
     query.append(" from cities join sightings on sightings.city_id = cities.id join shapes on shape_id = shapes.id");
-    query.append(" where " + activeFilter.whereClause());
+    query.append(" where " + activeFilter.whereClause(false));
     query.append(" group by cities.id");
     
     db.query(query.toString());
@@ -428,7 +457,7 @@ class SQLiteDataSource implements DataSource {
   List<Sighting> sightingsForCity(Place p)
   {
     db.query("select * from sightings join shapes on shape_id = shapes.id"
-      + " where city_id = " + p.id + " and " + activeFilter.whereClause()
+      + " where city_id = " + p.id + " and " + activeFilter.whereClause(true)
       + " order by occurred_at;");
     
     ArrayList<Sighting> sightings = new ArrayList<Sighting>();

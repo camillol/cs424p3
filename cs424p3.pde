@@ -156,7 +156,6 @@ void buttonClicked(Button button)
 
 void buttonClicked(Checkbox button)
 {
-  
   for (Entry<SightingType, Checkbox> entry : settingsView.typeCheckboxMap.entrySet()) {
     entry.getKey().setActive(entry.getValue().value);
   }
@@ -237,7 +236,8 @@ void mouseClicked()
   rootView.mouseClicked(mouseX, mouseY);
 }
 
-void updateFilter()
+/* returns true if filter changed */
+boolean updateFilter()
 {
   SightingsFilter newFilter = new SightingsFilter();
   newFilter.viewMinYear = 2000 + minYearIndex;
@@ -259,12 +259,21 @@ void updateFilter()
   
   if (!newFilter.equals(activeFilter)) {
     println(activeFilter + " -> " + newFilter);
+    boolean reload = !newFilter.equalsIgnoringTypes(activeFilter);
     activeFilter = newFilter;
-    data.reloadCitySightingCounts();
-    updateStateSightingCounts();
+    if (reload) {
+      data.reloadCitySightingCounts();
+      updateStateSightingCounts();
+    } else {
+      println("recomputing totals");
+      updateCitySightingTotals();
+      updateStateSightingTotals();
+    }
     mapv.rebuildOverlay();
     detailsAnimator.target(height);
+    return true;
   }
+  else return false;
 }
 
 void mouseReleased(){

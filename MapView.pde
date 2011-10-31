@@ -29,7 +29,7 @@ class MapView extends View {
   double TILE_EXPAND_FACTOR = 0.05;  // as a fraction of the tile size
   
   boolean DRAW_ALL_TYPES = false;
-  boolean DRAW_STATES = true;
+  boolean DRAW_STATES = false;
   
   MapView(float x_, float y_, float w_, float h_)
   {
@@ -361,7 +361,7 @@ class MapView extends View {
     SightingType sightingType = null;
     int idx = 0;
     for (SightingType st : sightingTypeMap.values()) {
-      if (place.counts[idx] > 0) {
+      if (st.active && place.counts[idx] > 0) {
         typeOfSightingCount++;
         sightingType = st;
       }
