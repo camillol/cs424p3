@@ -1,3 +1,5 @@
+import processing.net.*;
+
 /* a sighting is owned by a place */
 class Sighting {
   String description;
@@ -10,8 +12,10 @@ class Sighting {
   String shapeName;
   String weather;
   int temperature;
+  int id;
   
-  Sighting(String desc, SightingType type, String shapeName, float airportDist, float milDist, Date localTime,Date reportedTime, Place location,String weather, int temperature) {
+  Sighting(int id, String desc, SightingType type, String shapeName, float airportDist, float milDist, Date localTime,Date reportedTime, Place location,String weather, int temperature) {
+    this.id = id;
     this.description = desc;
     this.type = type;
     this.shapeName = shapeName;
@@ -23,8 +27,16 @@ class Sighting {
     this.weather = weather;
     this.temperature = temperature;
   }
-}
 
+  public void loadAttributeRemote(){
+    Client c = new Client(this, "it-came-out-of-the-sky.appspot.com", 80); // Connect to server on port 80
+    c.write("GET /sightings?sighting_id=" + this.id + " HTTP/1.1\r\n\r\n"); // Use the HTTP "GET" command to ask for a Web page
+    if(c.available() > 0) {
+      String data = c.readString();
+      println(data);
+    }
+  }
+}
 
 class SightingType {
   int id;
@@ -372,6 +384,7 @@ class SQLiteDataSource implements DataSource {
     while (db.next()) {
       try{
       sightings.add(new Sighting(
+        db.getInt("id");
         db.getString("full_description"),
         sightingTypeMap.get(db.getInt("type_id")),
         db.getString("name"),
