@@ -417,7 +417,8 @@ module Scraper
     db = SQLite3::Database.new('ufo.db')
     file_path = File.join(File.expand_path(File.dirname(__FILE__)), "../data", "population_density_by_county.csv")
     FasterCSV.foreach(file_path, :headers => true) do |line|
-      db.execute("UPDATE counties SET population_density = ? FROM counties c JOIN states s ON s.id = c.state_id WHERE c.name like ? AND s.name like ?", line[6].to_f * 100 , line[5].gsub(/County.*/i, '').strip, line[2].strip)
+      puts "updating..."
+      db.execute("UPDATE counties SET population_density = ? WHERE id IN (SELECT c.id FROM counties c JOIN states s ON s.id = c.state_id WHERE c.name like ? AND s.name like ?)", line[6].to_f * 100 , line[5].gsub(/County.*/i, '').strip, line[2].strip)
     end
   end
 

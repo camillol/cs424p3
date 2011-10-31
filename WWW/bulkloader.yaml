@@ -10,6 +10,9 @@
 #      object.  If you would like automatic key generation on import and
 #      omitting the key on export, you can remove the entire __key__
 #      property from the property map.
+#appcfg.py upload_data --config_file=bulkloader.yaml --filename=sightings.csv --kind=Sighting --url=http://it-came-out-of-the-sky.appspot.com/_ah/remote_api
+#python /opt/google_appengine/remote_api_shell.py -s it-came-out-of-the-sky.appspot.com
+
 
 # If you have module(s) with your model classes, add them here. Also
 # change the kind properties to model_class.
@@ -23,6 +26,35 @@ python_preamble:
 - import: google.appengine.api.users
 
 transformers:
+
+- kind: City
+  connector: csv # TODO: Choose a connector here: csv, simplexml, etc...
+  connector_options:
+    # TODO: Add connector options here--these are specific to each connector.
+  property_map:
+    - property: city_id
+      external_name: city_id
+      import_transform: int
+
+    - property: county_id
+      external_name: county_id
+      import_transform: int
+
+    - property: state_id
+      external_name: state_id
+      import_transform: int
+
+    - property: name
+      external_name: name
+
+    - property: lat
+      external_name: lat
+      import_transform: float
+
+    - property: lon
+      external_name: lon
+      import_transform: float
+
 - kind: Sighting
   connector: csv # TODO: Choose a connector here: csv, simplexml, etc...
   connector_options:
