@@ -396,7 +396,7 @@ class SQLiteDataSource implements DataSource {
     while (db.next()) {
       airportMap.put(db.getInt("id"), new Place(AIRPORT,
         db.getInt("id"),
-        new Location((db.getFloat("lat")/100), (db.getFloat("lon")/100)),
+        new Location((db.getFloat("lat")), (db.getFloat("lon"))),
         db.getString("name"),
         0
       ));
@@ -414,7 +414,7 @@ class SQLiteDataSource implements DataSource {
     while (db.next()) {
       militaryBaseMap.put(db.getInt("id"), new Place(MILITARY_BASE,
         db.getInt("id"),
-        new Location((db.getFloat("lat")/100), (db.getFloat("lon")/100)),
+        new Location((db.getFloat("lat")), (db.getFloat("lon"))),
         db.getString("name"),
         0
       ));
@@ -432,7 +432,7 @@ class SQLiteDataSource implements DataSource {
     while (db.next()) {
       weatherStationMap.put(db.getInt("id"), new Place(WEATHER_STATION,
         db.getInt("id"),
-        new Location((db.getFloat("lat")/100), (db.getFloat("lon")/100)),
+        new Location((db.getFloat("lat")), (db.getFloat("lon"))),
         db.getString("name"),
         0
       ));
