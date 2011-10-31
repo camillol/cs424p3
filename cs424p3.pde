@@ -3,7 +3,7 @@ import org.khelekore.prtree.*;
 View rootView;
 
 PFont font;
-
+  
 HBar hbar;
 HBar hbar2;
 Animator settingsAnimator;
@@ -11,7 +11,7 @@ Animator detailsAnimator;
 
 PApplet papplet;
 MapView mapv;
-View graphContainer;
+GraphContainer graphContainer;
 GraphView graphView;
 Button graphButton;
 ListBox graphModeList;
@@ -59,12 +59,15 @@ PRTree<Place> cityTree;
 PRTree<Place> airportTree;
 PRTree<Place> militaryBaseTree;
 PRTree<Place> weatherStationTree;
+
 Map<Integer,SightingType> sightingTypeMap;
+Map<SightingType, Checkbox> typeCheckboxMap;
 
 Sighting clickedSighting;
 Boolean showAirports=false;
 Boolean showMilitaryBases = false;
 Boolean showWeatherStation = false;
+Boolean showByStates = false;
 Boolean btwMonths = false;
 Boolean btwTime = false;
 String byType = "";
@@ -117,7 +120,7 @@ void setup()
   mapv = new MapView(0,0,width,height);
   rootView.subviews.add(mapv);
   
-  settingsView = new SettingsView(0,-100,width,125);
+  settingsView = new SettingsView(0,-80,width,125);
   rootView.subviews.add(settingsView);
   
   sightingDetailsView = new SightingDetailsView(0,height,width,200);
@@ -133,31 +136,36 @@ void setup()
     }
   });
 
-  graphContainer = new View(10, 100, width-20, height-120);
-  graphView = new GraphView(0, 0, graphContainer.w - 120, graphContainer.h);
-  graphContainer.subviews.add(graphView);
-  graphModeList = new ListBox(graphContainer.w - 120, 0, 120, 120, graphView.modesDataSource());
-  graphContainer.subviews.add(graphModeList);
+  graphContainer = new GraphContainer(0, 20, width, height-20); 
   
-  graphButton = new Button(width-80, 0, 80, 20, "Graph");
+  graphButton = new Button(0, 0, width, 20, "Click here to show the Graphs");
   rootView.subviews.add(graphButton);
   graphOn = false;
- 
 }
 
 void buttonClicked(Button button)
 {
   if (button == graphButton) {
     graphOn = !graphOn;
-    if (graphOn) rootView.subviews.add(graphContainer);
-    else rootView.subviews.remove(graphContainer);
+    if (graphOn){ 
+      rootView.subviews.add(graphContainer);
+      button.label = "Click here to show the Map";
+      graphContainer.updateValuesGraph();  
+      
+    }
+    else{
+      rootView.subviews.remove(graphContainer);
+      button.label = "Click here to show the Graphs";
+    }
   }
 }
 
 void buttonClicked(Checkbox button)
 {
-  
-  for (Entry<SightingType, Checkbox> entry : settingsView.typeCheckboxMap.entrySet()) {
+  if (graphOn)
+     graphContainer.updateValuesMap(); 
+     
+  for (Entry<SightingType, Checkbox> entry : typeCheckboxMap.entrySet()) {
     entry.getKey().setActive(entry.getValue().value);
   }
   btwTime = settingsView.timeCheckbox.value;
@@ -165,11 +173,12 @@ void buttonClicked(Checkbox button)
   
   updateFilter();
   
-  if (showAirports != settingsView.showAirport.value || showMilitaryBases !=  settingsView.showMilitaryBases.value || showWeatherStation != settingsView.showWeatherStation.value){
+  if (showAirports != settingsView.showAirport.value || showMilitaryBases !=  settingsView.showMilitaryBases.value 
+      || showWeatherStation != settingsView.showWeatherStation.value || showByStates != settingsView.showByStates.value){
     showAirports = settingsView.showAirport.value;
     showMilitaryBases = settingsView.showMilitaryBases.value;
     showWeatherStation = settingsView.showWeatherStation.value;
-    
+    showByStates = mapv.DRAW_STATES = settingsView.showByStates.value;
     mapv.rebuildOverlay();
   }
 }
@@ -197,7 +206,7 @@ void draw()
   sightingDetailsView.y = detailsAnimator.value;
        
   rootView.draw();
-//  println(seconds);
+
   if (settingsView.play.value){
       if (!startedPlaying){
           startedPlaying = true;
@@ -237,7 +246,8 @@ void mouseClicked()
   rootView.mouseClicked(mouseX, mouseY);
 }
 
-void updateFilter()
+/* returns true if filter changed */
+boolean updateFilter()
 {
   SightingsFilter newFilter = new SightingsFilter();
   newFilter.viewMinYear = 2000 + minYearIndex;
@@ -259,12 +269,21 @@ void updateFilter()
   
   if (!newFilter.equals(activeFilter)) {
     println(activeFilter + " -> " + newFilter);
+    boolean reload = !newFilter.equalsIgnoringTypes(activeFilter);
     activeFilter = newFilter;
-    data.reloadCitySightingCounts();
-    updateStateSightingCounts();
+    if (reload) {
+      data.reloadCitySightingCounts();
+      updateStateSightingCounts();
+    } else {
+      println("recomputing totals");
+      updateCitySightingTotals();
+      updateStateSightingTotals();
+    }
     mapv.rebuildOverlay();
     detailsAnimator.target(height);
+    return true;
   }
+  else return false;
 }
 
 void mouseReleased(){

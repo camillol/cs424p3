@@ -15,10 +15,11 @@ class PlayButton extends View {
     stroke(0);
     rect(0, 0, w, h);
     fill((transitionValue==0)?textColor:boldTextColor); 
+    textAlign(CENTER,CENTER);
     if (!value)
-       text ("Play",30,5);
+       text ("Play",w/2,h/2);
     else 
-       text ("Playing...",10,5);
+       text ("Playing...",w/2,h/2);
   }
   
   boolean contentPressed(float lx, float ly)

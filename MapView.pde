@@ -29,7 +29,9 @@ class MapView extends View {
   double TILE_EXPAND_FACTOR = 0.05;  // as a fraction of the tile size
   
   boolean DRAW_ALL_TYPES = false;
-  boolean DRAW_STATES = true;
+  boolean DRAW_STATES = false;
+  
+  Map<State, StateGlyph> stateGlyphs;
   
   MapView(float x_, float y_, float w_, float h_)
   {
@@ -53,6 +55,8 @@ class MapView extends View {
       }
     };
     bufferExec = Executors.newSingleThreadExecutor();
+    
+    stateGlyphs = new HashMap<State, StateGlyph>();
   }
   
   void rebuildOverlay()
@@ -61,6 +65,7 @@ class MapView extends View {
       future.cancel(true);
     }
     buffers.clear();
+    stateGlyphs.clear();
   }
   
   void drawOverlay()
@@ -154,9 +159,9 @@ class MapView extends View {
     Coordinate coord2 = new Coordinate(coord.row + 1, coord.column + 1, coord.zoom);
     Location loc2 = mmap.provider.coordinateLocation(coord2);
     
-    if (DRAW_STATES)
-      drawStates(buf, stateMap.values());
-    else
+    if (DRAW_STATES) {
+//      drawStates(buf, stateMap.values());
+    } else
       drawPlaces(buf, placesInRect(cityTree, loc1, loc2, TILE_EXPAND_FACTOR));
     if (showAirports)
         drawAirports(buf,placesInRect(airportTree,loc1,loc2,TILE_EXPAND_FACTOR));
@@ -182,6 +187,20 @@ class MapView extends View {
     }
   }
   
+  class StateGlyph {
+    PGraphics buf;
+    float x;
+    float y;
+    
+    StateGlyph(State state) {
+      int boxsz = ceil(sqrt(state.sightingCount));
+      buf = createGraphics(boxsz, boxsz, JAVA2D);
+      buf.beginDraw();
+      drawSightingDots(buf, state, new Point2f(boxsz/2, boxsz/2));
+      buf.endDraw();
+    }
+  }
+  
   void drawContent()
   {
     imageMode(CORNER);  // modestmaps needs this - I sent a patch, but who knows when it'll be committed
@@ -196,6 +215,18 @@ class MapView extends View {
         drawMilitaryBases(papplet.g,militaryBaseMap.values());
       if (showWeatherStation)
         drawWeatherStations(papplet.g,weatherStationMap.values());
+    }
+    if (DRAW_STATES) {
+      imageMode(CENTER);
+      for (State state : stateMap.values()) {
+        if (state.sightingCount <= 0) continue;
+        if (!stateGlyphs.containsKey(state))
+          stateGlyphs.put(state, new StateGlyph(state));
+        
+        PGraphics img = stateGlyphs.get(state).buf;
+        Point2f p = mmap.locationPoint(state.loc);
+        image(img, p.x, p.y);
+      }
     }
     
     drawPlacesInformationBox();
@@ -287,9 +318,8 @@ class MapView extends View {
       } 
   }
   
-  void drawSightingDots(PGraphics buffer, Place place)
+  void drawSightingDots(PGraphics buffer, Place place, Point2f p)
   {
-    Point2f p = mmap.locationPoint(place.loc);
     int boxsz = ceil(sqrt(place.sightingCount));
     int boxx = 0;
     int boxy = 0;
@@ -316,13 +346,6 @@ class MapView extends View {
     buffer.popMatrix();
   }
   
-  void drawStates(PGraphics buffer, Iterable<State> states)
-  {
-    for (State state : states) {
-      drawSightingDots(buffer, state);
-    }
-  }
-  
   void drawPlaces(PGraphics buffer, Iterable<? extends Place> places) {
     buffer.imageMode(CENTER);
     buffer.strokeWeight(0.5);
@@ -330,10 +353,10 @@ class MapView extends View {
     buffer.noStroke();
     for (Place place : places) {
       if (place.sightingCount > 0){
+        Point2f p = mmap.locationPoint(place.loc);
         if (DRAW_ALL_TYPES) {
-          drawSightingDots(buffer, place);
+          drawSightingDots(buffer, place, p);
         } else {
-          Point2f p = mmap.locationPoint(place.loc);
           SightingType st = mainSightingTypeForPlace(place);
           float maxPointValue =  map(zoomValue, minZoom, maxZoom, minPointSize, maxPointSize);
           float dotSize =  map(place.sightingCount, minCountSightings, maxCountSightings, minPointSize, maxPointValue);
@@ -361,7 +384,7 @@ class MapView extends View {
     SightingType sightingType = null;
     int idx = 0;
     for (SightingType st : sightingTypeMap.values()) {
-      if (place.counts[idx] > 0) {
+      if (st.active && place.counts[idx] > 0) {
         typeOfSightingCount++;
         sightingType = st;
       }
