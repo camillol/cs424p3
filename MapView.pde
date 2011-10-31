@@ -113,7 +113,8 @@ class MapView extends View {
   ExecutorService bufferExec;
   boolean USE_BUFFERS = true;
   
-  double TILE_EXPAND_FACTOR = 0.05;  // as a fraction of the tile size
+  double TILE_EXPAND_FACTOR = 0.5;  // as a fraction of the tile size
+  double AIRPORT_TILE_EXPAND_FACTOR = 0.15;
   
   boolean DRAW_ALL_TYPES = false;
   
@@ -130,6 +131,7 @@ class MapView extends View {
     String template = "http://{S}.mqcdn.com/tiles/1.0.0/osm/{Z}/{X}/{Y}.png";
     String[] subdomains = new String[] { "otile1", "otile2", "otile3", "otile4"}; // optional
     mmap = new InteractiveMap(papplet, new TemplatedMapProvider(template, subdomains), w, h);
+//    mmap = new InteractiveMap(papplet, new Yahoo.RoadProvider(), w, h);
   
     mmap.MAX_IMAGES_TO_KEEP = 64;
     mmap.setCenterZoom(new Location(39,-98), int(zoomValue));
@@ -274,7 +276,7 @@ class MapView extends View {
     } else
       drawPlaces(buf, placesInRect(cityTree, loc1, loc2, TILE_EXPAND_FACTOR));
     if (showAirports)
-        drawAirports(buf,placesInRect(airportTree,loc1,loc2,TILE_EXPAND_FACTOR));
+        drawAirports(buf,placesInRect(airportTree,loc1,loc2,AIRPORT_TILE_EXPAND_FACTOR));
     if (showMilitaryBases)
         drawMilitaryBases(buf,placesInRect(militaryBaseTree,loc1,loc2,TILE_EXPAND_FACTOR));
     if (showWeatherStation)
