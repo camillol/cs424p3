@@ -76,11 +76,11 @@ class MapView extends View {
   MapView(float x_, float y_, float w_, float h_)
   {
     super(x_, y_, w_, h_);
-    mmap = new InteractiveMap(papplet, new Microsoft.HybridProvider(), w, h);
-   // mmap = new InteractiveMap(papplet, new Microsoft.AerialProvider());  
- /* String template = "http://{S}.mqcdn.com/tiles/1.0.0/osm/{Z}/{X}/{Y}.png";
-  String[] subdomains = new String[] { "otile1", "otile2", "otile3", "otile4"}; // optional
-  mmap = new InteractiveMap(papplet, new TemplatedMapProvider(template, subdomains));*/
+//    mmap = new InteractiveMap(papplet, new Microsoft.HybridProvider(), w, h);
+//    mmap = new InteractiveMap(papplet, new Microsoft.AerialProvider(), w, h);
+    String template = "http://{S}.mqcdn.com/tiles/1.0.0/osm/{Z}/{X}/{Y}.png";
+    String[] subdomains = new String[] { "otile1", "otile2", "otile3", "otile4"}; // optional
+    mmap = new InteractiveMap(papplet, new TemplatedMapProvider(template, subdomains), w, h);
   
     mmap.MAX_IMAGES_TO_KEEP = 64;
     mmap.setCenterZoom(new Location(39,-98), int(zoomValue));
