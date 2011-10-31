@@ -326,7 +326,7 @@ class MapView extends View {
 
     if (USE_BUFFERS) drawOverlay();
     else{
-      drawPlaces(papplet.g, cityMap.values());
+      if (!DRAW_STATES) drawPlaces(papplet.g, cityMap.values());
       if (showAirports)
         drawAirports(papplet.g, airportMap.values());
       if (showMilitaryBases)
@@ -344,9 +344,11 @@ class MapView extends View {
   //        if (state.abbr.equals("CA") || state.abbr.equals("NV"))
           stateGlyphs.put(state, new StateGlyph(state));
         }
-        movingGlyphs = true;
-        glyphSavedMatrix = makeMapToTileMatrix(new Coordinate(0,0,0));
-        /* this matrix maps from screen to megatile coordinates. hopefully. */
+        if (stateGlyphs.size() > 0) {
+          movingGlyphs = true;
+          glyphSavedMatrix = makeMapToTileMatrix(new Coordinate(0,0,0));
+          /* this matrix maps from screen to megatile coordinates. hopefully. */
+        }
       }
       
       if (movingGlyphs) {
@@ -384,8 +386,7 @@ class MapView extends View {
       }
     }
     
-    drawPlacesInformationBox();
-
+    if (!DRAW_STATES) drawPlacesInformationBox();
   }
 
   boolean contentMouseWheel(float lx, float ly, int delta)
