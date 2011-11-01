@@ -93,12 +93,9 @@ void setup()
   
   smooth();
 
-  println(sketchPath);
-  println(dataPath(""));
-  
   /* load data */
   if (sketchPath == null)  // applet
-    data = new WebDataSource(dataPath("jsontest"));
+    data = new WebDataSource("http://young-mountain-2805.heroku.com/");  //dataPath("jsontest")
   else  // application
     data = new SQLiteDataSource();  
   

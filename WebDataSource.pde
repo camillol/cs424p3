@@ -116,7 +116,7 @@ class WebDataSource implements DataSource {
     maxCountSightings = 0;
     totalCountSightings = 0;
 
-    String request = baseURL + "/sightingCounts/" + activeFilter.toString();
+    String request = baseURL + "/sighting/counts/" + activeFilter.toString().replaceAll(" ", "%20");
     try {
       JSONObject result = new JSONObject(join(loadStrings(request), ""));
       JSONArray cities = result.getJSONArray("cities");
@@ -139,7 +139,7 @@ class WebDataSource implements DataSource {
       }
     }
     catch (JSONException e) {
-      println ("There was an error parsing the JSONObject.");
+      println (e);
     }
   }
   
@@ -167,7 +167,7 @@ class WebDataSource implements DataSource {
   {
     ArrayList<Sighting> sightings = new ArrayList<Sighting>();
     
-    String request = baseURL + "/sightingsForCity/" + p.id + "/" + activeFilter.toString();
+    String request = baseURL + "/sighting/forCity/" + p.id + "/" + activeFilter.toString();
     try {
       JSONObject result = new JSONObject(join(loadStrings(request), ""));
       JSONArray sa = result.getJSONArray("sightings");
@@ -203,7 +203,7 @@ class WebDataSource implements DataSource {
   {
     List<Bucket> buckets = new ArrayList();
     
-    String request = baseURL + "/sightingCountsByCategory/" + categoryName;
+    String request = baseURL + "/sighting/countsByCategory/" + categoryName ;
     try {
       JSONObject result = new JSONObject(join(loadStrings(request), ""));
       JSONArray ba = result.getJSONArray("buckets");
@@ -237,7 +237,12 @@ class WebDataSource implements DataSource {
   
   List<Bucket> sightingCountsBySeason()
   {
-    return sightingCountsByCategoryQuery("season");
+    String seasonNames[] = {"Winter", "Spring", "Summer", "Fall"};
+    List<Bucket> buckets = sightingCountsByCategoryQuery("season");
+    for (Bucket b : buckets) {
+      b.label = seasonNames[int(b.label)];
+    }
+    return buckets;
   }
   
   List<Bucket> sightingCountsByMonth()
@@ -274,7 +279,7 @@ class WebDataSource implements DataSource {
   {
     List<SightingLite> sightings = new ArrayList(limit);
     
-    String request = baseURL + "/sightingsByTime/" + limit + "/" + offset;
+    String request = baseURL + "/sighting/byTime/" + limit + "/" + offset;
     try {
       JSONObject result = new JSONObject(join(loadStrings(request), ""));
       JSONArray sa = result.getJSONArray("sightings");
