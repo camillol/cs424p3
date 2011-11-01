@@ -316,7 +316,7 @@ interface DataSource {
   List<Bucket> sightingCountsByWeatherStDistance();
   List<Bucket> sightingCountsByMilitaryBaseDistance();  
   List<Bucket> sightingCountsByPopulationDensity();   
-  List<SightingLite> sightingsByTime(int chunkSize, int chunkNum);
+  List<SightingLite> sightingsByTime(int limit, int offset);
   Date getLastSightingDate();
 }
 

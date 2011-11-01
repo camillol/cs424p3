@@ -117,7 +117,6 @@ class WebDataSource implements DataSource {
     totalCountSightings = 0;
 
     String request = baseURL + "/sightingCounts/" + activeFilter.toString();
-    println(request);
     try {
       JSONObject result = new JSONObject(join(loadStrings(request), ""));
       JSONArray cities = result.getJSONArray("cities");
@@ -168,57 +167,146 @@ class WebDataSource implements DataSource {
   {
     ArrayList<Sighting> sightings = new ArrayList<Sighting>();
     
+    String request = baseURL + "/sightingsForCity/" + p.id + "/" + activeFilter.toString();
+    try {
+      JSONObject result = new JSONObject(join(loadStrings(request), ""));
+      JSONArray sa = result.getJSONArray("sightings");
+      for (int i = 0; i < sa.length(); i++) {
+        JSONObject s = sa.getJSONObject(i);
+        try {
+          sightings.add(new Sighting(
+            s.getString("full_description"),
+            sightingTypeMap.get(s.getInt("type_id")),
+            s.getString("name"),
+            0.0, /* TODO: fill in airport distance */
+            0.0, /* TODO: fill in military base distance */
+            dbDateFormat.parse(s.getString("occurred_at")),
+            dbDateFormat.parse(s.getString("posted_at")),
+            p,
+            s.getString("weather_conditions"),
+            s.getInt("temperature")
+          ));
+        }
+        catch(Exception ex){
+          println(ex); 
+        }
+      }
+    }
+    catch (JSONException e) {
+      println ("There was an error parsing the JSONObject.");
+    }
+    
     return sightings;
+  }
+  
+  List<Bucket> sightingCountsByCategoryQuery(String categoryName)
+  {
+    List<Bucket> buckets = new ArrayList();
+    
+    String request = baseURL + "/sightingCountsByCategory/" + categoryName;
+    try {
+      JSONObject result = new JSONObject(join(loadStrings(request), ""));
+      JSONArray ba = result.getJSONArray("buckets");
+      for (int i = 0; i < ba.length(); i++) {
+        JSONObject b = ba.getJSONObject(i);
+        String cat = b.getString(categoryName);
+
+        Bucket bucket = new Bucket(cat);
+        buckets.add(bucket);
+
+        JSONArray counts = b.getJSONArray("counts");
+        int idx = 0;
+        for (SightingType st : sightingTypeMap.values()) {
+          int typeCount = counts.getInt(idx);
+          bucket.counts.put(st, typeCount);
+          idx++;
+        }
+      }
+    }
+    catch (JSONException e) {
+      println ("There was an error parsing the JSONObject.");
+    }
+    
+    return buckets;
   }
   
   List<Bucket> sightingCountsByYear()
   {
-    return new ArrayList<Bucket>();
+    return sightingCountsByCategoryQuery("year");
   }
   
   List<Bucket> sightingCountsBySeason()
   {
-    return new ArrayList<Bucket>();
+    return sightingCountsByCategoryQuery("season");
   }
   
   List<Bucket> sightingCountsByMonth()
   {
-    return new ArrayList<Bucket>();
+    return sightingCountsByCategoryQuery("month");
   }
   
   List<Bucket> sightingCountsByHour()
   {
-    return new ArrayList<Bucket>();
+    return sightingCountsByCategoryQuery("hour");
   }
   
   List<Bucket> sightingCountsByAirportDistance()
   {
-    return new ArrayList<Bucket>();
+    return sightingCountsByCategoryQuery("airport_dist");
   }
   
   List<Bucket> sightingCountsByWeatherStDistance()
   {
-    return new ArrayList<Bucket>();
+    return sightingCountsByCategoryQuery("weather_dist");
   }
   
   List<Bucket> sightingCountsByMilitaryBaseDistance()
   {
-    return new ArrayList<Bucket>();
+    return sightingCountsByCategoryQuery("military_dist");
   }
   
   List<Bucket> sightingCountsByPopulationDensity()
   {
-    return new ArrayList<Bucket>();
+    return sightingCountsByCategoryQuery("pop_density");
   }
   
-  List<SightingLite> sightingsByTime(int chunkSize, int chunkNum)
+  List<SightingLite> sightingsByTime(int limit, int offset)
   {
-    return new ArrayList<SightingLite>();
+    List<SightingLite> sightings = new ArrayList(limit);
+    
+    String request = baseURL + "/sightingsByTime/" + limit + "/" + offset;
+    try {
+      JSONObject result = new JSONObject(join(loadStrings(request), ""));
+      JSONArray sa = result.getJSONArray("sightings");
+      for (int i = 0; i < sa.length(); i++) {
+        JSONObject s = sa.getJSONObject(i);
+        try {
+          sightings.add(new SightingLite(
+            sightingTypeMap.get(s.getInt("type_id")),
+            dbDateFormat.parse(s.getString("occurred_at")),
+            cityMap.get(s.getInt("city_id"))
+          ));
+        } catch (ParseException e) {
+          println(e);
+        }
+      }
+    }
+    catch (JSONException e) {
+      println ("There was an error parsing the JSONObject.");
+    }
+    
+    return sightings;
   }
   
   Date getLastSightingDate()
   {
-    return new Date();
+    String request = baseURL + "/lastSightingDate";
+    try {
+      return dbDateFormat.parse(join(loadStrings(request), ""));
+    } catch (ParseException e) {
+      println(e);
+      return null;
+    }
   }
 }
 

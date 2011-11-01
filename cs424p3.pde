@@ -97,8 +97,10 @@ void setup()
   println(dataPath(""));
   
   /* load data */
-  data = new SQLiteDataSource();
-//  data = new WebDataSource(dataPath("jsontest"));
+  if (sketchPath == null)  // applet
+    data = new WebDataSource(dataPath("jsontest"));
+  else  // application
+    data = new SQLiteDataSource();  
   
   data.loadSightingTypes();
   activeFilter = new SightingsFilter();
