@@ -107,7 +107,7 @@ class GraphView extends View {
     rect (0,h+5,w,110);
     fill(textColor);
     
-    float[] activeModeLegend =  data.getLegendLabels(activeMode);
+    float[] activeModeLegend =  getLegendLabels(activeMode);
     if (activeModeLegend != null){
       if (!activeMode.equals("County Population dens."))
          text("Measurement unit = Km", w/2,h+20);
