@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+{% block content %}
+<div id="content">
+  <div class="post">
+    <h2 class="title"><a href="#">Sources used</a></h2>
+    <p class="meta"><span class="date"></span> <span class="posted"><a href="#"></a></span></p>
+    <div style="clear: both;">&nbsp;</div>
+    <div class="entry" style="color:white;">
+      <ul>
+        <li>
+          <a href="http://www.census.gov/geo/www/gazetteer/gazetteer2010.html">http://www.census.gov/geo/www/gazetteer/gazetteer2010.html</a>
+          <br /> Coordinates of places <small>(<a href="#csv_instruction">CSV Instructions</a>)</small>
+        </li>
+        <li>
+          <a href="http://www.nuforc.org/webreports/ndxloc.html">http://www.nuforc.org/webreports/ndxloc.html</a>
+          <br /> Detailed sigting information / accounts <small>(<a href="#scraping_instructions">Scraping Instructions</a>)</small>
+        </li>
+        <li>
+          <a href="http://factfinder2.census.gov">http://factfinder2.census.gov</a>
+          <br /> Population density by county <small>(<a href="#csv_instruction">CSV Instructions</a>)</small>
+        </li>
+        <li>
+          <a href="http://code.google.com/apis/maps/index.html">http://code.google.com/apis/maps/index.html</a>
+          <br /> Place coordinates and county lookup <small>(<a href="#api_instructions">API Instructions</a>)</small>
+        </li>
+        <li>
+          <a href="http://msdn.microsoft.com/en-us/library/dd877180.aspx">http://msdn.microsoft.com/en-us/library/dd877180.aspx</a>
+          <br /> Place coordinates and county lookup <small>(<a href="#api_instructions">API Instructions</a>)</small>
+        </li>
+        <li>
+          <a href="http://www.wunderground.com/history">http://www.wunderground.com/history</a>
+          <br /> Temperature and weather conditions <small>(<a href="#scraping_instructions">Scraping Instructions</a>)</small>
+        </li>
+        <li>
+          <a href="http://weather.noaa.gov">http://weather.noaa.gov</a>
+          <br /> Positions of weather stations <small>(<a href="#scraping_instructions">Scraping Instructions</a>)</small>
+        </li>
+        <li>
+          <a href="www.partow.net/miscellaneous/airportdatabase/">www.partow.net/miscellaneous/airportdatabase/</a>
+          <br /> Airports locations <small>(<a href="#csv_instruction">CSV Instructions</a>)</small>
+        </li>
+        <li>
+          <a href="http://militarybases.com/">http://militarybases.com/</a>
+          <br /> Military base locations <small>(<a href="#kml_instructions">KML Instructions</a>)</small>
+        </li>
+      </ul>
+      <!-- <p class="links"><a href="#" class="more">Read More</a><a href="#" title="b0x" class="comments">Comments</a></p> -->
+      <fieldset>
+        <legend><a name="csv_instructions">CSV instructions</a></legend>
+        <ol>
+          <li>Comma delimited data was downloaded manually</li>
+          <li>Data was processed via Ruby script using FasterCSV gem</li>
+          <li>Data was cleaned of spaces and extra dashes</li>
+          <li>Data was inserted into sqlite3 database with columns in CSV mapped to database columns accordingly</li>
+        </ol>
+      </fieldset>
+      <fieldset>
+        <legend><a name="api_instructions">API instructions</a></legend>
+        <ol>
+          <li>Using ruby net/http library, data was pulled via HTTP in XML form</li>
+          <li>Lat/Lon was extracted using Nokogiri library</li>
+          <li>Cleaned up of extra spaces / characters</li>
+        </ol>
+      </fieldset>
+      <fieldset>
+        <legend><a name="kml_instructions">KML instructions</a></legend>
+        <ol>
+          <li>Data was downloaded manually</li>
+          <li>Processed using ruby nokogiri XML library</li>
+          <li>Relation name, coordinates were extracted and inserted into the database</li>
+        </ol>
+      </fieldset>
+      <fieldset>
+        <legend><a name="scraping_instructions">Scraping Instructions</a></legend>
+        <ol>
+          <li>Specific target webpage was chosen manually as an entry point</li>
+          <li>Forms were anylized to get a page with proper links of all necessary information</li>
+          <li>Data was further processed to get rid of padded spacings and inserted into database</li>
+        </ol>
+      </fieldset>
+    </div>
+  </div>
+</div>
+{% endblock %}

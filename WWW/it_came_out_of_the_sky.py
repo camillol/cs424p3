@@ -59,14 +59,28 @@ class Download(webapp.RequestHandler):
 class Search(webapp.RequestHandler):
     def get(self):
         city_name = self.request.get("city_name")
+        shape_id = self.request.get("shape_id")
         cities = City.all().filter("name = ", city_name.lower().capitalize()).fetch(limit=10)
         sightings = []
         if len(cities) > 0:
           sightings = Sighting.all().filter("city_id IN ", map((lambda x: x.city_id), cities)).fetch(limit=100) 
+        if len(shape_id) > 0:
+          sightings = Sighting.all().filter("shape_id = ", int(shape_id)).fetch(limit=100) 
         template_values = {'current_page': 'search', 'sightings': sightings, 'city_name': city_name }
         path = os.path.join(os.path.dirname(__file__), views_path + 'search.html')
         self.response.out.write(template.render(path, template_values))
 
+class DataExtraction(webapp.RequestHandler):
+    def get(self):
+        template_values = {'current_page': 'data_extraction'}
+        path = os.path.join(os.path.dirname(__file__), views_path + 'data_extraction.html')
+        self.response.out.write(template.render(path, template_values))
+
+class Observations(webapp.RequestHandler):
+    def get(self):
+        template_values = {'current_page': 'observations'}
+        path = os.path.join(os.path.dirname(__file__), views_path + 'observations.html')
+        self.response.out.write(template.render(path, template_values))
 
 class Sightings(webapp.RequestHandler):
     def get(self):
@@ -82,6 +96,8 @@ application = webapp.WSGIApplication([('/', Index),
                                       ('/sightings', Sightings), 
                                       ('/screenshots', Screenshots),
                                       ('/search', Search),
+                                      ('/data_extraction', DataExtraction),
+                                      ('/observations', Observations),
                                       ('/download', Download)],
                                      debug=True)
 

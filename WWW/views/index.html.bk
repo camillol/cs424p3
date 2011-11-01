@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>It Came Out of the Sky</title>
+    <meta name="keywords" content="It Came Out of the Sky" />
+    <meta name="description" content="It Came Out of the Sky" />
+    <link href="/stylesheets/templatemo_style.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="/stylesheets/coda-slider.css" type="text/css" charset="utf-8" />
+    <script src="/js/jquery-1.2.6.js" type="text/javascript"></script>
+    <script src="/js/jquery.scrollTo-1.3.3.js" type="text/javascript"></script>
+    <script src="/js/jquery.localscroll-1.2.5.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/js/jquery.serialScroll-1.2.1.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/js/coda-slider.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/js/jquery.easing.1.3.js" type="text/javascript" charset="utf-8"></script>
+  </head>
+  <body>
+    <div id="slider">
+      <div id="templatemo_wrapper">
+        <div id="header">
+          <h1>It Came Out of the Sky</h1>
+          <div id="menu">
+            <ul class="navigation">
+              <li><a href="#home" class="selected">Home<span class="ui_icon home"></span></a></li>
+              <li><a href="#news">News<span class="ui_icon news"></span></a></li>
+              <li><a href="#screenshots">Screenshots<span class="ui_icon screenshots"></span></a></li>
+              <li><a href="#download">Download<span class="ui_icon gallery"></span></a></li>
+              <li><a href="#contactus">Contact<span  class="ui_icon contactus"></span></a></li>
+            </ul>
+          </div>
+        </div>
+        <div id="content">
+          <div class="scroll">
+            <div class="scrollContainer">
+              <div class="panel" id="home">
+                <div class="col_400 float_l">
+                  <h2>CONTENT</h2>    
+                  COMING SOON..., see <a href="#news">News<span class="ui_icon news"></span></a> for constant updates
+                </div>
+                <div class="col_300 float_r">
+                  <h2>Features</h2> 
+                  <ul class="service_list">
+                    <li><a href="#">Coming Soon</a></li>
+                  </ul>
+                </div>
+              </div> <!-- end of home -->
+              <div class="panel" id="news">
+                <h1>News</h1>
+                <div id="gallery_container">
+                  <fieldset>
+                  <legend>Week #3: Friday, October 28, 2011</legend>
+                  <ul>
+                    <li>
+                      <b>Camillo</b> 
+                      - Enhanced performance significantly, enabled OpenGL (a lot of work)
+                    </li>
+                    <li>
+                      <b>Priscilla</b> - 
+                      <ul>
+                        <li> Created ScrollList:  Customized object which list the occurred sightings in a specific place</li>
+                        <li> Created VScroll : Vertical scroll that is part of scrollList.</li>
+                        <li> Updated SightingDetailsView:  Functions to display the detailed information of a specific sighting (the one selected from the scrollList).</li>
+                        <li> Updated MapView: Make sure that moving and zooming the map and drawing information box only occur when the mouse is over     the map.  Drawing function for different types of sightings (drawn icon depends of the type of sighting)</li>
+                        <li> Worked on the first version of filter places&amp;sightings based on dates &amp; times specified by the user.</li>
+                        <li> Modifies database queries to retrieve number of UFO types &amp; UFO type by place. </li>
+                     </ul>
+                    </li>
+                     <li>
+                        <b>Eugene</b> - Collected / processed weather data, weather stations data.
+                     </li>
+                  </ul>
+                  </fieldset>
+
+                  <fieldset>
+                  <legend>Week #2: Friday, October 21, 2011</legend>
+                  <ul>
+                    <li>
+                      <b>Camillo</b> 
+                      - Worked on animations, created main project plan, assisted other 
+                      group members with various isssues that arose
+                    </li>
+                    <li>
+                      <b>Priscilla</b> - 
+                      <ul>
+                        <li> Create checkbox </li>
+                        <li> customized object which draws a checkbox with a text and/or color/image  </li>
+                        <li> Create HSlider </li>
+                        <li> customized object  which draws a horizontal slider with two marks (to specify      ranges of values)</li>
+                        <li> Create SettingsView </li>
+                        <li> 
+                          View that display the different options the user can choose to visualize on the map.  
+                          (It includes:  Year,Month &amp; Time sliders, Type of UFO checkboxes group and airport checkbox, 
+                          &amp; title that specified what is showing on the map.) 
+                        </li>
+                        <li>
+                          Modified MapView: Functions to draw sightings and airports, the size of the icons depends on the current zoom level. 
+                          Function to show a information box when the mouse cursor is over a sightings
+                        </li>
+                        <li>Search for icons to be used in the project.</li>
+                        <li>
+                          Create SightingDetailsView:  customized object that will display all the sighting information as it was original 
+                          reported.  Interaction was created..when the user clicks on a sighting the view will appear.  
+                          Content of the view is not ready yet. 
+                        </li>
+                      </ul>
+                    </li>
+                    <li><b>Eugene</b> - Built ORM like interface to access database through Java objects, worked on data integrity / optimization by adding indexes and integrating with Google and Bing APIs </li>
+                    <li><b>Group</b> - Come up with a higher level categories (7 types) for the many different sighting types.
+                        Had two meetings regarding general project layout and interface design
+                    </li>
+                  </ul>
+                </fieldset>
+                <fieldset>
+                  <legend>Week #1: Friday, October 14, 2011</legend>
+                  <ul>
+                    <li><b>Camillo</b> - Set up a repository on GitHub with initial code for view hierarchy, animation and miscellanous utilities.</li>
+                    <li><b>Priscilla</b> - Gather the location data by county and places.  
+                                Gather the population density by state, counties and places. Download the modest_maps_interactive to understand how it works.</li>
+                    <li><b>Eugene</b> - Wrote scraper that downloaded, parsed data from: 
+                    <a href="http://www.nuforc.org/webreports/ndxloc.html">www.nuforc.org/webreports/ndxloc.html</a>, and inserted it into database. Setup website.</li>
+                    <li><b>Group</b> - Had two meetings regarding general project layout and interface design</li>
+                  </ul>
+                </fieldset>
+                </div>
+              </div>
+              <div class="panel" id="screenshots">
+                <div class="col_400 float_l">
+                  <h1>Screenshots</h1>
+                </div>
+              </div>
+              <div class="panel" id="download">
+                <h1>Download</h1>
+              </div>
+              <div class="panel" id="contactus">
+                <h1>Contact Us</h1>
+              </div> <!-- end of scroll -->
+            </div> <!-- end of content -->
+          </div>
+        </div>
+        <div id="footer">
+          Copyright © 2011 <a href="#">UFO</a>
+        </div>
+      </div> <!-- end of wrapper -->
+    </div> <!-- end of slider -->
+  </body>
+</html>

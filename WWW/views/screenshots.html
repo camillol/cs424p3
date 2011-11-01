@@ -1,0 +1,172 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div id="content">
+  <div class="post">
+    <h2 class="title"><a href="#">First view</a></h2>
+    <p class="meta"><span class="date"></span> <span class="posted"><a href="#"></a></span></p>
+    <div style="clear: both;">&nbsp;</div>
+    <div class="entry" style="color:white;">
+      <p>
+        <b>Initial view shows aggregated data by states for all sightings.  It shows graphs based on percentage type of sighting for each state. 
+        Each color represents different type of sighting. Each colored rectangle is proportional to the number of sightings of that type.  
+        Each rectangle represents total number of sighting present in each state. User has an option to mouse over the rectangle.
+        And see the name of the State and total number of sightings.
+        </b>
+        <br />
+        <a href="/images/screenshots/ClusterByState.png" target="_blank">
+          <img src="/images/screenshots/ClusterByState.png" class="screenshots" />  
+        </a>
+      </p>
+      <!-- <p class="links"><a href="#" class="more">Read More</a><a href="#" title="b0x" class="comments">Comments</a></p> -->
+    </div>
+  </div>
+  <div class="post">
+    <h2 class="title"><a href="#">Filter by State and time</a></h2>
+    <p class="meta"><span class="date"></span> <span class="posted"><a href="#"></a></span></p>
+    <div style="clear: both;">&nbsp;</div>
+    <div class="entry" style="color:white;">
+      <p>
+        <b>
+          User has an option to filter the data by sighting type and 
+          date/time when clicking on the "show settings" at the top as shown on the picture.
+        </b>
+        <br />
+        <a href="/images/screenshots/ByStatesFilteredByDatetime.png" target="_blank">
+          <img src="/images/screenshots/ByStatesFilteredByDatetime&UFOTypes.png" class="screenshots" />  
+        </a>
+      </p>
+      <!-- <p class="links"><a href="#" class="more">Read More</a><a href="#" title="b0x" class="comments">Comments</a></p> -->
+    </div>
+  </div>
+  <div class="post">
+    <h2 class="title"><a href="#">Sightings on map</a></h2>
+    <p class="meta"><span class="date">  </span> <span class="posted"><a href="#"></a></span></p>
+    <div style="clear: both;">&nbsp;</div>
+    <div class="entry" style="color:white;">
+      <p>
+        <b>
+          Image below shows granular data of sightings by place. User can also filter by type of sighting and date/time by shifting cursor on the 
+          left side and toggling checkboxes in the middle in the setting panel.
+        </b>
+        <br />
+        <a href="/images/screenshots/SightingsOnMap.png" target="_blank">
+          <img src="/images/screenshots/SightingsOnMap.png" class="screenshots" />
+        </a>
+      </p>
+      <!-- <p class="links"><a href="#" class="more">Read More</a><a href="#" title="b0x" class="comments">Comments</a></p> -->
+    </div>
+  </div>
+  <div class="post">
+    <h2 class="title"><a href="#">Sighting detail view</a></h2>
+    <p class="meta"><span class="date">  </span> <span class="posted"><a href="#"></a></span></p>
+    <div style="clear: both;">&nbsp;</div>
+    <div class="entry" style="color:white;">
+      <p>
+        <b>
+          By hoving over each place, hover box appears with place name and number of sightings. When user clicks on the place, 
+          additional screen slides out from the bottom of the window with the list of sightings and detailed information for each of them.
+          The following information is available in detailed sighting view: Sighting time, type of UFO, shape, weather condition, temperature, 
+          and full sigthing report by the witness.
+        </b>
+        <br />
+        <a href="/images/screenshots/SightingDetails.png" target="_blank">
+          <img src="/images/screenshots/SightingDetails.png" class="screenshots" />        
+        </a>
+      </p>
+      <!-- <p class="links"><a href="#" class="more">Read More</a><a href="#" title="b0x" class="comments">Comments</a></p> -->
+    </div>
+  </div>
+  
+  <div class="post">
+    <h2 class="title"><a href="#">Highlighted places near venues</a></h2>
+    <p class="meta"><span class="date">  </span> <span class="posted"><a href="#"></a></span></p>
+    <div style="clear: both;">&nbsp;</div>
+    <div class="entry" style="color:white;">
+      <p>
+        <b>
+          This view shows a zoomed in Detroit area with sightings highlighted that are close to the airports. Threshold for a place to be considered 'Proximal'
+          is 10 km. User can see different venue combinations by clicking checkmarks: 'Show airports', 'Show military bases', 'Show weather stations'. 
+          Different places will be highlighted as new venues are selected/deselected.
+        </b>
+        <br />
+        <a href="/images/screenshots/SightingsNearAirport.png" target="_blank">
+          <img src="/images/screenshots/SightingsNearAirport.png" class="screenshots" />     
+        </a>
+      </p>
+      <!-- <p class="links"><a href="#" class="more">Read More</a><a href="#" title="b0x" class="comments">Comments</a></p> -->
+    </div>
+  </div>
+  <div class="post">
+    <h2 class="title"><a href="#"># of sightings by year</a></h2>
+    <p class="meta"><span class="date">  </span> <span class="posted"><a href="#"></a></span></p>
+    <div style="clear: both;">&nbsp;</div>
+    <div class="entry" style="color:white;">
+      <p>
+        <b>
+          By clicking "Show graph" at the top of the screen, user will be switched to the graph view. Lists of available graphs will displayed in the right corner.
+          User can customize sighting type that will be included in the graph. The following image shows number of sightings occurred by year with colors 
+          mapped to different sighting types.
+        </b>
+        <a href="/images/screenshots/ByYearGraph.png" target="_blank">
+          <img src="/images/screenshots/ByYearGraph.png" class="screenshots" />               
+        </a>
+      </p>
+      <!-- <p class="links"><a href="#" class="more">Read More</a><a href="#" title="b0x" class="comments">Comments</a></p> -->
+    </div>
+  </div>
+  <div class="post">
+    <h2 class="title"><a href="#">Distance to the venues vs # of sightings</a></h2>
+    <p class="meta"><span class="date">  </span> <span class="posted"><a href="#"></a></span></p>
+    <div style="clear: both;">&nbsp;</div>
+    <div class="entry" style="color:white;">
+      <p>
+        <b>
+          The following graph shows places grouped by ranges of distances from airports.  Similar distance graphs can be selected such as 
+          'Military base distance' and 'weather station distance' by clicking on the right side of the menu.
+        </b>
+        <br />
+        <a href="/images/screenshots/ByAirportDistanceGraph.png" target="_blank">
+          <img src="/images/screenshots/ByAirportDistanceGraph.png" class="screenshots" />
+        </a>
+      </p>
+      <!-- <p class="links"><a href="#" class="more">Read More</a><a href="#" title="b0x" class="comments">Comments</a></p> -->
+    </div>
+  </div>
+  <div class="post">
+    <h2 class="title"><a href="#">Population density vs # of sightings graph</a></h2>
+    <p class="meta"><span class="date">  </span> <span class="posted"><a href="#"></a></span></p>
+    <div style="clear: both;">&nbsp;</div>
+    <div class="entry" style="color:white;">
+      <p>
+        <b>
+          Following graph show correlation between population density and number of sightings and its types. Population densities are group by ranges.
+        </b>
+        <br />
+      </p>
+      <a href="/images/screenshots/DensityPopulationGraph.png" target="_blank">
+        <img src="/images/screenshots/DensityPopulationGraph.png" class="screenshots" />     
+      </a>
+      <!-- <p class="links"><a href="#" class="more">Read More</a><a href="#" title="b0x" class="comments">Comments</a></p> -->
+    </div>
+  </div>
+<div class="post">
+    <h2 class="title"><a href="#">Animation of sightings over time</a></h2>
+    <p class="meta"><span class="date">  </span> <span class="posted"><a href="#"></a></span></p>
+    <div style="clear: both;">&nbsp;</div>
+    <div class="entry" style="color:white;">
+      <p>
+        <b>
+          The following screenshot shows occurrence of sightings over time.  As time progresses, new sightings appear on the graph
+          with the older one fading away. Play mode can be toggled by clicking on the play/stop button on top of the screen. Rectangle on the right of the
+          play/stop button becomes the progress bar when the movie is playing.
+        </b>
+        <br />
+      </p>
+      <a href="/images/screenshots/PlayMovie.png" target="_blank">
+        <img src="/images/screenshots/PlayMovie.png" class="screenshots" />     
+      </a>
+      <!-- <p class="links"><a href="#" class="more">Read More</a><a href="#" title="b0x" class="comments">Comments</a></p> -->
+    </div>
+  </div>
+</div>
+{% endblock %}
