@@ -52,7 +52,6 @@ a:hover {
 #wrapper {
 	margin: 0 auto;
 	padding: 0;
-	background: url(images/img03.gif) no-repeat center top;
 }
 
 .container {
@@ -73,7 +72,7 @@ a:hover {
 
 #logo {
 	float: left;
-	width: 300px;
+	width: 500px;
 	margin: 0;
 	padding: 0;
 	color: #B23C1C;
@@ -96,7 +95,7 @@ a:hover {
 	margin: 0;
 	padding: 0px 0 0 0px;
 	letter-spacing: -1px;
-	font: normal 18px Georgia, "Times New Roman", Times, serif;
+	font: normal 20px Georgia, "Times New Roman", Times, serif;
 	font-style: italic;
 	color: #8E8E8E;
 }
@@ -185,7 +184,6 @@ a:hover {
 	height: 20px;
 	margin-right: 1px;
 	padding: 100px 20px 15px 20px;
-	background: url(images/img06.gif) no-repeat left 12px;
 	text-decoration: none;
 	text-align: center;
 	text-transform: uppercase;
@@ -394,7 +392,6 @@ a:hover {
 	overflow: hidden;
 	width: 890px;
 	padding: 30px 55px 50px 55px;
-	background: url(images/img05.jpg) no-repeat left bottom;
 }
 
 #footer-content h2 {
