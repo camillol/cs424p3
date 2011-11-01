@@ -67,6 +67,11 @@ class SightingType {
     active = act;
     activeAnimator.target(active ? 1.0 : 0.0);
   }
+  
+  int hashCode()
+  {
+    return id;
+  }
 }
 
 final static int CITY = 0;
@@ -112,6 +117,11 @@ class City extends Place {
     super(CITY, id, loc, name, sightingCount);
     this.state_id = state_id;
     this.county_id = county_id;
+  }
+  
+  String toString()
+  {
+    return "City("+name+")";
   }
 }
 
@@ -204,10 +214,17 @@ class SightingsFilter {
   
   String toString()
   {
-    return viewMinYear + "-" + viewMaxYear + " "
+    StringBuffer s = new StringBuffer();
+    s.append(viewMinYear + "-" + viewMaxYear + " "
       + viewMinMonth + "-" + viewMaxMonth + " "
-      + viewMinHour + "-" + viewMaxHour + " "
-      + activeTypes;
+      + viewMinHour + "-" + viewMaxHour + " ");
+    boolean first = true;
+    for (SightingType st : activeTypes) {
+      if (first) first = false;
+      else s.append(",");
+      s.append(st.id);
+    }
+    return s.toString();
   }
 }
 
@@ -299,8 +316,7 @@ interface DataSource {
   List<Bucket> sightingCountsByWeatherStDistance();
   List<Bucket> sightingCountsByMilitaryBaseDistance();  
   List<Bucket> sightingCountsByPopulationDensity();   
-  List<SightingLite> sightingsByTime(int chunkSize, int chunkNum);
-  float[] getLegendLabels(String activeMode);
+  List<SightingLite> sightingsByTime(int limit, int offset);
   Date getLastSightingDate();
 }
 
@@ -325,6 +341,20 @@ class Bucket {
   - unemployment (by county and year)?
   - income??
 */
+
+float[] airportsDistanceBreaks = {7.794978,12.22485,16.34988,21.02355,26.27319,32.03328,38.54012,45.20428,54.43778,64.34605,76.22255,91.7209,113.2127,152.5769};
+float[] weatherStDistanceBreaks = {3.417465,5.244248,6.937217,8.564252,10.51355,12.41377,14.63627,16.98696,19.75864,23.02078,26.70035,31.42313,38.6634,50.20286};
+float[] militaryBaseDistanceBreaks = {12.07392,20.41422,27.86664,36.02675,44.57247,54.70817,67.01115,80.2194,95.13276,111.2619,133.6569,158.7418,192.5056,247.0147};
+float[] populationDensityBreaks = {470,1290,2150,3073.333,4136.667,5350,7173.333,10183.33,14460,25483,54829};               
+
+float[] getLegendLabels(String activeMode){
+   if (activeMode.equals("Airport distance")) return airportsDistanceBreaks;
+   else if (activeMode.equals("Military Base distance")) return militaryBaseDistanceBreaks;
+   else if (activeMode.equals("Weather Station dist.")) return weatherStDistanceBreaks;
+   else if (activeMode.equals("County Population dens.")) return populationDensityBreaks;
+   
+   return null;
+}
 
 /* SQLite DB access */
 
@@ -367,7 +397,6 @@ class SQLiteDataSource implements DataSource {
     stopWatch();
     print("Loading cities...");
     db.query("select cities.*, count(*) as sighting_count , cities.name||', '||states.name_abbreviation as city_name from cities join sightings on sightings.city_id = cities.id join states on cities.state_id = states.id group by cities.id");
-    cityMap = new HashMap<Integer,Place>();
     minCountSightings = 1000;
     maxCountSightings = 0;
     while (db.next()) {
@@ -390,7 +419,6 @@ class SQLiteDataSource implements DataSource {
     stopWatch();
     print("Loading states...");
     db.query("select * from states");
-    stateMap = new HashMap<Integer,State>();
     while (db.next()) {
       stateMap.put(db.getInt("id"), new State(
         db.getInt("id"),
@@ -473,7 +501,6 @@ class SQLiteDataSource implements DataSource {
     stopWatch();
     print("Loading airports...");
     db.query("select * from airports");
-    airportMap = new HashMap<Integer,Place>();
   
     while (db.next()) {
       airportMap.put(db.getInt("id"), new Place(AIRPORT,
@@ -491,7 +518,6 @@ class SQLiteDataSource implements DataSource {
     stopWatch();
     print("Loading military bases...");
     db.query("select * from military_bases");
-    militaryBaseMap = new HashMap<Integer,Place>();
   
     while (db.next()) {
       militaryBaseMap.put(db.getInt("id"), new Place(MILITARY_BASE,
@@ -509,7 +535,6 @@ class SQLiteDataSource implements DataSource {
     stopWatch();
     print("Loading weather stations...");
     db.query("select * from weather_stations");
-    weatherStationMap = new HashMap<Integer,Place>();
   
     while (db.next()) {
       weatherStationMap.put(db.getInt("id"), new Place(WEATHER_STATION,
@@ -525,7 +550,6 @@ class SQLiteDataSource implements DataSource {
   void loadSightingTypes()
   {
     db.query("select * from sighting_types;");
-    sightingTypeMap = new LinkedHashMap<Integer, SightingType>();
     while (db.next()) {
       sightingTypeMap.put(db.getInt("id"), new SightingType(
         db.getInt("id"),
@@ -602,21 +626,7 @@ class SQLiteDataSource implements DataSource {
       + " from sightings join shapes on shape_id = shapes.id group by hour, type_id;",
       "hour");
   }
-  
-  float[] airportsDistanceBreaks = {7.794978,12.22485,16.34988,21.02355,26.27319,32.03328,38.54012,45.20428,54.43778,64.34605,76.22255,91.7209,113.2127,152.5769};
-  float[] weatherStDistanceBreaks = {3.417465,5.244248,6.937217,8.564252,10.51355,12.41377,14.63627,16.98696,19.75864,23.02078,26.70035,31.42313,38.6634,50.20286};
-  float[] militaryBaseDistanceBreaks = {12.07392,20.41422,27.86664,36.02675,44.57247,54.70817,67.01115,80.2194,95.13276,111.2619,133.6569,158.7418,192.5056,247.0147};
-  float[] populationDensityBreaks = {470,1290,2150,3073.333,4136.667,5350,7173.333,10183.33,14460,25483,54829};    
-
-               
-  float[] getLegendLabels(String activeMode){
-   if (activeMode.equals("Airport distance")) return airportsDistanceBreaks;
-   else if (activeMode.equals("Military Base distance")) return militaryBaseDistanceBreaks;
-   else if (activeMode.equals("Weather Station dist.")) return weatherStDistanceBreaks;
-   else if (activeMode.equals("County Population dens.")) return populationDensityBreaks;
-   
-   return null;
-  }    
+    
   List<Bucket> sightingCountsByAirportDistance()
   {
     String caseQuery = "when distance < "+airportsDistanceBreaks[0]+" then 1 ";

@@ -54,17 +54,17 @@ PImage airplaneImage;
 PImage militaryBaseImage;
 PImage weatherStationImage;
 
-Map<Integer,Place> cityMap;
-Map<Integer,Place> airportMap;
-Map<Integer,Place> militaryBaseMap;
-Map<Integer,Place> weatherStationMap;
-Map<Integer,State> stateMap;
+Map<Integer,SightingType> sightingTypeMap = new LinkedHashMap<Integer, SightingType>();
+Map<Integer,State> stateMap = new HashMap<Integer,State>();
+Map<Integer,Place> cityMap = new HashMap<Integer,Place>();
+Map<Integer,Place> airportMap = new HashMap<Integer,Place>();
+Map<Integer,Place> militaryBaseMap = new HashMap<Integer,Place>();
+Map<Integer,Place> weatherStationMap = new HashMap<Integer,Place>();
 PRTree<Place> cityTree;
 PRTree<Place> airportTree;
 PRTree<Place> militaryBaseTree;
 PRTree<Place> weatherStationTree;
 
-Map<Integer,SightingType> sightingTypeMap;
 Map<SightingType, Checkbox> typeCheckboxMap;
 
 Sighting clickedSighting;
@@ -97,7 +97,10 @@ void setup()
   println(dataPath(""));
   
   /* load data */
-  data = new SQLiteDataSource();
+  if (sketchPath == null)  // applet
+    data = new WebDataSource(dataPath("jsontest"));
+  else  // application
+    data = new SQLiteDataSource();  
   
   data.loadSightingTypes();
   activeFilter = new SightingsFilter();
