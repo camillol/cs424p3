@@ -12,6 +12,22 @@
             How do you do the animation in the movie?
             <ul>
               <li>
+              <a name = "animation"></a>
+              In playback mode, a Player object keeps track of real time, maps it to playback time
+              (we use a playback speed of 5 days per second), and maintains a sliding window of
+              sightings to draw. Sightings are loaded from the database in chunks, making sure that
+              the latest sighting in the window is ahead of the current playback time. Sightings are
+              dropped out of the window when they are older than the fadeout threshold (5 days).
+              </li>
+              <li>
+              When drawing a frame, the renderer iterates through the current window of sightings,
+              computing their age compared to the current playback time. When the age goes below 0,
+              i.e. into the future, it stops iterating.
+              For each sighting in the active timeframe, a dot is drawn. The alpha value is inversely
+              proportional to the age (fully opaque when the dot appears, fading to fully transparent
+              when it reached the fadeout threshold). If the age is less than one day, a stroked circle is
+              also drawn; the circle expands linearly, while its opacity fades out quadratically.
+              This produces the "raindrop" effect that draws attention to new sightings as they appear.
               </li>
             </ul>
           </li>
@@ -26,7 +42,7 @@
             </ul>
           </li>
           <li>
-            Our group
+            (Our group)
           </li>
           <li>
             How did you correlate the weather data?
@@ -41,6 +57,7 @@
             How did you implement your "explosion" effect on the playback?
             <ul>
               <li>
+              See the <a href="#animation">answer</a> to group 1.
               </li>
             </ul>
           </li>
@@ -48,6 +65,7 @@
             How do you do the animation in the movie?
             <ul>
               <li>
+              See the <a href="#animation">answer</a> to group 1.
               </li>
             </ul>
           </li>
@@ -55,6 +73,9 @@
              How did you make the dots animations when clicking on the play button? 
              Why did you use so bright colors on the graphs opposed to the black background?
             <ul>
+              <li>
+              For the animation, see the <a href="#animation">answer</a> to group 1.
+              </li>
               <li>
                 For color choice, it matches to the colors used on the map.  Each color matches sighting type, 
                 so changing colors for the sighting groups will cause inconsistency.
@@ -65,6 +86,26 @@
              How do you handle maintaining performance while drawing so many points?
             <ul>
               <li>
+              In the cluster view, each state's cluster is rendered into a buffer and treated as a whole.
+              </li>
+              <li>
+              In the individual location view, rendering is cached into an overlay layer. For each
+              map tile we render a translucent overlay tile; rendering is done on demand in background
+              threads, similarly to how tiles are loaded from the server.
+              To accelerate rendering
+              a given tile, we only draw locations within the tile (plus a margin, so that dots that
+              are close to the edge have each half drawn in the appropriate tile). We use R-trees
+              as a spatial index to find the right locations quickly.
+              The overlay layer is purged and automatically regenerated when the filter conditions
+              change.
+              Since this system integrates pretty closely to how ModestMaps works, I am thinking of
+              merging it into MM so that others can take advantage of it. While writing it, I was
+              also able to tighten the conditions for loading tiles, and that change has already been
+              incorporated into <a href="https://github.com/RandomEtc/modestmaps-processing">ModestMaps</a>.
+              </li>
+              <li>
+              In the animation view, we keep track of sightings within a sliding window of five days,
+              which limits the number of dots that we need to draw in any given frame.
               </li>
             </ul>
           </li>
