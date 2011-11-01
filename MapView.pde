@@ -7,8 +7,7 @@ import java.util.concurrent.*;
 import java.awt.geom.*;
 
 /* Cohen-Sutherland algorithm */
-Line2D clipLineToRect(Line2D l, Rectangle2D r)
-{
+Line2D clipLineToRect(Line2D l, Rectangle2D r){
   double x1 = l.getP1().getX();
   double y1 = l.getP1().getY();
   double x2 = l.getP2().getX();

@@ -45,10 +45,10 @@ class Index(webapp.RequestHandler):
         path = os.path.join(os.path.dirname(__file__), views_path + 'index.html')
         self.response.out.write(template.render(path, template_values))
 
-class Photos(webapp.RequestHandler):
+class Screenshots(webapp.RequestHandler):
     def get(self):
-        template_values = {'current_page': 'photos' }
-        path = os.path.join(os.path.dirname(__file__), views_path + 'photos.html')
+        template_values = {'current_page': 'screenshots' }
+        path = os.path.join(os.path.dirname(__file__), views_path + 'screenshots.html')
         self.response.out.write(template.render(path, template_values))
 
 class Download(webapp.RequestHandler):
@@ -75,12 +75,12 @@ class Sightings(webapp.RequestHandler):
         response = -1
         if sighting_id != '':
           response = db.GqlQuery("SELECT * FROM Sighting WHERE sighting_id = :1", int(sighting_id)).get().to_xml()
-        self.response.out.writeln('<?xml version="1.0"?>');
+        self.response.out.write('<?xml version="1.0"?>');
         self.response.out.write(response)
 
 application = webapp.WSGIApplication([('/', Index), 
                                       ('/sightings', Sightings), 
-                                      ('/photos', Photos),
+                                      ('/screenshots', Screenshots),
                                       ('/search', Search),
                                       ('/download', Download)],
                                      debug=True)
