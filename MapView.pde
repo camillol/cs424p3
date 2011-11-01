@@ -1,4 +1,4 @@
-import processing.opengl.*;
+//import processing.opengl.*;
 import com.modestmaps.*;
 import com.modestmaps.core.*;
 import com.modestmaps.geo.*;
