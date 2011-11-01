@@ -366,7 +366,7 @@ class SQLiteDataSource implements DataSource {
   {
     stopWatch();
     print("Loading cities...");
-    db.query("select cities.*, count(*) as sighting_count from cities join sightings on sightings.city_id = cities.id group by cities.id");
+    db.query("select cities.*, count(*) as sighting_count , cities.name||', '||states.name_abbreviation as city_name from cities join sightings on sightings.city_id = cities.id join states on cities.state_id = states.id group by cities.id");
     cityMap = new HashMap<Integer,Place>();
     minCountSightings = 1000;
     maxCountSightings = 0;
@@ -374,7 +374,7 @@ class SQLiteDataSource implements DataSource {
       cityMap.put(db.getInt("id"), new City(
         db.getInt("id"),
         new Location(db.getFloat("lat"), db.getFloat("lon")),
-        db.getString("name"),
+        db.getString("city_name"),
         db.getInt("sighting_count"),
         db.getInt("state_id"),
         db.getInt("county_id")
@@ -612,7 +612,7 @@ class SQLiteDataSource implements DataSource {
   float[] getLegendLabels(String activeMode){
    if (activeMode.equals("Airport distance")) return airportsDistanceBreaks;
    else if (activeMode.equals("Military Base distance")) return militaryBaseDistanceBreaks;
-   else if (activeMode.equals("Weather St. distance")) return weatherStDistanceBreaks;
+   else if (activeMode.equals("Weather Station dist.")) return weatherStDistanceBreaks;
    else if (activeMode.equals("County Population dens.")) return populationDensityBreaks;
    
    return null;
