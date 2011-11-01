@@ -338,16 +338,22 @@ class SQLiteDataSource implements DataSource {
     String dbname = "ufo.db";
     String dbpath = null;
     
-    dbpath = dataPath(dbname);
-    File dbf = new File(dbpath);
-    if (!dbf.exists()) {
-      dbpath = savePath(dbname);
-      dbf = new File(dbpath);
+    if (sketchPath == null) {
+      /* applet - what now!? */
+      println("applets can't access files!");
+      dbpath = "/Users/camillo/test.py";
+    } else {
+      dbpath = dataPath(dbname);
+      File dbf = new File(dbpath);
       if (!dbf.exists()) {
-        stopWatch();
-        print("extracting database...");
-        saveStream(dbpath, createInput(dbname));
-        println(stopWatch());
+        dbpath = savePath(dbname);
+        dbf = new File(dbpath);
+        if (!dbf.exists()) {
+          stopWatch();
+          print("extracting database...");
+          saveStream(dbpath, createInput(dbname));
+          println(stopWatch());
+        }
       }
     }
 

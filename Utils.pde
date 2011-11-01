@@ -60,6 +60,7 @@ void popClip()
                dataPath(""):  /Users/camillo/UIC/CS424 visualization/p3/cs424p3/application.macosx/data/
 
   applet:      sketchPath:    null
+               dataPath(""):  null
 */
 
 /* data utilities */
