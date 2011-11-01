@@ -67,6 +67,11 @@ class SightingType {
     active = act;
     activeAnimator.target(active ? 1.0 : 0.0);
   }
+  
+  int hashCode()
+  {
+    return id;
+  }
 }
 
 final static int CITY = 0;
@@ -209,10 +214,17 @@ class SightingsFilter {
   
   String toString()
   {
-    return viewMinYear + "-" + viewMaxYear + " "
+    StringBuffer s = new StringBuffer();
+    s.append(viewMinYear + "-" + viewMaxYear + " "
       + viewMinMonth + "-" + viewMaxMonth + " "
-      + viewMinHour + "-" + viewMaxHour + " "
-      + activeTypes;
+      + viewMinHour + "-" + viewMaxHour + " ");
+    boolean first = true;
+    for (SightingType st : activeTypes) {
+      if (first) first = false;
+      else s.append(",");
+      s.append(st.id);
+    }
+    return s.toString();
   }
 }
 

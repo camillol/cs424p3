@@ -98,7 +98,7 @@ void setup()
   
   /* load data */
   data = new SQLiteDataSource();
-//  data = new WebDataSource();
+//  data = new WebDataSource(dataPath("jsontest"));
   
   data.loadSightingTypes();
   activeFilter = new SightingsFilter();
