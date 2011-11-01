@@ -92,13 +92,20 @@ class Sightings(webapp.RequestHandler):
         self.response.out.write('<?xml version="1.0"?>');
         self.response.out.write(response)
 
+class Applet(webapp.RequestHandler):
+    def get(self):
+        template_values = {'current_page': 'applet' }
+        path = os.path.join(os.path.dirname(__file__), views_path + 'applet.html')
+        self.response.out.write(template.render(path, template_values))
+
 application = webapp.WSGIApplication([('/', Index), 
                                       ('/sightings', Sightings), 
                                       ('/screenshots', Screenshots),
                                       ('/search', Search),
                                       ('/data_extraction', DataExtraction),
                                       ('/observations', Observations),
-                                      ('/download', Download)],
+                                      ('/download', Download),
+                                      ('/applet', Applet)],
                                      debug=True)
 
 def main():
