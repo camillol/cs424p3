@@ -1,0 +1,57 @@
+938|Long beach|66
+2215|Colorado springs|66
+13595|Spokane|66
+438|Chandler|67
+474|Scottsdale|67
+4512|Rochester|67
+933|Fresno|68
+8746|Reno|68
+150|Jackson|69
+971|Riverside|69
+1325|Wilmington|69
+114|Auburn|70
+5386|Everett|70
+7817|Omaha|70
+980|Lancaster|71
+6765|St. louis|72
+471|Gilbert|75
+2673|Tampa|75
+2620|Washington, d.c.|76
+4727|Kansas city|77
+13606|Tacoma|80
+4422|Indianapolis|81
+1032|Richmond|82
+394|Salem|83
+326|Louisville|84
+3644|Arlington|87
+11783|Myrtle beach|89
+8931|New york city (brooklyn)|92
+447|Mesa|93
+2592|Columbia|96
+8968|New york city|98
+6270|Charlotte|103
+3417|Dallas|106
+3248|Columbus|108
+8515|Albuquerque|109
+65|Jacksonville|110
+3678|Rockford|110
+968|Sacramento|113
+1000|San jose|120
+2205|Denver|120
+2276|Springfield|122
+2666|Orlando|126
+349|Austin|129
+8600|San antonio|131
+3894|Tinley park|136
+941|San francisco|138
+486|Miami|152
+431|Tucson|161
+3774|Chicago|193
+2708|Houston|198
+7659|Las vegas|235
+931|San diego|238
+2563|Portland|240
+962|Los angeles|256
+440|Phoenix|298
+13579|Seattle|339
+

@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+Design by Free CSS Templates
+http://www.freecsstemplates.org
+Released for free under a Creative Commons Attribution 2.5 License
+Name       : Moonlight 
+Description: A two-column, fixed-width design with dark color scheme.
+Version    : 1.0
+Released   : 20110815
+
+-->
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>It Came Out of the Sky</title>
+<link href="/stylesheets/style.css" rel="stylesheet" type="text/css" media="screen" />
+</head>
+<body>
+<div id="wrapper">
+	<div id="header" class="container">
+		<div id="logo">
+			<h1><a href="/">Out of the Sky</a></h1>
+			<p>The Unexplored Cosmos</p>
+		</div>
+		<div id="menu">
+			<ul>
+				<li class="{% ifequal current_page "home" %} current_page_item {% endifequal %}"><a href="/">Home</a></li>
+				<li class="{% ifequal current_page "screenshots" %} current_page_item {% endifequal %}"><a href="/screenshots">Instructions</a></li>
+				<li class="{% ifequal current_page "download" %} current_page_item {% endifequal %}"><a href="/download">Download</a></li>
+				<li class="{% ifequal current_page "data_extraction" %} current_page_item {% endifequal %}"><a href="/data_extraction">Data Extraction</a></li>
+				<li class="{% ifequal current_page "observations" %} current_page_item {% endifequal %}"><a href="/observations">Observations</a></li>
+			</ul>
+		</div>
+	</div>
+	<!-- end #header -->
+	<div id="page">
+		<!-- start #content -->
+    {% block content %}
+      Override Me  
+    {% endblock %}
+		<!-- end #content -->
+		<div id="sidebar">
+		  <!-- YIELD sidebar -->	
+      <ul>
+        <li>
+          <div id="search" >
+            <form method="get" action="/search">
+              <div>
+                Search sightings by city name:
+                <input type="text" name="city_name" id="search-text" value="{{ city_name }}"/>
+                <input type="submit" id="search-submit" value="Search" />
+              </div>
+            </form>
+          </div>
+          <div style="clear: both;">&nbsp;</div>
+        </li>
+        <li>
+          <h2>Our Purpose</h2>
+          <p>Correlate sightings to geographical locations</p>
+        </li>
+        <li>
+          <h2>Sighting Types</h2>
+          <ul>
+            <li>Light (12,809)
+              <ul>
+                <li><a href="/search?shape_id=2">Light</a></li>
+                <li><a href="/search?shape_id=17">Flash</a></li>
+                <li><a href="/search?shape_id=6">Fireball</a></li>
+              </ul>
+            </li>
+            <li>Round (11,371)
+              <ul>
+                <li><a href="/search?shape_id=3">Circle</a></li>
+                <li><a href="/search?shape_id=5">Sphere</a></li>
+                <li><a href="/search?shape_id=9">Disk</a></li>
+                <li><a href="/search?shape_id=11">Oval</a></li>
+                <li><a href="/search?shape_id=20">Egg</a></li>
+              </ul>
+            </li>
+            <li>Unknown (7,308)
+              <ul>
+                <li><a href="/search?shape_id=4">Unknown</a></li>
+                <li><a href="/search?shape_id=12">Other</a></li>
+              </ul>
+            </li>
+            <li>Triangle (4,561)
+              <ul>
+                <li><a href="/search?shape_id=1">Triangle</a></li>
+                <li><a href="/search?shape_id=7">Cone</a></li>
+              </ul> 
+            </li>
+            <li>Other (3,696)
+              <ul>
+                <li><a href="/search?shape_id=10">Formation</a></li>
+                <li><a href="/search?shape_id=13">Tear drop</a></li>
+                <li><a href="/search?shape_id=14">Cigar</a></li>
+                <li><a href="/search?shape_id=19">Cylinder</a></li>
+                <li><a href="/search?shape_id=22">Cross</a></li>
+              </ul>
+            </li>
+            <li>Polygon (1,871)
+              <ul>
+                <li><a href="/search?shape_id=16">Rectangle</a></li>
+                <li><a href="/search?shape_id=18">Diamond</a></li>
+                <li><a href="/search?shape_id=21">Chevron</a></li>
+              </ul> 
+            </li>
+            <li>Changing (216)
+              <ul>
+                <li><a href="/search?shape_id=15">Changing</a></li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <h2>Top Sighting Locations</h2>
+          <ul>
+            <li><a href="/search?city_name=Seattle">Seattle(339)</a></li>
+            <li><a href="/search?city_name=Phoenix">Phoenix(298)</a></li>
+            <li><a href="/search?city_name=Los+Angeles">Los Angeles(256)</a></li>
+            <li><a href="/search?city_name=Portland">Portland(240)</a></li>
+            <li><a href="/search?city_name=San+Diego">San Diego(238)</a></li>
+            <li><a href="/search?city_name=Las+Vegas">Las Vegas(235)</a></li>
+            <li><a href="/search?city_name=Houston">Houston(198)</a></li>
+            <li><a href="/search?city_name=Chicago">Chicago(193)</a></li>
+            <li><a href="/search?city_name=Tucson">Tucson(161)</a></li>
+            <li><a href="/search?city_name=Miami">Miami(152)</a></li>
+            <li><a href="/search?city_name=San+Francisco">San Francisco(138)</a></li>
+            <li><a href="/search?city_name=Tinley+Park">Tinley Park(136)</a></li>
+            <li><a href="/search?city_name=San+Antonio">San Antonio(131)</a></li>
+            <li><a href="/search?city_name=Austin">Austin(129)</a></li>
+            <li><a href="/search?city_name=Orlando">Orlando(126)</a></li>
+            <li><a href="/search?city_name=Springfield">Springfield(122)</a></li>
+            <li><a href="/search?city_name=Denver">Denver(120)</a></li>
+            <li><a href="/search?city_name=San+Jose">San Jose(120)</a></li>
+            <li><a href="/search?city_name=Sacramento">Sacramento(113)</a></li>
+            <li><a href="/search?city_name=Jacksonville">Jacksonville(110)</a></li>
+          </ul>
+        </li>
+      </ul>
+		</div>
+		<!-- end #sidebar -->
+		<div style="clear: both;">&nbsp;</div>
+	</div>
+	<!-- end #page -->
+</div>
+<div id="footer-content">
+	<div id="footer-bg" class="container">
+		<div id="column1">
+			<h2>Sources</h2>
+			<p>Sources will be listed here</p>
+        <li>
+          <a href="http://www.census.gov/geo/www/gazetteer/gazetteer2010.html">http://www.census.gov/geo/www/gazetteer/gazetteer2010.html</a>
+        </li>
+        <li>
+          <a href="http://www.nuforc.org/webreports/ndxloc.html">http://www.nuforc.org/webreports/ndxloc.html</a>
+        </li>
+        <li>
+          <a href="http://factfinder2.census.gov">http://factfinder2.census.gov</a>
+        </li>
+        <li>
+          <a href="http://code.google.com/apis/maps/index.html">http://code.google.com/apis/maps/index.html</a>
+        </li>
+        <li>
+          <a href="http://msdn.microsoft.com/en-us/library/dd877180.aspx">http://msdn.microsoft.com/en-us/library/dd877180.aspx</a>
+        </li>
+        <li>
+          <a href="http://www.wunderground.com/history">http://www.wunderground.com/history</a>
+        </li>
+        <li>
+          <a href="http://weather.noaa.gov">http://weather.noaa.gov</a>
+        </li>
+        <li>
+          <a href="www.partow.net/miscellaneous/airportdatabase/">www.partow.net/miscellaneous/airportdatabase/</a>
+        </li>
+        <li>
+          <a href="http://militarybases.com/">http://militarybases.com/</a>
+        </li>
+      </ul>
+
+		</div>
+		<div id="column3">
+			<h2>Recommended Links</h2>
+			<ul>
+				<li><a href="http://www.nuforc.org">National UFO Reporting Center</a></li>
+			</ul>
+		</div>
+	</div>
+</div>
+<div id="footer">
+	<p>Copyright (c) 2011 Camillo Lugaresi, Priscilla Jiménez, Eugene Magdel</p>
+</div>
+<!-- end #footer -->
+</body>
+</html>

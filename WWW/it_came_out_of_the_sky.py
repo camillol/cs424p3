@@ -45,10 +45,10 @@ class Index(webapp.RequestHandler):
         path = os.path.join(os.path.dirname(__file__), views_path + 'index.html')
         self.response.out.write(template.render(path, template_values))
 
-class Photos(webapp.RequestHandler):
+class Screenshots(webapp.RequestHandler):
     def get(self):
-        template_values = {'current_page': 'photos' }
-        path = os.path.join(os.path.dirname(__file__), views_path + 'photos.html')
+        template_values = {'current_page': 'screenshots' }
+        path = os.path.join(os.path.dirname(__file__), views_path + 'screenshots.html')
         self.response.out.write(template.render(path, template_values))
 
 class Download(webapp.RequestHandler):
@@ -59,14 +59,28 @@ class Download(webapp.RequestHandler):
 class Search(webapp.RequestHandler):
     def get(self):
         city_name = self.request.get("city_name")
+        shape_id = self.request.get("shape_id")
         cities = City.all().filter("name = ", city_name.lower().capitalize()).fetch(limit=10)
         sightings = []
         if len(cities) > 0:
           sightings = Sighting.all().filter("city_id IN ", map((lambda x: x.city_id), cities)).fetch(limit=100) 
+        if len(shape_id) > 0:
+          sightings = Sighting.all().filter("shape_id = ", int(shape_id)).fetch(limit=100) 
         template_values = {'current_page': 'search', 'sightings': sightings, 'city_name': city_name }
         path = os.path.join(os.path.dirname(__file__), views_path + 'search.html')
         self.response.out.write(template.render(path, template_values))
 
+class DataExtraction(webapp.RequestHandler):
+    def get(self):
+        template_values = {'current_page': 'data_extraction'}
+        path = os.path.join(os.path.dirname(__file__), views_path + 'data_extraction.html')
+        self.response.out.write(template.render(path, template_values))
+
+class Observations(webapp.RequestHandler):
+    def get(self):
+        template_values = {'current_page': 'observations'}
+        path = os.path.join(os.path.dirname(__file__), views_path + 'observations.html')
+        self.response.out.write(template.render(path, template_values))
 
 class Sightings(webapp.RequestHandler):
     def get(self):
@@ -75,13 +89,15 @@ class Sightings(webapp.RequestHandler):
         response = -1
         if sighting_id != '':
           response = db.GqlQuery("SELECT * FROM Sighting WHERE sighting_id = :1", int(sighting_id)).get().to_xml()
-        self.response.out.writeln('<?xml version="1.0"?>');
+        self.response.out.write('<?xml version="1.0"?>');
         self.response.out.write(response)
 
 application = webapp.WSGIApplication([('/', Index), 
                                       ('/sightings', Sightings), 
-                                      ('/photos', Photos),
+                                      ('/screenshots', Screenshots),
                                       ('/search', Search),
+                                      ('/data_extraction', DataExtraction),
+                                      ('/observations', Observations),
                                       ('/download', Download)],
                                      debug=True)
 

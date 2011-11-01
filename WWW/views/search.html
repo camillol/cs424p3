@@ -1,0 +1,21 @@
+
+{% extends "layout.html" %}
+
+{% block content %}
+  <div id="content">
+{% for sighting in sightings %}
+  <div class="post">
+    <h2 class="title"><a href="#">{{ sighting.summary_description_short }}</a></h2>
+    <p class="meta"><span class="date">{% if sighting.show_date %} {{ sighting.occurred_at|date:"M" }} {% endif %} </span> <span class="posted">Conditions: <a href="#">{{ sighting.weather_conditions }}</a></span></p>
+    <div style="clear: both;">&nbsp;</div>
+    <div class="entry">
+      <p>
+        {{ sighting.full_description }}
+      </p>
+      <!-- <p class="links"><a href="#" class="more">Read More</a><a href="#" title="b0x" class="comments">Comments</a></p> -->
+    </div>
+  </div>
+{% endfor %}
+  <div style="clear: both;">&nbsp;</div>
+</div>
+{% endblock %}
