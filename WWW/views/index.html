@@ -157,19 +157,81 @@
       <!-- <p class="links"><a href="#" class="more">Read More</a><a href="#" title="b0x" class="comments">Comments</a></p> -->
     </div>
   </div>
+  
   <div class="post">
-    <h2 class="title"><a href="#">Week Three</a></h2>
-    <p class="meta"><span class="date"> Monday, October 28, 2011</span><span class="posted">Posted by <a href="#">The group</a></span></p>
+    <h2 class="title"><a href="#">Week Three Point Five</a></h2>
+    <p class="meta"><span class="date"> Monday, October 31, 2011</span><span class="posted">Posted by <a href="#">The group</a></span></p>
     <div style="clear: both;">&nbsp;</div>
     <div class="entry">
       <p>
         <ul>
           <li>
             <b>Camillo</b> 
-            - Enhanced performance significantly, enabled OpenGL (a lot of work)
+            <ul>
+            	<li>Wrote web service to support the applet (handles db queries, proxies map tile downloads)</li>
+            	<li>Added WebDataSource for use in applet (uses JSON)</li>
+            	<li>Database updating & rejiggering</li>
+            	<li>Implemented playback feature</li>
+            	<li>Performance improvements across the board (DB access, rendering, etc.)</li>
+            	<li>Implemented state cluster view</li>
+            	<li>Force-based algorithm for cluster positioning</li>
+            	<li>Distance computations using haversine formula</li>
+            	<li>Render overlay buffers in background</li>
+            	<li>Factored out DB access layer</li>
+            	<li>Graph view</li>
+            </ul>
+          </li>
+  		  <li>
+            <b>Priscilla</b>
+            <ul>
+              <li>Additional graphs</li>
+              <li>Interface improvements</li>
+              <li>Highlight locations near to airports/weather stations/military bases</li>
+              <li>State rollover</li>
+              <li>Show locations of airports/weather stations/military bases</li>
+              <li>Website work</li>
+           </ul>
+          </li>
+           <li>
+              <b>Eugene</b>
+            <ul>
+              <li>Website development</li>
+              <li>Filter non-US data</li>
+              <li>DB: add population density</li>
+              <li>Data collection improvements</li>
+              <li>Rails advice</li>
+           </ul>
+           </li>
+        </ul>
+      </p>
+      <!-- <p class="links"><a href="#" class="more">Read More</a><a href="#" title="b0x" class="comments">Comments</a></p> -->
+    </div>
+  </div>
+  
+  
+  <div class="post">
+    <h2 class="title"><a href="#">Week Three</a></h2>
+    <p class="meta"><span class="date"> Friday, October 28, 2011</span><span class="posted">Posted by <a href="#">The group</a></span></p>
+    <div style="clear: both;">&nbsp;</div>
+    <div class="entry">
+      <p>
+        <ul>
+          <li>
+            <b>Camillo</b> 
+            <ul>
+            	<li>Fast filtering</li>
+            	<li>Updated SQLite driver, solving slowness problem</li>
+            	<li>Faster reloads on filter changes</li>
+            	<li>Faster mourseover using R-tree</li>
+            	<li>Faster buffer rendering using R-tree</li>
+            	<li>Synchronized panning and zooming of overlay</li>
+            	<li>Buffer rendering into overlay tiles</li>
+            	<li>Parameterize sighting types from DB</li>
+            	<li>New optimized DB access layer</li>
+            </ul>
           </li>
           <li>
-            <b>Priscilla</b> - 
+            <b>Priscilla</b>
             <ul>
               <li> Created ScrollList:  Customized object which list the occurred sightings in a specific place</li>
               <li> Created VScroll : Vertical scroll that is part of scrollList.</li>
@@ -183,7 +245,10 @@
            </ul>
           </li>
            <li>
-              <b>Eugene</b> - Collected / processed weather data, weather stations data.
+              <b>Eugene</b>
+              <ul>
+              <li> Collected / processed weather data, weather stations data.</li>
+              </ul>
            </li>
         </ul>
       </p>
